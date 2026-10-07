@@ -3,18 +3,15 @@
 import { SUMMARY_SECTIONS, ASYMMETRY } from '../config.js';
 import { cellValue, formatDiff, statusLabel, sideLabel, formatSpeed, formatIncline, formatCadence } from './format.js';
 
-export const FAR_SIDE_LABEL = 'far side, low reliability';
-
 function cellText(def, cell) {
   const value = cellValue(def, cell, { short: true });
   const strides = cell.strides ? `median of ${cell.strides} strides` : '';
-  // Far-side values are shown for reference only: no status (they are not scored).
-  if (cell.farSide) return `${value} (${[FAR_SIDE_LABEL, strides].filter(Boolean).join(', ')})`;
   if (cell.status === 'ic-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across initial-contact timing, not scored)`;
   if (cell.status === 'window-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across analysis-window choices, not scored${excludedText(cell)})`;
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
-  const status = def.type === 'record' ? '' : statusLabel(cell.status, 'summary');
-  const parts = [status, conf, strides + excludedText(cell)].filter(Boolean);
+  const status = def.type === 'record' || def.type === 'category' ? '' : statusLabel(cell.status, 'summary');
+  const unscored = def.scored === false && status && cell.status !== 'review' ? 'not scored' : '';
+  const parts = [status, unscored, conf, strides + excludedText(cell)].filter(Boolean);
   return parts.length ? `${value} (${parts.join(', ')})` : value;
 }
 
@@ -29,7 +26,9 @@ function notAssessedText(cell) {
 }
 
 // Lowercase the first letter for use mid-sentence, leaving acronyms (COM, IC, DF) intact.
+const PROPER = ['Achilles'];
 function midSentence(text) {
+  if (PROPER.some((p) => text.startsWith(p))) return text;
   return /^[A-Z][a-z]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
 }
 
@@ -79,6 +78,8 @@ export function buildHeader(intake, { placeholder, analysis } = {}) {
     `GAIT ANALYSIS SUMMARY | ${intake.clientCode} | ${intake.sessionDate}`,
     `Speed: ${formatSpeed(intake)} | Incline: ${formatIncline(intake)} | Cadence: ${formatCadence(intake)}`,
   ];
+  const clips = analysis?.clipsUsed;
+  if (clips?.length) lines.push(`Clips: ${clips.join(' | ')}`);
   const v = analysis?.cadenceVideo;
   if (v) {
     lines.push(`Video: ${analysis.cyclesDetected} strides analysed | Cadence from stride period: ${Math.round(v.spm)} spm (unvalidated, not used for scoring)`);
@@ -105,7 +106,7 @@ export function buildInterpretation(results, intake) {
   const cellsWith = (status) =>
     scored.flatMap((r) =>
       Object.values(r.cells)
-        .filter((c) => c.status === status && !c.farSide)
+        .filter((c) => c.status === status)
         .map((c) => ({ def: r.def, cell: c })),
     );
 
@@ -151,12 +152,6 @@ export function buildInterpretation(results, intake) {
       `Borderline, window-sensitive (the status changes with how the late-stance window is defined, so no status is shown and these are not scored or used for patterns until validated): ${sentenceList(windowSensitive)}.`,
     );
   }
-  const farCells = results.rows.flatMap((r) => Object.values(r.cells).filter((c) => c.farSide && c.assessed).map((c) => ({ def: r.def, cell: c })));
-  if (farCells.length) {
-    paras.push(
-      `Far-side values (${sideLabel(farCells[0].cell.side, fp)}) are shown for reference only: from a single side camera that leg is tracked with low reliability, so it is not scored, not used for patterns and not compared side to side. Film from the other side for bilateral values.`,
-    );
-  }
 
   for (const p of results.patterns) {
     const scope = { left: 'left side', right: 'right side', both: 'both sides', midline: 'trunk/midline' }[p.scope];
@@ -190,31 +185,34 @@ export function buildInterpretation(results, intake) {
   );
   if (prompts.length) paras.push(`Clinical checks: ${sentenceList(prompts)}.`);
 
+  // Not assessed, grouped by reason. Missing-view metrics collapse into one line per view.
   const missingViews = new Set();
-  const groups = { reshoot: new Map(), far: new Map(), other: new Map() };
+  const reshoot = new Map();
+  const byReason = new Map();
   for (const na of results.notAssessed) {
-    if (!na.unreliable && na.reason.endsWith('clip in this session')) {
-      missingViews.add(na.def.view);
+    if (na.missingView) {
+      missingViews.add(na.missingView);
       continue;
     }
-    // Merge left/right entries that share a reason.
-    const map = na.farSide ? groups.far : na.unreliable ? groups.reshoot : groups.other;
-    const key = `${na.def.id}|${na.reason}`;
-    const entry = map.get(key) || { def: na.def, reason: na.reason, sides: [] };
-    if (na.side === 'left' || na.side === 'right') entry.sides.push(sideLabel(na.side, fp));
+    const map = na.unreliable ? reshoot : byReason;
+    const key = na.reason;
+    const entry = map.get(key) || { reason: na.reason, items: new Map() };
+    const name = midSentence(na.def.summaryLabel || na.def.label);
+    const item = entry.items.get(na.def.id) || { name, sides: [] };
+    if (na.side === 'left' || na.side === 'right') item.sides.push(sideLabel(na.side, fp));
+    entry.items.set(na.def.id, item);
     map.set(key, entry);
   }
-  const describe = (e) =>
-    `${e.sides.length === 1 ? `${e.sides[0]} ` : ''}${midSentence(e.def.summaryLabel || e.def.label)} (${e.reason})`;
-  if (groups.reshoot.size) {
-    paras.push(`Not assessed (tracking below the confidence floor; consider re-shoot): ${sentenceList([...groups.reshoot.values()].map(describe))}.`);
+  const itemText = (it) => `${it.sides.length === 1 ? `${it.sides[0]} ` : ''}${it.name}`;
+  for (const e of reshoot.values()) {
+    paras.push(`Not assessed (${e.reason}; consider re-shoot): ${sentenceList([...e.items.values()].map(itemText))}.`);
   }
-  if (groups.far.size) {
-    paras.push(`Not assessed from this camera angle (far side): ${sentenceList([...groups.far.values()].map(describe))}.`);
+  for (const e of byReason.values()) {
+    paras.push(`Not assessed (${e.reason}): ${sentenceList([...e.items.values()].map(itemText))}.`);
   }
-  if (groups.other.size) paras.push(`Not assessed: ${sentenceList([...groups.other.values()].map(describe))}.`);
   if (missingViews.size) {
-    paras.push(`No ${[...missingViews].join(' or ')}-view clip in this session, so those metrics were not assessed.`);
+    const label = { lateral: 'lateral (side)', posterior: 'posterior (rear)' };
+    paras.push(`No ${[...missingViews].map((v) => label[v] || v).join(' or ')} clip in this session, so those metrics were not assessed.`);
   }
 
   const context = [];

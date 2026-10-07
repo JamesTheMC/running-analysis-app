@@ -1,7 +1,7 @@
 // Single source of truth for metric ranges, scoring weights and pattern rules.
 // See SPEC.md Sections 5, 6 and 9. Items marked [CONFIRM] are open questions for the owner.
 
-export const APP_VERSION = '0.3.0-events';
+export const APP_VERSION = '0.4.0-viewmap';
 
 // ---------------------------------------------------------------------------
 // Phases and views
@@ -13,10 +13,32 @@ export const PHASES = [
   { id: 'toe_off', label: 'Toe Off' },
 ];
 
+// Camera views (reference/VIEW_MAP.md). Every metric declares the views it may be computed from
+// (`allowedViews`); the pipeline's emitter and the engine both refuse anything else.
 export const VIEWS = {
-  side: { label: 'Side (sagittal)' },
-  rear: { label: 'Rear (posterior)' },
+  lateral: { label: 'Lateral (side)' },
+  posterior: { label: 'Posterior (rear)' },
 };
+
+// Clip slots for the planned three-clip session (not built yet: a session currently holds one lateral
+// clip and one posterior clip). Each lateral clip supplies its near leg and near arm only.
+export const CLIP_SLOTS = {
+  lateral_left: { view: 'lateral', leg: 'left', label: 'Lateral, filmed from the left' },
+  lateral_right: { view: 'lateral', leg: 'right', label: 'Lateral, filmed from the right' },
+  posterior: { view: 'posterior', label: 'Posterior (from behind)' },
+};
+
+// Metric build status: 'built' = computed; 'planned' = allowed but not computed yet (reason below);
+// 'not-built' = deliberately not built (poor 2D reliability); 'not-measurable' = impossible in 2D.
+export const STATUS_REASONS = {
+  planned: 'not measured by this build yet',
+  'planned-posterior': 'posterior metrics awaiting validation, not built yet',
+  'not-built': 'not built: poor 2D reliability',
+  'not-measurable': 'not measurable in 2D',
+};
+
+// Not measurable from 2D video at all; listed so they are never implied (check clinically).
+export const NOT_MEASURABLE = ['Pelvic tilt (anterior/posterior)', 'Lordosis', 'Transverse-plane motion (rotation)'];
 
 // ---------------------------------------------------------------------------
 // Scoring (Section 6.3). First draft: every weight here is configurable.
@@ -52,9 +74,14 @@ export const CADENCE = {
 };
 
 // ---------------------------------------------------------------------------
-// Metrics (Section 6.1, confidence from 6.2)
+// Metrics (Section 6.1, confidence from 6.2, views from reference/VIEW_MAP.md)
+//
+// allowedViews: views the metric may be computed from. Lateral clips supply the near leg/arm only.
+// status:   'built' (default) | 'planned' | 'not-built' | 'not-measurable' (see STATUS_REASONS)
+// scored:   false = shown but never scored (default true for 'range' and 'boolean')
 //
 // type:     'range'   numeric, scored against green/red bounds (yellow = in between)
+//           'category' numeric value shown as a category (`categories`); never scored
 //           'boolean' scored against `expected`; a mismatch gets `mismatchStatus`
 //           'record'  value is shown but never scored
 // sided:    'lr'   left and right values
@@ -72,13 +99,36 @@ export const CADENCE = {
 // ---------------------------------------------------------------------------
 
 export const METRICS = [
-  // ----- Initial contact (side view) -----
+  // ----- Initial contact (lateral) -----
+  {
+    id: 'ic_foot_strike',
+    label: 'Foot strike pattern',
+    summaryLabel: 'Foot strike pattern',
+    phase: 'initial_contact',
+    allowedViews: ['lateral'],
+    type: 'category',
+    sided: 'lr',
+    unit: 'deg',
+    // Foot angle at IC relative to the same foot flat at midstance (as foot inclination). Two
+    // categories only. Cutoff 8° for rearfoot: source to be verified (Altman & Davis 2012 classify
+    // foot strike angle > 8.0° as rearfoot).
+    categories: [
+      { above: 8, label: 'rearfoot' },
+      { label: 'non-rearfoot' },
+    ],
+    greenText: 'rearfoot vs non-rearfoot (8° cutoff, source to be verified)',
+    redText: '—',
+    scored: false,
+    baselineConfidence: 'low',
+    note: 'Two categories from the foot angle at IC relative to the flat-foot midstance angle; 8° cutoff, source to be verified.',
+    summary: 'ANKLE',
+  },
   {
     id: 'ic_foot_inclination',
     label: 'Foot inclination',
     summaryLabel: 'Foot inclination at IC',
     phase: 'initial_contact',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -97,7 +147,7 @@ export const METRICS = [
     label: 'Tibial inclination',
     summaryLabel: 'Tibial inclination at IC',
     phase: 'initial_contact',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -116,7 +166,7 @@ export const METRICS = [
     label: 'Foot-to-COM distance',
     summaryLabel: 'Foot-to-COM distance at IC',
     phase: 'initial_contact',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'shoe',
@@ -136,7 +186,7 @@ export const METRICS = [
     label: 'Knee flexion',
     summaryLabel: 'Knee flexion at IC',
     phase: 'initial_contact',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -151,10 +201,10 @@ export const METRICS = [
   },
   {
     id: 'ic_spine_lean',
-    label: 'Spine lean',
-    summaryLabel: 'Trunk lean at IC',
+    label: 'Forward trunk lean',
+    summaryLabel: 'Forward trunk lean at IC',
     phase: 'initial_contact',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'mid',
     unit: 'deg',
@@ -174,7 +224,7 @@ export const METRICS = [
     label: 'Max knee flexion',
     summaryLabel: 'Max stance knee flexion',
     phase: 'midstance',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -187,11 +237,27 @@ export const METRICS = [
     summary: 'KNEE',
   },
   {
+    id: 'ms_knee_flexion_excursion',
+    label: 'Knee flexion excursion',
+    summaryLabel: 'Knee flexion excursion (IC to midstance)',
+    phase: 'midstance',
+    allowedViews: ['lateral'],
+    type: 'record',
+    sided: 'lr',
+    unit: 'deg',
+    // Knee flexion at midstance minus knee flexion at IC, per stride. IC-dependent.
+    greenText: 'record value',
+    redText: 'none defined',
+    scored: false,
+    baselineConfidence: 'high',
+    summary: 'KNEE',
+  },
+  {
     id: 'ms_ankle',
     label: 'Ankle at midstance',
     summaryLabel: 'Ankle DF at midstance',
     phase: 'midstance',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'record',
     sided: 'lr',
     unit: 'deg',
@@ -206,7 +272,8 @@ export const METRICS = [
     id: 'ms_knee_ankle_sync',
     label: 'Knee/ankle sync',
     phase: 'midstance',
-    view: 'side',
+    status: 'planned',
+    allowedViews: ['lateral'],
     type: 'boolean',
     sided: 'lr',
     expected: true,
@@ -219,10 +286,10 @@ export const METRICS = [
   },
   {
     id: 'ms_spine_lean',
-    label: 'Spine lean',
-    summaryLabel: 'Trunk lean at midstance',
+    label: 'Forward trunk lean',
+    summaryLabel: 'Forward trunk lean at midstance',
     phase: 'midstance',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'mid',
     unit: 'deg',
@@ -238,9 +305,11 @@ export const METRICS = [
   // ----- Midstance (rear view) -----
   {
     id: 'ms_pelvic_drop',
-    label: 'Pelvic drop',
+    label: 'Contralateral pelvic drop',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    // Change in the pelvis line from loading response (segmentation-derived stance start) to midstance.
     type: 'range',
     sided: 'lr', // side = stance leg
     unit: 'deg',
@@ -250,13 +319,15 @@ export const METRICS = [
     redText: '>6°',
     priority: true,
     baselineConfidence: 'low', // trend only
-    note: 'Template row reads "Pelvic tilt"; treated as frontal-plane pelvic drop. [CONFIRM]',
+    note: 'Trend only. Template row "Pelvic tilt" is not measurable in 2D; this is frontal-plane pelvic drop.',
   },
   {
     id: 'ms_hip_adduction',
     label: 'Hip adduction',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    // At midstance: thigh vs the perpendicular to the pelvis line; + = knee toward midline.
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -269,9 +340,11 @@ export const METRICS = [
   },
   {
     id: 'ms_knee_varus_valgus',
-    label: 'Knee varus/valgus',
+    label: 'Knee frontal-plane projection angle',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    // At midstance: 180 - frontal hip-knee-ankle angle; + = knee medial (valgus).
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -284,9 +357,10 @@ export const METRICS = [
   },
   {
     id: 'ms_out_toe',
-    label: 'Out-toe',
+    label: 'Out-toe / foot progression angle',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'not-built',
     type: 'range',
     sided: 'lr',
     unit: 'toes',
@@ -301,9 +375,11 @@ export const METRICS = [
     id: 'ms_crossover',
     label: 'Crossover pattern',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    // Heel vs the pelvis midline at midstance; a leg's pattern is "yes" when >= 50% of its steps cross.
     type: 'boolean',
-    sided: 'mid',
+    sided: 'lr',
     expected: false,
     mismatchStatus: 'yellow', // [CONFIRM] template gives yes/no without a red rule
     display: { true: 'Yes', false: 'No' },
@@ -314,9 +390,11 @@ export const METRICS = [
   },
   {
     id: 'ms_spine_shift',
-    label: 'Spine shift',
+    label: 'Spine shift (PSIS rule)',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'planned',
+    statusReason: 'threshold not confirmed',
     type: 'boolean',
     sided: 'mid',
     expected: true, // true = stays between PSIS
@@ -331,7 +409,8 @@ export const METRICS = [
     id: 'ms_achilles_angle',
     label: 'Achilles angle',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'not-built',
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -346,7 +425,8 @@ export const METRICS = [
     id: 'ms_rearfoot_eversion',
     label: 'Rearfoot eversion',
     phase: 'midstance',
-    view: 'rear',
+    allowedViews: ['posterior'],
+    status: 'not-built',
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -357,6 +437,48 @@ export const METRICS = [
     priority: true,
     baselineConfidence: 'low',
   },
+  {
+    id: 'ms_foot_midline',
+    label: 'Foot position vs midline',
+    phase: 'midstance',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    type: 'record',
+    sided: 'lr',
+    unit: 'hipw',
+    // Heel vs the pelvis midline at midstance, in hip widths; + = on its own side, <= 0 = crossing.
+    greenText: 'record value',
+    redText: 'none defined',
+    baselineConfidence: 'medium',
+  },
+  {
+    id: 'ms_trunk_lateral_lean',
+    label: 'Trunk lateral lean',
+    phase: 'midstance',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    type: 'record',
+    sided: 'mid',
+    unit: 'deg',
+    greenText: 'record value',
+    redText: 'none defined',
+    baselineConfidence: 'medium',
+    note: 'Proxy: shoulder-midpoint to pelvis-midpoint line; no spine landmarks.',
+  },
+  {
+    id: 'ms_lateral_shift',
+    label: 'Trunk lateral shift',
+    phase: 'midstance',
+    allowedViews: ['posterior'],
+    status: 'planned-posterior',
+    type: 'record',
+    sided: 'mid',
+    unit: 'cm',
+    greenText: 'record value',
+    redText: 'none defined',
+    baselineConfidence: 'medium',
+    note: 'Proxy (no PSIS landmark): shoulder midpoint vs pelvis midpoint, cm from intake height, hip-width fraction without height.',
+  },
 
   // ----- Toe off (side view) -----
   {
@@ -364,7 +486,7 @@ export const METRICS = [
     label: 'Hip extension',
     summaryLabel: 'Hip extension (late stance)',
     phase: 'toe_off',
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
     unit: 'deg',
@@ -374,7 +496,9 @@ export const METRICS = [
     greenText: '5–15°',
     redText: '<5° (with lordosis)',
     priority: false,
-    baselineConfidence: 'high',
+    scored: false, // unscored until the clinician validates the trunk-axis reference and window
+    baselineConfidence: 'medium',
+    note: 'Measured relative to the trunk axis; unscored until validated.',
     // Lordosis is not measurable in 2D; prompt the clinician instead.
     clinicalPrompt: { when: ['red'], text: 'check lordosis clinically' },
     summary: 'HIP',
@@ -383,10 +507,10 @@ export const METRICS = [
   // ----- Summary-only, never scored -----
   {
     id: 'trunk_change_peak_hip_ext',
-    label: 'Trunk angle change at peak hip extension',
+    label: 'Trunk angle change at peak hip extension (trunk-angle proxy)',
     summaryLabel: 'Trunk angle change, IC to peak hip extension',
     phase: null, // summary only, never scored
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'range',
     sided: 'mid',
     unit: 'deg',
@@ -405,7 +529,7 @@ export const METRICS = [
     id: 'arm_elbow_angle',
     label: 'Elbow angle',
     phase: null,
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'record',
     sided: 'near',
     unit: 'deg',
@@ -416,7 +540,7 @@ export const METRICS = [
     id: 'arm_shoulder_rom',
     label: 'Shoulder swing ROM',
     phase: null,
-    view: 'side',
+    allowedViews: ['lateral'],
     type: 'record',
     sided: 'near',
     unit: 'deg',
@@ -433,12 +557,12 @@ export const SUMMARY_SECTIONS = [
   {
     id: 'LUMBAR',
     emptyNote: 'No trunk metrics assessed.',
-    footer: 'Trunk-angle proxy (shoulder-hip line vs vertical); not measured lumbar kinematics.',
+    footer: 'Trunk-angle proxy (shoulder-hip line vs vertical); not measured lumbar kinematics. Pelvic tilt and lordosis: not measurable in 2D.',
   },
   {
     id: 'ARMS',
     emptyNote: 'No arm metrics assessed.',
-    footer: 'Far side: not visible from this camera angle.',
+    footer: 'Each lateral clip measures its near arm only; the other arm needs a clip filmed from that side.',
   },
 ];
 
@@ -544,6 +668,8 @@ export const STATUS_LABELS = {
 
 export const UNITS = {
   deg: { suffix: '°', decimals: 1 },
+  cm: { suffix: ' cm', decimals: 1 },
+  hipw: { suffix: ' hip widths', short: ' HW', decimals: 2 },
   shoe: { suffix: ' shoe lengths', short: ' SL', decimals: 2 },
   toes: { suffix: ' toes', singular: ' toe', decimals: 0 },
 };

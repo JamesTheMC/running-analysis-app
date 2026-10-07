@@ -1,7 +1,6 @@
 import { esc } from '../util.js';
-import { VIEWS, SCORING } from '../config.js';
+import { VIEWS, SCORING, NOT_MEASURABLE } from '../config.js';
 import { cellValue, formatDiff, formatValue, statusLabel, sideLabel } from '../engine/format.js';
-import { FAR_SIDE_LABEL } from '../engine/summary.js';
 import { buildHeader, buildSections } from '../engine/summary.js';
 
 function scoreChip(label, value) {
@@ -20,6 +19,13 @@ function scoreRow(score) {
   </div>`;
 }
 
+// Provenance of a value, e.g. "lateral clip (filmed from the left)".
+export function sourceText(src) {
+  if (src.view === 'lateral') return `lateral clip${src.filmedFrom ? ` (filmed from the ${src.filmedFrom})` : ''}`;
+  if (src.view === 'posterior') return 'posterior clip';
+  return `${src.view} clip`;
+}
+
 function sweepText(def, cell) {
   const f = (v) => (v == null ? '–' : formatValue(def, v, { short: true }));
   const label = cell.sweep.kind === 'window' ? 'Window end' : 'IC tolerance';
@@ -31,9 +37,8 @@ function cellHtml(def, cell, colspan = 1) {
   if (!cell.assessed) {
     return `<td${span} class="cell cell-na"><span class="na">Not assessed</span><span class="why">${esc(cell.reason)}</span></td>`;
   }
-  // Far-side values are reference only: neutral styling, no status, not scored.
-  const status = cell.farSide ? 'far' : cell.status;
-  const statusText = cell.farSide ? FAR_SIDE_LABEL : statusLabel(status);
+  const status = cell.status;
+  const statusText = statusLabel(status);
   const iqr = cell.iqr && def.unit === 'deg' ? `, IQR ${cell.iqr[0].toFixed(1)}–${cell.iqr[1].toFixed(1)}°` : '';
   return `<td${span} class="cell cell-${status}">
     <span class="val">${esc(cellValue(def, cell, { short: true }))}</span>
@@ -42,7 +47,9 @@ function cellHtml(def, cell, colspan = 1) {
       <span class="conf conf-${cell.confidence}" title="Confidence">${esc(cell.confidence)}</span>
     </span>
     ${cell.strides ? `<span class="detail">Median of ${cell.strides} strides${esc(iqr)}</span>` : ''}
-    ${cell.status === 'review' && !cell.farSide ? '<span class="detail">Reference under review; not scored</span>' : ''}
+    ${cell.status === 'review' ? '<span class="detail">Reference under review; not scored</span>' : ''}
+    ${def.scored === false && cell.status !== 'review' && !['ic-sensitive', 'window-sensitive'].includes(cell.status) && def.type !== 'record' ? '<span class="detail">Not scored</span>' : ''}
+    ${cell.source ? `<span class="detail">From ${esc(sourceText(cell.source))}</span>` : ''}
     ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}
     ${cell.status === 'ic-sensitive' ? '<span class="detail">Status changes with IC timing; no flag, not scored or used for patterns until validated</span>' : ''}
     ${cell.status === 'window-sensitive' ? '<span class="detail">Status changes with the analysis window; not scored or used for patterns until validated</span>' : ''}
@@ -59,7 +66,7 @@ function metricRow(row) {
     <span class="range"><span class="dot dot-green"></span>${esc(def.greenText)}${
       def.redText && def.redText !== '—' ? ` <span class="dot dot-red"></span>${esc(def.redText)}` : ''
     }</span>
-    ${diff ? `<span class="diff">L/R diff ${esc(diff)} <span class="muted">(trend)</span></span>` : ''}
+    ${diff ? `<span class="diff">L/R diff ${esc(diff)} <span class="muted">(trend${row.asymmetry?.separateClips ? '; measured on separate clips' : ''})</span></span>` : ''}
     ${def.note ? `<span class="note">${esc(def.note)}</span>` : ''}
   </th>`;
   const body = def.sided === 'lr' ? cellHtml(def, cells.left) + cellHtml(def, cells.right) : cellHtml(def, cells.mid, 2);
@@ -68,7 +75,7 @@ function metricRow(row) {
 
 function phaseSection(phase, views) {
   const groups = Object.keys(VIEWS)
-    .map((view) => ({ view, rows: phase.rows.filter((r) => r.def.view === view) }))
+    .map((view) => ({ view, rows: phase.rows.filter((r) => r.def.allowedViews?.[0] === view) }))
     .filter((g) => g.rows.length);
   return `<section class="phase card">
     <header class="phase-head">
@@ -146,6 +153,11 @@ function reportTab(state, results) {
               .join('')}</ul>`
           : '<p class="muted">All metrics assessed.</p>'
       }
+    </section>
+
+    <section class="card">
+      <h2>Not measurable in 2D</h2>
+      <p class="small">${NOT_MEASURABLE.map(esc).join(' · ')}. Check clinically; the app never reports these.</p>
     </section>
 
     <section class="card">

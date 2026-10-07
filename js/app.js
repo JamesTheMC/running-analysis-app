@@ -7,12 +7,14 @@ import { renderResults } from './views/results.js';
 import { renderAnalyzing } from './views/analyzing.js';
 import { analyzeVideo } from './pipeline/run.js';
 import { toAnalysis, UNMEASURED_REASON } from './pipeline/measurements.js';
+import { checkVideoFile } from './pipeline/file-check.js';
+import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
 
 const EMPTY_INTAKE = {
   clientCode: '',
   sessionDate: today(),
-  view: 'side',
+  view: 'lateral',
   filmedFrom: '',
   heightValue: '',
   heightUnit: 'cm',
@@ -29,7 +31,7 @@ const EMPTY_INTAKE = {
 // Everything lives in memory only. Video files are referenced by local object URLs and never leave the device.
 const state = {
   screen: 'upload',
-  session: null, // { intake, clips: { side?, rear? }, views, placeholder, analysis }
+  session: null, // { intake, clips: { lateral?, posterior? }, views, placeholder, analysis }
   pendingClip: null,
   draftIntake: { ...EMPTY_INTAKE },
   interpretation: '',
@@ -66,7 +68,11 @@ function render() {
 
 function recompute({ resetInterpretation = false } = {}) {
   const s = state.session;
-  s.views = ['side', 'rear'].filter((v) => s.clips[v]);
+  s.views = ['lateral', 'posterior'].filter((v) => s.clips[v]);
+  // Provenance for the summary header: which clip supplied which view.
+  s.analysis.clipsUsed = s.views.map((v) =>
+    v === 'lateral' ? `lateral, filmed from the ${s.intake.filmedFrom || 'unknown side'}` : 'posterior (metrics not built yet)',
+  );
   results = analyze(s);
   if (resetInterpretation || !state.interpretationEdited) {
     state.interpretation = buildInterpretation(results, s.intake);
@@ -83,7 +89,15 @@ function pickVideo(file) {
   if (!file) return;
   if (state.pendingClip?.url) URL.revokeObjectURL(state.pendingClip.url);
   // The File stays in memory for on-device analysis; it is never uploaded.
-  state.pendingClip = { name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file), file };
+  const clip = { name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file), file, check: 'pending' };
+  state.pendingClip = clip;
+  checkVideoFile(file)
+    .catch((e) => ({ error: e.message || String(e) }))
+    .then((check) => {
+      clip.check = check;
+      const el = state.screen === 'intake' && state.pendingClip === clip && root.querySelector('[data-file-check]');
+      if (el) el.innerHTML = fileCheckHtml(check);
+    });
   if (state.session) state.draftIntake = { ...state.session.intake, view: '' };
   go('intake');
 }
@@ -99,7 +113,9 @@ function wireIntake() {
   form.addEventListener('change', () => {
     const data = Object.fromEntries(new FormData(form));
     Object.assign(state.draftIntake, data);
-    root.querySelector('[data-show-for="side"]').hidden = data.view !== 'side';
+    root.querySelector('[data-show-for="lateral"]').hidden = data.view !== 'lateral';
+    const protocol = root.querySelector('[data-protocol]');
+    if (protocol) protocol.innerHTML = protocolHtml(data.view);
   });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -123,11 +139,11 @@ function submitIntake(form) {
   }
 
   const clip = { ...state.pendingClip, view: data.view };
-  if (data.view === 'side') {
+  if (data.view === 'lateral') {
     analyzeClip(clip, data);
     return;
   }
-  // Rear-view metrics arrive in Milestone 4: the clip is kept, its metrics show as not measured.
+  // Posterior metrics arrive in Milestone 4: the clip is kept, its metrics show as not built yet.
   addClip(clip, data, null);
 }
 
@@ -135,7 +151,7 @@ function addClip(clip, data, analysis) {
   state.pendingClip = null;
   if (state.session) {
     state.session.clips[data.view] = clip;
-    if (data.view === 'side' && data.filmedFrom) state.session.intake.filmedFrom = data.filmedFrom;
+    if (data.view === 'lateral' && data.filmedFrom) state.session.intake.filmedFrom = data.filmedFrom;
   } else {
     const { view, ...intake } = { ...EMPTY_INTAKE, ...data };
     intake.clientCode = intake.clientCode.toUpperCase();
@@ -143,7 +159,11 @@ function addClip(clip, data, analysis) {
   }
   if (analysis) {
     const prev = state.session.analysis;
-    state.session.analysis = { ...analysis, measurements: { ...prev.measurements, ...analysis.measurements } };
+    state.session.analysis = {
+      ...analysis,
+      measurements: { ...prev.measurements, ...analysis.measurements },
+      lateralLegs: [...new Set([...(prev.lateralLegs || []), ...(analysis.lateralLegs || [])])],
+    };
     if (!state.session.intake.filmedFrom) state.session.intake.filmedFrom = analysis.nearSide;
   }
   state.tab = 'summary';
@@ -193,7 +213,7 @@ function startDemo() {
   state.pendingClip = null;
   state.session = {
     intake: { ...EMPTY_INTAKE, ...DEMO_INTAKE },
-    clips: { side: { name: 'demo-side', demo: true }, rear: { name: 'demo-rear', demo: true } },
+    clips: { lateral: { name: 'demo-lateral', demo: true }, posterior: { name: 'demo-posterior', demo: true } },
     placeholder: true,
     analysis: PLACEHOLDER_ANALYSIS,
   };

@@ -750,3 +750,13 @@ abbr.p {
 .status-window-sensitive {
   color: var(--yellow);
 }
+
+/* Upload-time file check warnings */
+.warn {
+  color: var(--yellow);
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+[data-file-check] p {
+  margin: 4px 0 0;
+}

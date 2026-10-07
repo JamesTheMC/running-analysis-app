@@ -174,7 +174,7 @@ export function pickRearStrides(events, period, count = 5) {
 
 export async function buildContactSheet({ video, result, clipName, onProgress = () => {} }) {
   const { rows, events, seg, meta } = result;
-  const rear = result.view === 'rear';
+  const rear = result.view === 'posterior';
   const near = rear ? 'L' : seg.near.side;
   const analysedW = meta.analysedSize[0];
   const picks = rear ? pickRearStrides(events, seg.period) : pickStrides(events);

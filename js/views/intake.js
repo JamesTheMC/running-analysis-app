@@ -1,5 +1,24 @@
 import { esc, formatBytes, formatDuration } from '../util.js';
 import { VIEWS } from '../config.js';
+import { CAPTURE } from '../pipeline/file-check.js';
+
+// File checks read from the movie header at upload (frame rate, length, orientation, HDR).
+export function fileCheckHtml(check) {
+  if (!check) return '';
+  if (check === 'pending') return '<p class="small muted">Checking the file…</p>';
+  if (check.error) return `<p class="small form-error">Could not read this file: ${esc(check.error)}</p>`;
+  const facts = `${Math.round(check.fps)} fps · ${Math.round(check.seconds)} s · ${check.width}×${check.height} ${check.orientation}${check.hdr ? ' · HDR' : ''}`;
+  return `<p class="small"><strong>File:</strong> ${esc(facts)}</p>
+    ${check.warnings.map((w) => `<p class="small warn" role="alert">⚠ ${esc(w)}</p>`).join('')}
+    ${check.notes.map((n) => `<p class="small muted">${esc(n)}</p>`).join('')}`;
+}
+
+// Capture protocol per view (also shown on the upload screen).
+export function protocolHtml(view) {
+  const common = `level and fixed (tripod), lens at about pelvis height, as far back as the room allows with the whole body in frame, good light. At least ${CAPTURE.minSeconds} s of steady running (more than 7 steps per leg for a stable mean). ${CAPTURE.recommendedFps} fps recommended, ${CAPTURE.minFps} fps minimum; native camera file, not a screen recording.`;
+  if (view === 'posterior') return `<strong>Posterior:</strong> camera directly behind the runner, centred on the belt, ${common}`;
+  return `<strong>Lateral:</strong> camera perpendicular to the belt, ${common} Measures the leg and arm facing the camera only; film the other side for bilateral values.`;
+}
 
 function radios(name, options, value, { disabled = [] } = {}) {
   return `<div class="segmented" role="radiogroup">
@@ -40,6 +59,7 @@ export function renderIntake(state) {
           <span>${esc(formatBytes(clip.size))}</span>
           <span data-clip-meta>${clip.duration ? `${formatDuration(clip.duration)} · ${clip.width}×${clip.height}` : ''}</span>
         </div>
+        <div data-file-check>${fileCheckHtml(clip.check)}</div>
       </div>
 
       <form id="intake-form" class="form" novalidate>
@@ -63,11 +83,12 @@ export function renderIntake(state) {
             <span class="label">Camera view <span class="req">required</span></span>
             ${radios('view', Object.entries(VIEWS).map(([v, d]) => [v, d.label]), view, { disabled: usedViews })}
           </div>
-          <div class="field" data-show-for="side" ${view === 'side' ? '' : 'hidden'}>
+          <div class="field" data-show-for="lateral" ${view === 'lateral' ? '' : 'hidden'}>
             <span class="label">Runner's side facing the camera</span>
             ${radios('filmedFrom', [['left', 'Left'], ['right', 'Right']], f.filmedFrom)}
-            <p class="hint">Maps near/far limb to anatomical left/right.</p>
+            <p class="hint">A lateral clip measures the leg and arm on this side only. The other side needs its own clip.</p>
           </div>
+          <p class="hint" data-protocol>${protocolHtml(view)}</p>
         </fieldset>
 
         <fieldset ${sharedLocked ? 'disabled' : ''}>

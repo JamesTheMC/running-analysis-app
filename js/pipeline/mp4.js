@@ -114,8 +114,15 @@ export async function demux(file) {
     const codedWidth = dv.getUint16(entry.start + 24);
     const codedHeight = dv.getUint16(entry.start + 26);
     let description = null;
+    let transfer = null; // colr 'nclx' transfer characteristics: 16 = PQ, 18 = HLG (HDR)
+    let dolbyVision = false;
     for (const b of boxes(dv, entry.start + 78, entry.end)) {
       if (b.type === 'avcC' || b.type === 'hvcC') description = dv.buffer.slice(dv.byteOffset + b.start, dv.byteOffset + b.end);
+      if (b.type === 'dvvC' || b.type === 'dvcC') dolbyVision = true;
+      if (b.type === 'colr' && b.end - b.start >= 10) {
+        const kind = td.decode(new Uint8Array(dv.buffer, dv.byteOffset + b.start, 4));
+        if (kind === 'nclx' || kind === 'nclc') transfer = dv.getUint16(b.start + 6);
+      }
     }
     if (!description) throw new Error('Missing decoder configuration in video track.');
     const codec = codecString(entry.type, description);
@@ -233,6 +240,10 @@ export async function demux(file) {
       frameTimes, // presentation order, seconds
       frameCount: frameTimes.length,
       fps: duration > 0 ? (frameTimes.length - 1) / duration : 0,
+      duration,
+      hdr: dolbyVision || transfer === 16 || transfer === 18,
+      dolbyVision,
+      transfer,
     };
   }
   throw new Error('No video track found in this file.');

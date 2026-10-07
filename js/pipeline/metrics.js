@@ -112,7 +112,7 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
   const ev = events[side];
   const knee = smoothSeries(rows.map((r, i) => (bad[i] || r[`knee_flex_${side}`] == null ? NaN : r[`knee_flex_${side}`])), seg.fs);
   const total = ev.strides.length;
-  const per = { kneeIC: [], maxStanceKnee: [], tibialIC: [], footInclIC: [], ankleDFms: [], footToComPx: [], footToComShoe: [], trunkIC: [], trunkMS: [], trunkChange: [] };
+  const per = { kneeIC: [], maxStanceKnee: [], kneeExcursion: [], tibialIC: [], footInclIC: [], ankleDFms: [], footToComPx: [], footToComShoe: [], trunkIC: [], trunkMS: [], trunkChange: [] };
   const trunkIds = [LANDMARKS.L.sho, LANDMARKS.R.sho, LANDMARKS.L.hip, LANDMARKS.R.hip];
   const ok = (i, ...ks) => i != null && !bad[i] && visible(rows[i], ...ks);
 
@@ -132,6 +132,10 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
     if (!near) continue; // far-leg MS is unreliable; MS-referenced and trunk metrics use the near leg only
     if (ok(s.ic, ids.heel, ids.toe) && ok(s.ms, ids.heel, ids.toe)) per.footInclIC.push(footAngle(ic, ids, facing) - footAngle(rows[s.ms], ids, facing));
     if (ok(s.ms, ids.knee, ids.ank, ids.heel, ids.toe)) per.ankleDFms.push(ankleDorsiflexion(rows[s.ms], ids));
+    // Knee flexion excursion: midstance minus IC (raw per-frame values, as knee flexion at IC).
+    const kIC = ic[`knee_flex_${side}`];
+    const kMS = rows[s.ms][`knee_flex_${side}`];
+    if (ok(s.ic, ids.hip, ids.knee, ids.ank) && ok(s.ms, ids.hip, ids.knee, ids.ank) && kIC != null && kMS != null) per.kneeExcursion.push(kMS - kIC);
     if (ok(s.ic, ...trunkIds)) per.trunkIC.push(trunkLean(ic, facing));
     if (ok(s.ms, ...trunkIds)) per.trunkMS.push(trunkLean(rows[s.ms], facing));
     const peak = hipExt[side].strides[s.cycle];

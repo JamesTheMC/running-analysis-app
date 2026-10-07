@@ -1,5 +1,6 @@
 import { esc } from '../util.js';
 import { VIEWS } from '../config.js';
+import { protocolHtml } from './intake.js';
 
 export function renderUpload(state) {
   const adding = state.session && Object.keys(state.session.clips).length > 0;
@@ -27,10 +28,8 @@ export function renderUpload(state) {
       <details class="card">
         <summary>Capture protocol</summary>
         <ul class="tight">
-          <li><strong>Side clip:</strong> full body in frame, camera level and still, good lighting.</li>
-          <li><strong>Rear clip:</strong> same setup, filmed from behind.</li>
-          <li>Use the native camera file, not a screen recording. 60 fps if available.</li>
-          <li>Record at least 30 seconds of steady running; short clips may not give enough clean strides.</li>
+          <li>${protocolHtml('lateral')}</li>
+          <li>${protocolHtml('posterior')}</li>
           <li>A side camera only tracks the near-side arm. Film the other side in a second pass for bilateral arms.</li>
         </ul>
       </details>

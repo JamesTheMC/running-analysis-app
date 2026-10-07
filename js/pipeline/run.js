@@ -70,11 +70,11 @@ export async function analyzeVideo(file, opts = {}) {
     delegate,
     seconds,
   };
-  meta.view = opts.view || 'side';
-  return { meta, rows, ...(meta.view === 'rear' ? postProcessRear(rows, meta) : postProcess(rows, meta, opts)) };
+  meta.view = opts.view || 'lateral';
+  return { meta, rows, ...(meta.view === 'posterior' ? postProcessRear(rows, meta) : postProcess(rows, meta, opts)) };
 }
 
-// Rear view (Milestone 4): events only so far. Metrics are added after the event contact sheet is reviewed.
+// Posterior view (Milestone 4): events only so far. Metrics are added after the event contact sheet is reviewed.
 export function postProcessRear(rows, meta) {
   const bad = tibiaGate(rows);
   const seg = segmentRear(rows, bad, meta.fs);
@@ -85,7 +85,7 @@ export function postProcessRear(rows, meta) {
   );
   // Midstance from the segmentation alone (centre of each stance half-cycle); used for rear metrics.
   const midstance = segmentationMidstance(seg);
-  return { bad, seg, events, sweep, midstance, view: 'rear', summary: referenceSummary(rows, bad) };
+  return { bad, seg, events, sweep, midstance, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
 
 // Everything after pose estimation. Pure: can be re-run on cached rows (test page).

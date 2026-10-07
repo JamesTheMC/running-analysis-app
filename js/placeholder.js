@@ -67,7 +67,10 @@ export const PLACEHOLDER_ANALYSIS = {
       left: { value: 1, quality: 0.7 },
       right: { value: 1, quality: 0.7 },
     },
-    ms_crossover: { mid: { value: false, quality: 0.8 } },
+    ms_crossover: {
+      left: { value: false, quality: 0.8 },
+      right: { value: true, quality: 0.78 },
+    },
     ms_spine_shift: { mid: { value: true, quality: 0.83 } },
     ms_achilles_angle: {
       left: { value: 6.0, quality: 0.78 },

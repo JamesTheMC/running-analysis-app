@@ -89,7 +89,7 @@ async function run() {
 }
 
 function render(name, file, r, py) {
-  if (r.view === 'rear') return renderRear(name, file, r);
+  if (r.view === 'posterior') return renderRear(name, file, r);
   const m = r.meta;
   out.innerHTML = `
     <h2>Clip</h2>
@@ -281,7 +281,7 @@ async function loadCachedRows(base) {
   if (!res.ok) return null;
   const { meta, rows } = await res.json();
   for (const row of rows) if (row.lm) row.lm = Float32Array.from(row.lm);
-  if ($('view').value === 'rear') return { meta: { ...meta, view: 'rear' }, rows, cached: true, ...postProcessRear(rows, meta) };
+  if ($('view').value === 'posterior') return { meta: { ...meta, view: 'posterior' }, rows, cached: true, ...postProcessRear(rows, meta) };
   return { meta, rows, cached: true, ...postProcess(rows, meta, { nearSide: $('near').value || undefined }) };
 }
 

@@ -1,8 +1,8 @@
 // Turns raw measurements + intake into statuses, confidence tags, scores and pattern flags.
 // Pure functions; all thresholds come from config.js.
 
-import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY } from '../config.js';
-import { formatRange } from './format.js';
+import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY, STATUS_REASONS } from '../config.js';
+import { formatRange, formatValue } from './format.js';
 
 // Statuses for values whose colour depends on an analysis choice (IC timing, window end): range shown,
 // no flag, no score weight, no pattern triggers, no L/R difference.
@@ -15,8 +15,13 @@ export function metricById(id) {
   return METRICS.find((m) => m.id === id);
 }
 
+// Category label for 'category' metrics (first matching rule; the last rule is the fallback).
+export function categoryFor(def, value) {
+  return (def.categories.find((c) => c.above == null || value > c.above) || def.categories.at(-1)).label;
+}
+
 export function statusFor(def, value) {
-  if (def.type === 'record') return 'record';
+  if (def.type === 'record' || def.type === 'category') return 'record';
   if (def.type === 'boolean') return value === def.expected ? 'green' : def.mismatchStatus;
   const { red = {}, green = {} } = def;
   // Above the template range while the reference is under review: shown, never scored.
@@ -28,12 +33,11 @@ export function statusFor(def, value) {
   return aboveMin && belowMax ? 'green' : 'yellow';
 }
 
-export function confidenceFor(def, quality, { farSide = false } = {}) {
+export function confidenceFor(def, quality) {
   const q = SCORING.quality;
   if (quality == null || quality < q.floor) return null;
   const measured = quality >= q.high ? 'high' : quality >= q.medium ? 'medium' : 'low';
-  // Far-side limbs (further from a side camera) are capped at low confidence.
-  const cap = farSide ? 'low' : def.baselineConfidence || 'high';
+  const cap = def.baselineConfidence || 'high';
   return CONF_RANK[measured] <= CONF_RANK[cap] ? measured : cap;
 }
 
@@ -53,10 +57,27 @@ export function intakeNumbers(intake) {
   };
 }
 
+const viewLabel = (v) => (v === 'lateral' ? 'lateral (side)' : v === 'posterior' ? 'posterior (rear)' : v);
+
 function evaluateCell(def, side, measurement, ctx) {
   const cell = { side, assessed: false, value: null, status: null, confidence: null, reason: null };
-  if (!ctx.views.includes(def.view)) {
-    cell.reason = `no ${def.view}-view clip in this session`;
+  const status = def.status ?? 'built';
+  if (status !== 'built') {
+    cell.reason = def.statusReason || STATUS_REASONS[status] || 'not measured';
+    cell.notBuilt = true;
+    return cell;
+  }
+  const allowed = def.allowedViews || [];
+  if (!allowed.some((v) => ctx.views.includes(v))) {
+    cell.reason = `needs a ${allowed.map(viewLabel).join(' or ')} clip`;
+    cell.missingView = allowed[0];
+    return cell;
+  }
+  // View enforcement: a value from a view the metric does not allow is never shown.
+  if (measurement && (!measurement.source ? !ctx.allowUnsourced : !allowed.includes(measurement.source.view))) {
+    ctx.violations.push({ metricId: def.id, side, view: measurement.source?.view ?? 'unknown' });
+    cell.reason = 'not assessed from this view';
+    cell.viewViolation = true;
     return cell;
   }
   const missing = (def.requires || []).filter((f) => ctx.numbers[`${f}Cm`] == null && ctx.numbers[f] == null);
@@ -65,11 +86,15 @@ function evaluateCell(def, side, measurement, ctx) {
     return cell;
   }
   if (!measurement) {
-    cell.reason = ctx.unmeasuredReason || 'not measured';
+    // Lateral clips cover their near leg only: the other leg needs a clip filmed from its side.
+    const lateralOnly = allowed.length === 1 && allowed[0] === 'lateral';
+    if (lateralOnly && (side === 'left' || side === 'right') && ctx.lateralLegs && !ctx.lateralLegs.includes(side)) {
+      cell.reason = `needs a lateral clip filmed from the ${side}`;
+    } else cell.reason = ctx.unmeasuredReason || 'not measured';
     return cell;
   }
-  const confidence = confidenceFor(def, measurement.quality, { farSide: measurement.farSide });
-  cell.farSide = !!measurement.farSide;
+  const confidence = confidenceFor(def, measurement.quality);
+  cell.source = measurement.source;
   if (confidence == null || measurement.value == null) {
     cell.unreliable = true;
     cell.reason = measurement.reason || 'tracking quality below the confidence floor';
@@ -83,24 +108,30 @@ function evaluateCell(def, side, measurement, ctx) {
   cell.excluded = measurement.excluded; // e.g. { rising: 12 } strides excluded and why
   cell.confidence = confidence;
   cell.status = statusFor(def, measurement.value);
-  // IC-dependent metrics: if the status changes anywhere across the IC-tolerance sweep, the value is
-  // not stable enough to flag. Show the range, no prompt, no score weight, no pattern triggers.
-  if (measurement.sweep && def.type === 'range') {
+  if (def.type === 'category') {
+    cell.category = categoryFor(def, measurement.value);
+    cell.display = `${cell.category}, ${formatValue(def, measurement.value, { short: true })}`;
+  }
+  // Timing-dependent metrics: if the status (or category) changes anywhere across the sweep, the value
+  // is not stable enough to flag. Show the range, no prompt, no score weight, no pattern triggers.
+  if (measurement.sweep && (def.type === 'range' || def.type === 'category')) {
     const values = measurement.sweep.values;
     const known = values.filter((v) => v != null);
-    const statuses = new Set(known.map((v) => statusFor(def, v)));
+    const classes = new Set(known.map((v) => (def.type === 'category' ? categoryFor(def, v) : statusFor(def, v))));
     cell.sweep = measurement.sweep;
-    if (statuses.size > 1 || known.length < values.length) {
+    if (classes.size > 1 || known.length < values.length) {
       cell.status = measurement.sweep.kind === 'window' ? 'window-sensitive' : 'ic-sensitive';
-      cell.display = measurement.sweep.display ?? formatRange(def, Math.min(...known), Math.max(...known));
+      const range = formatRange(def, Math.min(...known), Math.max(...known));
+      cell.display =
+        def.type === 'category' ? `${[...classes].join(' / ')}, ${range}` : (measurement.sweep.display ?? range);
       return cell;
     }
   }
   if (def.clinicalPrompt && def.clinicalPrompt.when.includes(cell.status)) {
     cell.prompt = def.clinicalPrompt.text;
   }
-  // Far-side values and values awaiting a reference decision never affect the score.
-  if (!['record', 'review', ...SENSITIVE].includes(cell.status) && !cell.farSide) {
+  // Unscored metrics and values awaiting a reference decision never affect the score.
+  if (!['record', 'review', ...SENSITIVE].includes(cell.status) && def.scored !== false) {
     cell.weight = (def.priority ? SCORING.priorityMultiplier : 1) * SCORING.confidenceWeight[confidence];
     cell.credit = SCORING.credit[cell.status];
   }
@@ -109,13 +140,18 @@ function evaluateCell(def, side, measurement, ctx) {
 
 export function asymmetry(left, right) {
   if (!left?.assessed || !right?.assessed) return null;
-  if (left.farSide || right.farSide) return null; // far-side values are not comparable
   if (SENSITIVE.includes(left.status) || SENSITIVE.includes(right.status)) return null;
+  // Posterior: both legs from one clip, compared only when that clip passed the left/right swap check.
+  const views = [left.source?.view, right.source?.view];
+  if (views.includes('posterior') && !(left.source?.swapCheckPassed && right.source?.swapCheckPassed)) return null;
+  // Lateral: each leg must come from its own near-side clip (planned two-clip session).
+  const separateClips = views[0] === 'lateral' && views[1] === 'lateral';
+  if (separateClips && left.source.filmedFrom === right.source.filmedFrom) return null;
   if (typeof left.value !== 'number' || typeof right.value !== 'number') return null;
   const absDiff = Math.abs(left.value - right.value);
   const mean = (Math.abs(left.value) + Math.abs(right.value)) / 2;
-  if (mean < ASYMMETRY.minMeanForPercent) return { absDiff, percent: null };
-  return { absDiff, percent: (absDiff / mean) * 100 };
+  if (mean < ASYMMETRY.minMeanForPercent) return { absDiff, percent: null, separateClips };
+  return { absDiff, percent: (absDiff / mean) * 100, separateClips };
 }
 
 function score(cells) {
@@ -155,7 +191,7 @@ function evalTrigger(trigger, side, rowsById, numbers, fired) {
   const row = rowsById[trigger.metric];
   const cell = cellForSide(row, side);
   // Far-side and IC-sensitive values never trigger patterns.
-  if (!cell?.assessed || cell.farSide || SENSITIVE.includes(cell.status)) return null;
+  if (!cell?.assessed || SENSITIVE.includes(cell.status)) return null;
   let hit = false;
   if (trigger.status) hit = trigger.status.includes(cell.status);
   if (trigger.below != null) hit = typeof cell.value === 'number' && cell.value < trigger.below;
@@ -187,10 +223,17 @@ export function evaluatePatterns(rowsById, numbers) {
   return results;
 }
 
-// session = { intake, views: ['side', 'rear'], analysis: { measurements } }
+// session = { intake, views: ['lateral', 'posterior'], analysis: { measurements, lateralLegs } }
 export function analyze(session) {
   const numbers = intakeNumbers(session.intake);
-  const ctx = { views: session.views, numbers, unmeasuredReason: session.analysis.unmeasuredReason };
+  const ctx = {
+    views: session.views,
+    numbers,
+    unmeasuredReason: session.analysis.unmeasuredReason,
+    lateralLegs: session.analysis.lateralLegs,
+    allowUnsourced: session.analysis.source === 'placeholder', // demo data only
+    violations: [],
+  };
   const rows = METRICS.map((def) => {
     const m = session.analysis.measurements[def.id] || {};
     const cells = {};
@@ -211,7 +254,7 @@ export function analyze(session) {
   const notAssessed = [];
   for (const r of rows) {
     for (const c of Object.values(r.cells)) {
-      if (!c.assessed) notAssessed.push({ def: r.def, side: c.side, reason: c.reason, unreliable: !!c.unreliable, farSide: !!c.farSide });
+      if (!c.assessed) notAssessed.push({ def: r.def, side: c.side, reason: c.reason, unreliable: !!c.unreliable, notBuilt: !!c.notBuilt, missingView: c.missingView });
     }
   }
 
@@ -223,5 +266,6 @@ export function analyze(session) {
     notAssessed,
     patterns: evaluatePatterns(rowsById, numbers),
     numbers,
+    viewViolations: ctx.violations,
   };
 }
