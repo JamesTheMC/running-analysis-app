@@ -22,7 +22,8 @@ function scoreRow(score) {
 
 function sweepText(def, cell) {
   const f = (v) => (v == null ? '–' : formatValue(def, v, { short: true }));
-  return `IC tolerance ${cell.sweep.tolerances.join(' / ')}: ${cell.sweep.values.map(f).join(' / ')}`;
+  const label = cell.sweep.kind === 'window' ? 'Window end' : 'IC tolerance';
+  return `${label} ${cell.sweep.tolerances.join(' / ')}: ${cell.sweep.values.map(f).join(' / ')}`;
 }
 
 function cellHtml(def, cell, colspan = 1) {
@@ -44,6 +45,8 @@ function cellHtml(def, cell, colspan = 1) {
     ${cell.status === 'review' && !cell.farSide ? '<span class="detail">Reference under review; not scored</span>' : ''}
     ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}
     ${cell.status === 'ic-sensitive' ? '<span class="detail">Status changes with IC timing; no flag, not scored or used for patterns until validated</span>' : ''}
+    ${cell.status === 'window-sensitive' ? '<span class="detail">Status changes with the analysis window; not scored or used for patterns until validated</span>' : ''}
+    ${cell.excluded?.rising ? `<span class="detail">${cell.excluded.rising} strides excluded: angle still rising at the window end</span>` : ''}
     ${cell.prompt ? `<span class="prompt">${esc(cell.prompt)}</span>` : ''}
   </td>`;
 }

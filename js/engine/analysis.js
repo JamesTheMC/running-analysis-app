@@ -4,6 +4,10 @@
 import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY } from '../config.js';
 import { formatRange } from './format.js';
 
+// Statuses for values whose colour depends on an analysis choice (IC timing, window end): range shown,
+// no flag, no score weight, no pattern triggers, no L/R difference.
+export const SENSITIVE = ['ic-sensitive', 'window-sensitive'];
+
 const SIDE_KEYS = { lr: ['left', 'right'], mid: ['mid'], near: ['near'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 };
 
@@ -76,6 +80,7 @@ function evaluateCell(def, side, measurement, ctx) {
   cell.display = measurement.display;
   cell.strides = measurement.strides;
   cell.iqr = measurement.iqr;
+  cell.excluded = measurement.excluded; // e.g. { rising: 12 } strides excluded and why
   cell.confidence = confidence;
   cell.status = statusFor(def, measurement.value);
   // IC-dependent metrics: if the status changes anywhere across the IC-tolerance sweep, the value is
@@ -86,7 +91,7 @@ function evaluateCell(def, side, measurement, ctx) {
     const statuses = new Set(known.map((v) => statusFor(def, v)));
     cell.sweep = measurement.sweep;
     if (statuses.size > 1 || known.length < values.length) {
-      cell.status = 'ic-sensitive';
+      cell.status = measurement.sweep.kind === 'window' ? 'window-sensitive' : 'ic-sensitive';
       cell.display = measurement.sweep.display ?? formatRange(def, Math.min(...known), Math.max(...known));
       return cell;
     }
@@ -95,7 +100,7 @@ function evaluateCell(def, side, measurement, ctx) {
     cell.prompt = def.clinicalPrompt.text;
   }
   // Far-side values and values awaiting a reference decision never affect the score.
-  if (!['record', 'review', 'ic-sensitive'].includes(cell.status) && !cell.farSide) {
+  if (!['record', 'review', ...SENSITIVE].includes(cell.status) && !cell.farSide) {
     cell.weight = (def.priority ? SCORING.priorityMultiplier : 1) * SCORING.confidenceWeight[confidence];
     cell.credit = SCORING.credit[cell.status];
   }
@@ -105,7 +110,7 @@ function evaluateCell(def, side, measurement, ctx) {
 export function asymmetry(left, right) {
   if (!left?.assessed || !right?.assessed) return null;
   if (left.farSide || right.farSide) return null; // far-side values are not comparable
-  if (left.status === 'ic-sensitive' || right.status === 'ic-sensitive') return null;
+  if (SENSITIVE.includes(left.status) || SENSITIVE.includes(right.status)) return null;
   if (typeof left.value !== 'number' || typeof right.value !== 'number') return null;
   const absDiff = Math.abs(left.value - right.value);
   const mean = (Math.abs(left.value) + Math.abs(right.value)) / 2;
@@ -150,7 +155,7 @@ function evalTrigger(trigger, side, rowsById, numbers, fired) {
   const row = rowsById[trigger.metric];
   const cell = cellForSide(row, side);
   // Far-side and IC-sensitive values never trigger patterns.
-  if (!cell?.assessed || cell.farSide || cell.status === 'ic-sensitive') return null;
+  if (!cell?.assessed || cell.farSide || SENSITIVE.includes(cell.status)) return null;
   let hit = false;
   if (trigger.status) hit = trigger.status.includes(cell.status);
   if (trigger.below != null) hit = typeof cell.value === 'number' && cell.value < trigger.below;

@@ -42,7 +42,7 @@ function cell(sum, { far = false, reason, display } = {}) {
  * @param {object} intake  { heightCm } from the intake form (for the pixel-to-cm scale)
  */
 export function toAnalysis(result, { heightCm } = {}) {
-  const { seg, hipExt, rows, bad, meta, metrics, sweep = {}, cadence } = result;
+  const { seg, hipExt, hipWindows, rows, bad, meta, metrics, sweep = {}, cadence } = result;
   const near = seg.near.side;
   const far = near === 'L' ? 'R' : 'L';
   const m = { [near]: metrics[near].summary, [far]: metrics[far].summary };
@@ -104,11 +104,24 @@ export function toAnalysis(result, { heightCm } = {}) {
   // Late-stance peak hip extension vs trunk axis (computation unchanged). Near leg only: the far
   // leg's value is not reported, so nothing implies it was measured like the near leg.
   const h = hipExt[near];
+  const hipCell = cell(
+    { median: h.median, iqr: h.iqr, n: h.n, total: h.total, quality: h.total ? h.n / h.total : 0 },
+    { reason: usable < MIN_STRIDES ? 'too few strides could be segmented' : `only ${h.n} of ${h.total} strides had a clear late-stance peak` },
+  );
+  if (hipCell.value != null) {
+    hipCell.excluded = { rising: h.rising };
+    // Window-sensitivity: medians for each window end (null where too few strides).
+    if (hipWindows?.length) {
+      hipCell.sweep = {
+        kind: 'window',
+        values: hipWindows.map((w) => (w.n >= MIN_STRIDES ? w.median : null)),
+        tolerances: hipWindows.map((w) => (w.end === 'late-stance' ? 'late stance' : `TO+${Math.round(w.end * 1000)} ms`)),
+        windows: hipWindows.map((w) => ({ end: w.end, median: w.median, iqr: w.iqr, n: w.n, total: w.total, rising: w.rising })),
+      };
+    }
+  }
   measurements.to_hip_extension = {
-    [ANAT[near]]: cell(
-      { median: h.median, iqr: h.iqr, n: h.n, total: h.total, quality: h.total ? h.n / h.total : 0 },
-      { reason: usable < MIN_STRIDES ? 'too few strides could be segmented' : `only ${h.n} of ${h.total} strides had a clear late-stance peak` },
-    ),
+    [ANAT[near]]: hipCell,
     [ANAT[far]]: { value: null, quality: 0, reason: FAR_HIP_REASON, farSide: true },
   };
 

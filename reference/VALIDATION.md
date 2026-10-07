@@ -187,3 +187,33 @@ cycle). With quality below the floor, every event metric correctly reads "not as
 recover the excerpt (percentile belt level, 3-frame gap bridging) either moved IC on 37–47 of the
 full clip's approved strides or lost valid strides there, so none was adopted. Until event detection is
 made more robust, record at least ~30 s of steady running.
+
+## Hip-extension window ends at toe-off + 50 ms (near leg)
+
+The late-stance window used to end at the inter-ankle signal's minimum + 10% of the cycle. That minimum
+depends on far-foot landmarks; under it, peaks fell a median of 2 source frames after TO but 22 of 66
+fell more than 50 ms after TO (up to 167 ms, i.e. early swing). The window now ends at detected TO +
+50 ms; strides without a valid near-leg TO are not measured.
+
+| | Strides | Median | IQR |
+|---|---|---|---|
+| Before (signal-based end) | 81/83 | 18.2° | 11.5–24.7° |
+| After (TO + 50 ms) | 55/83 | 14.3° | 9.6–20.4° |
+
+15 strides changed, all lower (median −6.8°, range −0.1° to −21.7°); 39 unchanged; 27 no longer
+measured (15 without a valid TO, 12 still rising at TO + 50 ms, so no interior peak); 1 gained. Example:
+cycle 70 went from 17.4° at frame 6172 (18 frames after TO) to 6.2° at its TO (6154).
+
+## Foot-height traces (cycles 10, 25, 40, 54)
+
+`test-data/debug/foot_height_traces_IMG_0639_2.png`. In all 67 valid strides TO is the last on-belt
+frame (the foot is off the belt on the next frame), never the search-window edge; IC is never the
+window start. Peak stance knee flexion falls 1–12 analysed frames after IC (3: 16 strides, 4: 11,
+5: 18, 6–12: 22), never on the first or last stance frame.
+
+## Pose input resolution
+
+Pose runs on frames downscaled to 0.45 (486×864 for a 1080×1920 clip). MediaPipe crops a region
+around the person and resizes it to its 256×256 landmark model, and the runner is well over 256 px tall
+at 0.45 scale, so extra input resolution adds little. On the 8 s side excerpt, full resolution was not
+more precise: tibia-length MAD 6.9% vs 7.1%, heel-to-toe length MAD 17% vs 13%, hip jitter equal.

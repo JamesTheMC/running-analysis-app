@@ -740,11 +740,13 @@ abbr.p {
   font-size: 0.72rem;
   color: var(--muted);
 }
-.cell-ic-sensitive {
+.cell-ic-sensitive,
+.cell-window-sensitive {
   background: var(--na-bg);
   border-left-color: var(--yellow);
   border-left-style: dashed;
 }
-.status-ic-sensitive {
+.status-ic-sensitive,
+.status-window-sensitive {
   color: var(--yellow);
 }

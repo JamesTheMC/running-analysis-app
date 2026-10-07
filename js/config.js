@@ -538,6 +538,8 @@ export const STATUS_LABELS = {
   review: { report: 'Above template range', summary: 'above template range, reference under review' },
   // IC-dependent metric whose status changes across the IC-tolerance sweep: range shown, not scored.
   'ic-sensitive': { report: 'Borderline, IC-sensitive', summary: 'borderline, IC-sensitive' },
+  // Status changes across analysis-window choices (hip extension window end): range shown, not scored.
+  'window-sensitive': { report: 'Borderline, window-sensitive', summary: 'borderline, window-sensitive' },
 };
 
 export const UNITS = {

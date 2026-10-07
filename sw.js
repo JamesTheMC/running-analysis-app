@@ -2,7 +2,7 @@
 // Only same-origin GET requests for app files are cached; video never touches the network.
 // The MediaPipe bundle, wasm and model (vendor/, ~22 MB) are cached by the fetch handler the first
 // time an analysis runs, not at install, to keep the first load light.
-const CACHE = 'gait-shell-v3';
+const CACHE = 'gait-shell-v4';
 const SHELL = [
   './',
   './index.html',
@@ -29,6 +29,7 @@ const SHELL = [
   './js/pipeline/strides.js',
   './js/pipeline/events.js',
   './js/pipeline/metrics.js',
+  './js/pipeline/rear-events.js',
   './js/pipeline/measurements.js',
   './icons/icon.svg',
   './icons/icon-192.png',

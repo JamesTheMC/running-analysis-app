@@ -1,4 +1,6 @@
-import { analyzeVideo, postProcess } from '../js/pipeline/run.js';
+import { analyzeVideo, postProcess, postProcessRear } from '../js/pipeline/run.js';
+import { REAR_EVENTS } from '../js/pipeline/rear-events.js';
+import { buildMidstanceStrip, midstanceSensitivity } from './rear-midstance.js';
 import { buildContactSheet } from './contact-sheet.js';
 import { detectEvents } from '../js/pipeline/events.js';
 import { computeMetrics } from '../js/pipeline/metrics.js';
@@ -62,6 +64,7 @@ async function run() {
       sampleEvery: Number($('every').value) || undefined,
       delegate: $('delegate').value,
       nearSide: $('near').value || undefined,
+      view: $('view').value,
       onProgress: ({ phase, done, total }) => {
         $('prog').max = total || 1;
         $('prog').value = done;
@@ -86,6 +89,7 @@ async function run() {
 }
 
 function render(name, file, r, py) {
+  if (r.view === 'rear') return renderRear(name, file, r);
   const m = r.meta;
   out.innerHTML = `
     <h2>Clip</h2>
@@ -277,6 +281,7 @@ async function loadCachedRows(base) {
   if (!res.ok) return null;
   const { meta, rows } = await res.json();
   for (const row of rows) if (row.lm) row.lm = Float32Array.from(row.lm);
+  if ($('view').value === 'rear') return { meta: { ...meta, view: 'rear' }, rows, cached: true, ...postProcessRear(rows, meta) };
   return { meta, rows, cached: true, ...postProcess(rows, meta, { nearSide: $('near').value || undefined }) };
 }
 
@@ -442,4 +447,122 @@ function metricsHtml(r) {
     <tr><td>Shoulder swing ROM (near arm)</td><td>${fmt(sw)}</td><td>–</td>${TOLERANCES.map(() => '<td>–</td>').join('')}</tr>
     </table>
     <p class="muted small">Body height estimate: ${f1(r.metrics.bodyHeightPx)} px (analysed frame) from near-side thigh + shank + trunk (Winter ratios). Foot length ${f1(r.events[near].footLength)} px.</p>`;
+}
+
+// ---- Rear view (Milestone 4): events and their validation only ----
+
+export function rearValidation(r) {
+  const ms = (i) => r.rows[i].t * 1000;
+  const out = {};
+  for (const side of ['L', 'R']) {
+    const e = r.events[side];
+    const valid = e.strides.filter((s) => s.valid);
+    const byStride = (ev) => new Map(ev[side].strides.filter((s) => s.valid).map((s) => [s.stride, s]));
+    const ref = byStride(r.events);
+    const sweep = REAR_EVENTS.speedSweep.map((v) => {
+      const cur = byStride(r.sweep[v]);
+      const shared = [...cur.keys()].filter((k) => ref.has(k));
+      const sv = r.sweep[v][side].strides.filter((s) => s.valid);
+      const st = (a) => (a.length ? { median: median(a), p25: percentile(a, 25), p75: percentile(a, 75), maxAbs: Math.max(...a.map(Math.abs)) } : null);
+      return {
+        speed: v,
+        valid: sv.length,
+        total: r.sweep[v][side].strides.length,
+        contactMs: st(sv.map((s) => ms(s.to) - ms(s.ic))),
+        icShiftMs: v === REAR_EVENTS.speed ? null : st(shared.map((k) => ms(cur.get(k).ic) - ms(ref.get(k).ic))),
+        toShiftMs: v === REAR_EVENTS.speed ? null : st(shared.map((k) => ms(cur.get(k).to) - ms(ref.get(k).to))),
+      };
+    });
+    const withPelvis = valid.filter((s) => s.msPelvis != null);
+    const d = withPelvis.map((s) => s.msPelvis - s.msMid);
+    const reasons = {};
+    for (const s of e.strides) for (const w of s.reasons) reasons[w.replace(/\d+%/, 'N%')] = (reasons[w.replace(/\d+%/, 'N%')] || 0) + 1;
+    const low = {};
+    for (const s of valid) for (const w of s.lowQuality) low[w.replace(/[\d.]+/g, 'N')] = (low[w.replace(/[\d.]+/g, 'N')] || 0) + 1;
+    out[side] = {
+      valid: valid.length,
+      total: e.strides.length,
+      good: e.goodCount,
+      contactShare: e.contactShareMedian,
+      shank: e.shankLength,
+      speedPx: e.speedThreshold,
+      reasons,
+      low,
+      sweep,
+      ms: { found: withPelvis.length, median: d.length ? median(d) : null, over2: d.filter((x) => Math.abs(x) > 2).length },
+    };
+  }
+  return out;
+}
+
+function renderRear(name, file, r) {
+  const m = r.meta;
+  const v = rearValidation(r);
+  window.__rearValidation = v;
+  const ms0 = (x) => (x == null ? '–' : Math.round(x));
+  const st = (o) => (o ? `${ms0(o.median)} (IQR ${ms0(o.p25)} to ${ms0(o.p75)})` : '–');
+  const sh = (o) => (o ? `${st(o)}, max |Δ| ${ms0(o.maxAbs)}` : 'reference');
+  const fmt = (o) => Object.entries(o).map(([k, n]) => `${k} ×${n}`).join(' · ') || 'none';
+  out.innerHTML = `
+    <h2>Clip (rear view)</h2>
+    <p>${name} · ${m.codec} · ${m.frameCount} frames at ${m.fps.toFixed(2)} fps · every ${m.sampleEvery} → ${m.fs.toFixed(1)} Hz · analysed at ${m.analysedSize.join('×')}</p>
+    <p>Stride period ${r.seg.periodSec ? r.seg.periodSec.toFixed(3) : '–'} s · left stance centres ${r.seg.peaks.length} · right ${r.seg.troughs.length} ·
+      frames with left/right landmarks out of order: ${r.events.orderViolationFrames}/${r.rows.length} · tibia-gated frames ${r.bad.filter(Boolean).length}</p>
+    <h2>Rear-view gait events (per leg)</h2>
+    <table><tr><th>Leg</th><th>Valid</th><th>Good (no flags)</th><th>Contact (median % of cycle)</th><th>Speed threshold</th><th>Invalid because</th><th>Low-quality flags (valid strides)</th></tr>
+    ${['L', 'R'].map((sd) => `<tr><td>${sd === 'L' ? 'Left' : 'Right'}</td><td>${v[sd].valid}/${v[sd].total}</td><td>${v[sd].good}</td><td>${v[sd].contactShare == null ? '–' : Math.round(v[sd].contactShare * 100) + '%'}</td><td>${v[sd].speedPx.toFixed(1)} px/frame (shank ${v[sd].shank.toFixed(0)} px)</td><td class="small">${fmt(v[sd].reasons)}</td><td class="small">${fmt(v[sd].low)}</td></tr>`).join('')}
+    </table>
+    <p class="small"><strong>Threshold sensitivity</strong> (heel/toe speed, shank lengths per frame; shifts vs ${REAR_EVENTS.speed})</p>
+    <table><tr><th>Leg</th><th>Speed</th><th>Valid</th><th>Contact ms (internal)</th><th>IC shift ms</th><th>TO shift ms</th></tr>
+    ${['L', 'R'].flatMap((sd) => v[sd].sweep.map((x) => `<tr><td>${sd}</td><td>${x.speed}</td><td>${x.valid}/${x.total}</td><td>${st(x.contactMs)}</td><td>${sh(x.icShiftMs)}</td><td>${sh(x.toShiftMs)}</td></tr>`)).join('')}
+    </table>
+    <p class="small"><strong>Midstance cross-check</strong> (MS = stance midpoint; lowest pelvis minus midpoint, analysed frames):
+      ${['L', 'R'].map((sd) => `${sd}: found ${v[sd].ms.found}/${v[sd].valid}, median ${v[sd].ms.median ?? '–'}, differs by >2 in ${v[sd].ms.over2}`).join(' · ')}</p>
+    <p><button id="sheet">Build contact sheet (5 strides)</button> <span id="sheet-status" class="muted"></span></p>
+    <div id="sheet-out" class="scroll"></div>
+    <h2>Midstance from segmentation</h2>
+    ${rearMidstanceHtml(r)}
+    <p><button id="msstrip">Build midstance strip (10 strides per leg)</button> <span id="ms-status" class="muted"></span></p>
+    <div id="ms-out" class="scroll"></div>`;
+  $('sheet').onclick = () => contactSheet(name, file, r);
+  $('msstrip').onclick = () => midstanceStrip(name, file, r);
+}
+
+function rearMidstanceHtml(r) {
+  const ms = r.midstance;
+  const sens = midstanceSensitivity(r.rows, r.bad, ms);
+  window.__msSensitivity = sens;
+  const count = (sd) => `${ms[sd].filter((s) => s.valid).length}/${ms[sd].length}`;
+  const f = (v, u) => (u === '°' ? v.toFixed(1) : v.toFixed(3));
+  const rowsHtml = ['L', 'R'].flatMap((sd) =>
+    Object.entries(sens[sd]).map(([name, m]) => {
+      const cells = m.byShift.map((x) => `<td>${f(x.median, m.unit)}${x.shift ? ` <span class="muted">(${x.delta >= 0 ? '+' : ''}${f(x.delta, m.unit)})</span>` : ''}${x.crossoverShare != null ? `<br><span class="muted">${Math.round(x.crossoverShare * 100)}% cross</span>` : ''}</td>`).join('');
+      return `<tr><td>${sd}</td><td>${name}</td><td>${m.unit.trim()}</td>${cells}</tr>`;
+    }),
+  );
+  return `<p>Valid stance half-cycles: left ${count('L')}, right ${count('R')} (0.3–0.7 of the stride).</p>
+    <table><tr><th>Leg</th><th>Candidate</th><th>Unit</th>${[-3, -2, -1, 0, 1, 2, 3].map((d) => `<th>MS ${d > 0 ? '+' : ''}${d}</th>`).join('')}</tr>${rowsHtml.join('')}</table>
+    <p class="muted small">Per-stride medians at midstance shifted by d analysed frames (16.7 ms each); change vs d = 0 in brackets.</p>`;
+}
+
+async function midstanceStrip(name, file, r) {
+  const status = $('ms-status');
+  const video = document.createElement('video');
+  video.muted = true;
+  video.src = URL.createObjectURL(file);
+  try {
+    await new Promise((res) => (video.onloadeddata = res));
+    status.textContent = 'Drawing…';
+    const canvas = await buildMidstanceStrip({ video, result: r, ms: r.midstance });
+    canvas.style.maxWidth = '100%';
+    $('ms-out').replaceChildren(canvas);
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+    const fname = `${name.replace(/\.[^.]+$/, '')}.midstance-strip.png`;
+    const ok = await fetch(`/__save?name=${encodeURIComponent(fname)}`, { method: 'POST', body: blob }).then((x) => x.ok).catch(() => false);
+    status.textContent = ok ? `Saved to test-data/debug/${fname}` : 'Built (not saved).';
+  } catch (e) {
+    status.textContent = `Error: ${e.message}`;
+  } finally {
+    URL.revokeObjectURL(video.src);
+  }
 }

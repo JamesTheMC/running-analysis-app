@@ -1,5 +1,7 @@
 // Debug contact sheet: annotated frames at IC / MS / TO for both legs over 5 consecutive strides,
 // plus an IC timing strip (IC-2 .. IC+2) per leg, so events can be checked by eye.
+// Side view: near leg blue, far leg orange, with each stride's belt line.
+// Rear view: left leg blue, right leg orange, with the pelvis line (hip to hip).
 
 import { LANDMARKS } from '../js/pipeline/kinematics.js';
 
@@ -56,7 +58,7 @@ function cropBox(row, beltY, aspect) {
 }
 
 function drawFrame(ctx, video, row, { x, y, w, h }, opts) {
-  const { side, nearSide, belt, analysedW, label, highlight, flags = [], invalid } = opts;
+  const { side, nearSide, belt, analysedW, label, highlight, flags = [], invalid, pelvis } = opts;
   const beltAt = (px) => (belt ? belt.a + belt.b * px : null);
   const footX = P(row, LANDMARKS[side].heel)[0];
   const box = cropBox(row, belt ? beltAt(footX) : 0, w / h);
@@ -78,6 +80,16 @@ function drawFrame(ctx, video, row, { x, y, w, h }, opts) {
   ctx.moveTo(T(hipMid)[0], y);
   ctx.lineTo(T(hipMid)[0], y + h);
   ctx.stroke();
+
+  // Rear view: pelvis line (hip to hip).
+  if (pelvis) {
+    ctx.strokeStyle = C.hip;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(...T(P(row, LANDMARKS.L.hip)));
+    ctx.lineTo(...T(P(row, LANDMARKS.R.hip)));
+    ctx.stroke();
+  }
 
   // This stride's belt level for the event leg (slanted to follow the treadmill in the image).
   const legColor = side === nearSide ? C.near : C.far;
@@ -149,13 +161,25 @@ export function pickStrides(events, count = 5) {
   return both.slice(start, start + count).map((k) => ({ cycle: k, L: L.get(k), R: R.get(k) }));
 }
 
+// Rear view: pair each left stride with the right stride whose stance centre follows it.
+export function pickRearStrides(events, period, count = 5) {
+  const pairs = [];
+  for (const l of events.L.strides) {
+    const r = events.R.strides.find((x) => x.centre > l.centre && x.centre <= l.centre + period);
+    if (r) pairs.push({ cycle: l.stride, L: l, R: r });
+  }
+  const start = Math.max(0, Math.floor(pairs.length / 2) - Math.floor(count / 2));
+  return pairs.slice(start, start + count);
+}
+
 export async function buildContactSheet({ video, result, clipName, onProgress = () => {} }) {
   const { rows, events, seg, meta } = result;
-  const near = seg.near.side;
+  const rear = result.view === 'rear';
+  const near = rear ? 'L' : seg.near.side;
   const analysedW = meta.analysedSize[0];
-  const picks = pickStrides(events);
+  const picks = rear ? pickRearStrides(events, seg.period) : pickStrides(events);
   const sides = [near, near === 'L' ? 'R' : 'L'];
-  const legName = (sd) => `${sd} ${sd === near ? 'near' : 'far'}`;
+  const legName = rear ? (sd) => (sd === 'L' ? 'Left' : 'Right') : (sd) => `${sd} ${sd === near ? 'near' : 'far'}`;
 
   const gridW = HEAD_W + 6 * TILE.w;
   const top = 96;
@@ -177,7 +201,9 @@ export async function buildContactSheet({ video, result, clipName, onProgress = 
   ctx.font = '13px -apple-system, system-ui, sans-serif';
   const ev = (sd) => events[sd];
   ctx.fillText(
-    `${legName(near)} (blue) · ${legName(sides[1])} (orange) · white dot = heel, cyan dot = foot index · coloured dashed = that stride's belt level · yellow dashed = hip midpoint (COM proxy)`,
+    rear
+      ? 'Rear view · Left (blue) · Right (orange) · white dot = heel, cyan dot = foot index · yellow line = pelvis (hip to hip) · yellow dashed = hip midpoint · MS = middle of stance'
+      : `${legName(near)} (blue) · ${legName(sides[1])} (orange) · white dot = heel, cyan dot = foot index · coloured dashed = that stride's belt level · yellow dashed = hip midpoint (COM proxy)`,
     16,
     54,
   );
@@ -208,7 +234,7 @@ export async function buildContactSheet({ video, result, clipName, onProgress = 
     ctx.fillText(`Stride ${r + 1}`, 10, y + 24);
     ctx.font = '12px -apple-system, system-ui, sans-serif';
     ctx.fillStyle = '#9aa5b1';
-    ctx.fillText(`cycle #${pick.cycle}`, 10, y + 42);
+    ctx.fillText(rear ? `left stride #${pick.cycle}` : `cycle #${pick.cycle}`, 10, y + 42);
     let ly = y + 70;
     for (const sd of sides) {
       const s = pick[sd];
@@ -250,8 +276,9 @@ export async function buildContactSheet({ video, result, clipName, onProgress = 
           side: sd,
           nearSide: near,
           belt: s.belt,
+          pelvis: rear,
           analysedW,
-          label: `${EVENT_LABEL[e]} · frame ${row.frame} · ${row.t.toFixed(3)} s${e === 'ms' && s.msSource !== 'ankle under hip midpoint' ? ' (mid-stance time)' : ''}`,
+          label: `${EVENT_LABEL[e]} · frame ${row.frame} · ${row.t.toFixed(3)} s${e === 'ms' && s.msSource === 'middle of stance' ? ' (mid-stance time)' : ''}`,
           flags: s.lowQuality,
           invalid: s.valid ? null : s.reasons.join('; '),
         });
@@ -288,6 +315,7 @@ export async function buildContactSheet({ video, result, clipName, onProgress = 
           side: sd,
           nearSide: near,
           belt: s.belt,
+          pelvis: rear,
           analysedW,
           label: d === 0 ? 'IC' : `${d > 0 ? '+' : ''}${d}`,
           highlight: d === 0,

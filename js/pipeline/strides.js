@@ -26,7 +26,10 @@ export const STRIDE = {
   stepRange: [0.75, 1.25], // next peak searched this many periods after the previous one
   referenceSmoothing: 1 / 3, // Savitzky-Golay window for the reference signal, in periods
   maxMissingInWindow: 0.3,
-  toeOffMargin: 0.1, // share of the cycle added after the toe-off proxy
+  toeOffMargin: 0.1, // share of the cycle added after the toe-off proxy (signal-based windows)
+  afterToeOffSec: 0.05, // near-leg hip-extension window ends at detected toe-off + 50 ms
+  // Window ends compared for the window-sensitivity rule: 'late-stance' = the original signal-based end.
+  windowSweep: ['late-stance', 0, 0.05, 0.1, 0.15],
   gapFillSec: 0.1,
 };
 
@@ -71,7 +74,7 @@ export function referenceSignal(rows, bad, nearSide) {
   return { raw, facing, tibia };
 }
 
-function estimatePeriod(x, fs) {
+export function estimatePeriod(x, fs) {
   const fin = Array.from(x).filter(Number.isFinite);
   if (fin.length < fs) return 0;
   const mean = fin.reduce((s, y) => s + y, 0) / fin.length;
@@ -172,24 +175,43 @@ function peakInWindow(x, raw, [ws, we]) {
   if (share > STRIDE.maxMissingInWindow) return { valid: false, reason: 'window mostly missing or gated' };
   const i = argExtreme(x, ws, we, true);
   if (i < 0) return { valid: false, reason: 'no data in window' };
-  if (i === ws || i === we) return { valid: false, index: i, value: x[i], reason: 'maximum on window edge (no peak inside)' };
+  if (i === we) return { valid: false, index: i, value: x[i], rising: true, reason: 'still rising at the window end' };
+  if (i === ws) return { valid: false, index: i, value: x[i], reason: 'maximum on window start (no peak inside)' };
   return { valid: true, index: i, value: x[i] };
 }
 
-export function hipExtensionPeaks(rows, bad, fs, seg) {
+// With `events`, the near leg's window ends at its detected toe-off + STRIDE.afterToeOffSec instead of
+// at the reference-signal minimum + 10% of the cycle. That minimum depends on the far foot's
+// landmarks and moved by ~12 frames between strides, which let some windows run into early swing.
+// Strides without a valid near-leg toe-off are not measured. The far leg keeps the signal-based
+// window (its events are unreliable; its hip extension is not reported).
+// `afterToeOffSec` overrides the TO offset (window-sensitivity sweep); `null` events = original window.
+export function hipExtensionPeaks(rows, bad, fs, seg, events = null, { afterToeOffSec = STRIDE.afterToeOffSec } = {}) {
   const out = {};
+  const nearTO = new Map((events?.[seg.near.side]?.strides || []).filter((s) => s.valid).map((s) => [s.cycle, s.to]));
+  const after = Math.round(afterToeOffSec * fs);
   for (const side of ['L', 'R']) {
     const raw = rows.map((r, i) => (bad[i] || r[`hip_ext_${side}`] == null ? NaN : r[`hip_ext_${side}`]));
     const sm = smoothSeries(raw, fs);
-    const strides = seg.cycles.map((c) =>
-      c.windows ? { window: c.windows[side], ...peakInWindow(sm, raw, c.windows[side]) } : { valid: false, reason: c.reason },
-    );
+    const useTO = events && side === seg.near.side;
+    const strides = seg.cycles.map((c, k) => {
+      if (!c.windows) return { valid: false, reason: c.reason };
+      let w = c.windows[side];
+      if (useTO) {
+        if (!nearTO.has(k)) return { valid: false, reason: 'no valid toe-off for this stride' };
+        w = [w[0], Math.min(rows.length - 1, nearTO.get(k) + after)];
+        if (w[1] - w[0] < 2) return { valid: false, reason: 'late-stance window too short' };
+      }
+      return { window: w, ...peakInWindow(sm, raw, w) };
+    });
     const values = strides.filter((s) => s.valid).map((s) => s.value);
     out[side] = {
       near: side === seg.near.side,
       strides,
       values,
       n: values.length,
+      rising: strides.filter((s) => s.rising).length, // excluded: angle still rising at the window end
+      noToeOff: strides.filter((s) => s.reason === 'no valid toe-off for this stride').length,
       total: strides.length,
       median: values.length ? median(values) : null,
       iqr: values.length ? [percentile(values, 25), percentile(values, 75)] : null,

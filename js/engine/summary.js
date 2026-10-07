@@ -11,10 +11,16 @@ function cellText(def, cell) {
   // Far-side values are shown for reference only: no status (they are not scored).
   if (cell.farSide) return `${value} (${[FAR_SIDE_LABEL, strides].filter(Boolean).join(', ')})`;
   if (cell.status === 'ic-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across initial-contact timing, not scored)`;
+  if (cell.status === 'window-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across analysis-window choices, not scored${excludedText(cell)})`;
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
   const status = def.type === 'record' ? '' : statusLabel(cell.status, 'summary');
-  const parts = [status, conf, strides].filter(Boolean);
+  const parts = [status, conf, strides + excludedText(cell)].filter(Boolean);
   return parts.length ? `${value} (${parts.join(', ')})` : value;
+}
+
+// Strides left out of a median, stated so they are never dropped silently.
+function excludedText(cell) {
+  return cell.excluded?.rising ? `; ${cell.excluded.rising} strides excluded: angle still rising at the window end` : '';
 }
 
 // Anything below the confidence floor (or not measured) says "not assessed" and never shows a number.
@@ -133,6 +139,16 @@ export function buildInterpretation(results, intake) {
   if (icSensitive.length) {
     paras.push(
       `Borderline, IC-sensitive (the green/yellow/red status changes with small shifts in detected initial-contact timing, so no flag is shown and these are not scored or used for patterns until validated): ${sentenceList(icSensitive)}.`,
+    );
+  }
+  const windowSensitive = results.rows.flatMap((r) =>
+    Object.values(r.cells)
+      .filter((c) => c.status === 'window-sensitive')
+      .map((c) => describeCell(r.def, c, fp)),
+  );
+  if (windowSensitive.length) {
+    paras.push(
+      `Borderline, window-sensitive (the status changes with how the late-stance window is defined, so no status is shown and these are not scored or used for patterns until validated): ${sentenceList(windowSensitive)}.`,
     );
   }
   const farCells = results.rows.flatMap((r) => Object.values(r.cells).filter((c) => c.farSide && c.assessed).map((c) => ({ def: r.def, cell: c })));
