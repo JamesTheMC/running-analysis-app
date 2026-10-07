@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Privacy: the page may only talk to its own origin. Video and results can never be sent elsewhere,
+         even by a third-party library (see vendor/mediapipe/PATCHES.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; img-src 'self' blob: data:; media-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+    <title>Pipeline Test</title>
+    <style>
+      :root {
+        --bg: #fff; --fg: #1a1f24; --muted: #5b6670; --line: #d9dee3; --card: #f6f8fa;
+        --ok: #1a7f37; --bad: #c62828; --near: #1f6feb; --far: #c2410c; --win: rgba(31, 111, 235, 0.12);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --bg: #0f1419; --fg: #e6e9ec; --muted: #9aa5b1; --line: #2b333b; --card: #161c22;
+          --ok: #4ac26b; --bad: #ff6b6b; --near: #58a6ff; --far: #fb923c; --win: rgba(88, 166, 255, 0.14);
+        }
+      }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; max-width: 1100px; }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      h2 { font-size: 15px; margin: 24px 0 8px; }
+      .muted { color: var(--muted); }
+      .small { font-size: 12px; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+      button, select, input { font: inherit; }
+      table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+      th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+      .pass { color: var(--ok); font-weight: 600; }
+      .fail { color: var(--bad); font-weight: 600; }
+      pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow: auto; font-size: 12px; }
+      progress { width: 260px; }
+      .scroll { overflow-x: auto; }
+      svg text { fill: var(--muted); font-size: 11px; }
+      .thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+      .thumbs figure { margin: 0; }
+      .thumbs canvas { width: 180px; border-radius: 6px; border: 1px solid var(--line); }
+      .thumbs figcaption { font-size: 12px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <h1>Pipeline test</h1>
+    <p class="muted">Development page. Runs the in-browser pipeline on a clip and compares it with the Python reference output for the same clip. Nothing leaves this machine.</p>
+
+    <div class="card">
+      <div class="row">
+        <label>Clip <select id="clip"></select></label>
+        <label>or file <input type="file" id="file" accept="video/*" /></label>
+      </div>
+      <div class="row" style="margin-top: 8px">
+        <label>Sample every <input id="every" type="number" min="1" value="2" style="width: 4em" /> frames</label>
+        <label>Delegate <select id="delegate"><option>CPU</option><option>GPU</option></select></label>
+        <label>Near side <select id="near"><option value="">auto</option><option value="L">L</option><option value="R">R</option></select></label>
+        <label>Compare with <select id="pyvariant"><option value="py">Python reference (legacy Pose)</option><option value="pytasks">Python + Tasks API (diagnostic)</option></select></label>
+        <label>or file <input type="file" id="pyfile" accept=".json" /></label>
+        <label><input type="checkbox" id="cache" checked /> Reuse cached landmarks</label>
+        <button id="run">Run</button>
+      </div>
+      <div class="row" style="margin-top: 8px">
+        <progress id="prog" value="0" max="1"></progress>
+        <span id="status" class="muted">Idle.</span>
+      </div>
+    </div>
+
+    <div id="out"></div>
+    <script type="module" src="pipeline.js"></script>
+  </body>
+</html>
