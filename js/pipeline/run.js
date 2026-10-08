@@ -11,6 +11,7 @@ import { cadenceFromStrides, computeMetrics } from './metrics.js';
 import { applyHipAnchor } from './hip-anchor.js';
 import { HIP_ANCHOR } from '../config.js';
 import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
+import { frontalBodyHeightPx, posteriorMetrics } from './posterior-metrics.js';
 import { max, median, min } from './stats.js';
 
 export const PIPELINE = {
@@ -90,7 +91,10 @@ export function postProcessRear(rows, meta) {
   // Candidate: lowest smoothed pelvis within each stance half-cycle (deepest landing position).
   const midstancePelvis = pelvisLowMidstance(rows, bad, seg, midstance);
   const capture = posteriorCaptureChecks(rows, bad, meta.analysedSize[0]);
-  return { bad, seg, events, sweep, midstance, midstancePelvis, capture, view: 'posterior', summary: referenceSummary(rows, bad) };
+  // Posterior metrics at the lowest-pelvis midstance (and at ±2 frames for the timing rule).
+  const metrics = { ...posteriorMetrics(rows, bad, midstancePelvis), bodyHeightPx: frontalBodyHeightPx(rows, bad) };
+  const cadence = seg.periodSec ? { spm: 120 / seg.periodSec, strideSec: seg.periodSec, strides: seg.peaks.length } : null;
+  return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
 
 // Everything after pose estimation. Pure: can be re-run on cached rows (test page).

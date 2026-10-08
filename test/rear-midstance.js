@@ -3,59 +3,18 @@
 
 import { LANDMARKS } from '../js/pipeline/kinematics.js';
 import { median, percentile } from '../js/pipeline/stats.js';
+import { POSTERIOR } from '../js/pipeline/posterior-metrics.js';
 
-const DEG = 180 / Math.PI;
 const P = (row, k) => [row.lm[k * 4], row.lm[k * 4 + 1]];
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
-const unit = (v) => {
-  const n = Math.hypot(...v) || 1;
-  return [v[0] / n, v[1] / n];
-};
 const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
-// Frame geometry for stance leg `side`: pelvis direction, downward perpendicular, medial direction.
-function frame(row, side) {
-  const hl = P(row, LANDMARKS.L.hip);
-  const hr = P(row, LANDMARKS.R.hip);
-  const u = unit(sub(hr, hl)); // left hip -> right hip
-  const n = [-u[1], u[0]]; // perpendicular, pointing down the image
-  const m = side === 'L' ? u : [-u[0], -u[1]]; // medial for this leg
-  return { hl, hr, u, n, m, hipMid: mid(hl, hr), hipW: Math.hypot(...sub(hr, hl)) };
-}
-
+// The candidate measures are the pipeline's own (js/pipeline/posterior-metrics.js), so the review
+// tools and the app can never disagree.
 export const CANDIDATES = {
-  // Thigh vs the perpendicular to the pelvis line; + = knee toward midline (adduction).
-  hipAdduction(row, side) {
-    const f = frame(row, side);
-    const t = sub(P(row, LANDMARKS[side].knee), P(row, LANDMARKS[side].hip));
-    return Math.atan2(dot(t, f.m), dot(t, f.n)) * DEG;
-  },
-  // Frontal knee angle, 180 - interior hip-knee-ankle; + = knee medial to the hip-ankle line (valgus).
-  kneeValgus(row, side) {
-    const f = frame(row, side);
-    const h = P(row, LANDMARKS[side].hip);
-    const k = P(row, LANDMARKS[side].knee);
-    const a = P(row, LANDMARKS[side].ank);
-    const v1 = sub(h, k);
-    const v2 = sub(a, k);
-    const interior = Math.acos(Math.max(-1, Math.min(1, dot(v1, v2) / (Math.hypot(...v1) * Math.hypot(...v2))))) * DEG;
-    const l = unit(sub(a, h));
-    const rel = sub(k, h);
-    const off = sub(rel, [l[0] * dot(rel, l), l[1] * dot(rel, l)]);
-    return Math.sign(dot(off, f.m)) * (180 - interior);
-  },
-  // Shoulder midpoint vs pelvis midpoint along the pelvis line, in hip widths; + = toward the stance side.
-  trunkShift(row, side) {
-    const f = frame(row, side);
-    const s = mid(P(row, LANDMARKS.L.sho), P(row, LANDMARKS.R.sho));
-    return dot(sub(s, f.hipMid), [-f.m[0], -f.m[1]]) / f.hipW;
-  },
-  // Heel vs the pelvis midline, in hip widths; + = on its own side, <= 0 = on or past the midline (crossover).
-  heelFromMidline(row, side) {
-    const f = frame(row, side);
-    return dot(sub(P(row, LANDMARKS[side].heel), f.hipMid), [-f.m[0], -f.m[1]]) / f.hipW;
-  },
+  hipAdduction: POSTERIOR.hipAdduction,
+  kneeValgus: POSTERIOR.kneeValgus,
+  trunkShift: POSTERIOR.trunkShift,
+  heelFromMidline: POSTERIOR.heelFromMidline,
 };
 
 const UNITS = { hipAdduction: '°', kneeValgus: '°', trunkShift: ' hip widths', heelFromMidline: ' hip widths' };

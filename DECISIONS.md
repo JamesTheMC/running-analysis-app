@@ -64,3 +64,43 @@ Format: **Date: Decision.** Alternatives considered. Why. Reversible? (Y/N)
   within 15% of stance time (≥ 1 analysed frame); "yes" when ≥ 50% of strides are in sync. Low
   confidence (ankle angle from heel/toe landmarks).** Source: no published threshold found for this
   template item; provisional, for owner review. Y
+
+## Phase 3: posterior view (2026-10-08)
+- **Rear midstance = lowest point of the smoothed pelvis inside each stance half-cycle.** Alt:
+  half-cycle centre, foot-height minimum. Why: least timing-sensitive candidate on review; no
+  reliable rear foot-contact events (perspective). Y
+- **Timing-sensitivity rule for posterior metrics: recompute at midstance ±2 analysed frames; if the
+  status changes, show the range as "borderline, timing-sensitive", unscored, no pattern trigger.** Y
+- **Sign convention: + = toward the midline for both legs; verified by a mirror/swap unit test.** Y
+- **Contralateral pelvic drop = change in the pelvis line from loading response (segmentation stance
+  start) to midstance; unscored, trend only.** Why: 2D pelvic drop tracks 3D poorly, and the template
+  red (>6°) equals the healthy 2D mean in published data. Provisional. Y
+- **Crossover = heel on or past the pelvis midline at midstance in ≥ 50% of steps.** Provisional. Y
+- **Spine shift vs PSIS (provisional): shoulder midpoint more than 0.25 hip widths from the pelvis
+  midpoint = "beyond PSIS".** PSIS are not visible landmarks; 0.25 hip widths approximates the PSIS
+  spacing relative to the hip-joint landmarks. Owner review. Y
+- **Lateral shift in cm when height is entered (scale from frontal segment lengths, Winter ratios),
+  otherwise in hip widths.** Y
+- **Posterior L/R differences only when the left/right swap check passes.** Y
+- **Not built from behind: out-toe angle, Achilles angle, rearfoot eversion.** Why: foot landmarks are
+  too small and noisy at treadmill filming distance; listed in the summary as not built. Y
+
+## Phase 4: ranges, template output (2026-10-08)
+Sources were gathered by a literature-search subagent and reviewed; values marked UNVERIFIED were read
+through abstracts or summaries and need a full-text check. All of these are flagged "provisional" in
+the output.
+- **Max stance knee flexion: green 40–55°, red < 35°.** The template's 35–45° / red > 45° would flag
+  healthy runners (healthy group means 44.5–46.3° in the studies the literature review found; UNVERIFIED, exact sources to be confirmed). Y
+- **Foot-to-COM at IC in cm: green ≤ 13 cm, red > 17 cm.** Heiderscheit 2011: 9.2 ± 4.0 cm at
+  preferred cadence (green ≈ mean + 1 SD, red ≈ mean + 2 SD). Shoe lengths still shown. Y
+- **Knee frontal-plane projection angle: unscored.** 2D FPPA has poor validity against 3D during
+  running (Dingenen 2018). Y
+- **Hip adduction: red > 13° (≈ healthy 3D mean + 1 SD; UNVERIFIED).** Y
+- **Knee flexion at IC 15–25°, tibial inclination ±10°, trunk lean ranges: template values kept,
+  marked provisional (no published cutoff found).** Y
+- **Mechanics suggestion: when overstride signs are present (overstride pattern or foot-to-COM
+  caution/flag), suggest a 5–10% step-rate increase with target steps/min and the resulting step
+  length (Heiderscheit 2011).** Step length = treadmill speed / step rate; step rate is the entered
+  cadence, else the video estimate (labelled unvalidated). Y
+- **Limits statement in every interpretation: movement analysis to support clinical judgment, not a
+  diagnosis; provisional thresholds are not published cutoffs.** Y

@@ -10,6 +10,8 @@ import { postProcess, postProcessRear } from '../js/pipeline/run.js';
 import { applyHipAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
 import { CANDIDATES } from './rear-midstance.js';
 import { mergeSession } from '../js/pipeline/session.js';
+import { POSTERIOR as POSTERIOR_MEASURES, pelvisDropAngle } from '../js/pipeline/posterior-metrics.js';
+import { toPosteriorAnalysis } from '../js/pipeline/posterior.js';
 
 const out = document.getElementById('out');
 const results = [];
@@ -380,7 +382,7 @@ test('synthetic asymmetric pose: every candidate equals the mirrored other leg',
   for (const [k, x, y] of [[11, 180, 100], [12, 260, 104], [23, 195, 300], [24, 255, 292], [25, 215, 400], [26, 250, 395], [27, 205, 500], [28, 262, 497], [29, 200, 520], [30, 268, 515], [31, 207, 530], [32, 262, 527]]) put(k, x, y);
   const row = { lm };
   const m = mirrorRow(row, 480);
-  for (const [name, fn] of Object.entries(CANDIDATES)) {
+  for (const [name, fn] of Object.entries({ ...POSTERIOR_MEASURES, pelvisDropAngle })) {
     for (const [a, b] of [['L', 'R'], ['R', 'L']]) {
       const d = Math.abs(fn(row, a) - fn(m, b));
       assert(d < 1e-4, `${name} ${a}: ${fn(row, a)} vs mirrored ${b}: ${fn(m, b)}`);
@@ -401,10 +403,33 @@ await testAsync('cached IMG_0640: candidates and midstance swap legs exactly und
     const fa = a.midstancePelvis[sd].filter((h) => h.valid).map((h) => h.ms);
     const fb = b.midstancePelvis[other].filter((h) => h.valid).map((h) => h.ms);
     assert(JSON.stringify(fa) === JSON.stringify(fb), `midstance frames differ for ${sd}`);
-    for (const fn of Object.values(CANDIDATES)) for (const i of fa) worst = Math.max(worst, Math.abs(fn(rows[i], sd) - fn(mrows[i], other)));
+    for (const fn of Object.values({ ...POSTERIOR_MEASURES, pelvisDropAngle })) for (const i of fa) worst = Math.max(worst, Math.abs(fn(rows[i], sd) - fn(mrows[i], other)));
   }
   assert(worst < 1e-3, `max difference ${worst}`);
   return `max per-frame difference ${worst.toExponential(1)}`;
+});
+
+// ---------------------------------------------------------------------------
+section = 'Posterior adapter';
+await testAsync('cached IMG_0640: only posterior metrics, both legs, swap check, timing sweep (strict)', async () => {
+  const res = await fetch('../test-data/debug/IMG_0640.rows.json');
+  if (!res.ok) return 'skip';
+  const { meta, rows } = await res.json();
+  for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
+  EMIT.strict = true;
+  const a = toPosteriorAnalysis(postProcessRear(rows, meta), { heightCm: 170 });
+  for (const id of Object.keys(a.measurements)) assert(allowed(id, 'posterior'), `${id} not allowed from posterior`);
+  for (const id of ['ms_hip_adduction', 'ms_knee_varus_valgus', 'ms_pelvic_drop', 'ms_foot_midline', 'ms_crossover']) {
+    for (const leg of ['left', 'right']) assert(a.measurements[id]?.[leg]?.value != null, `${id} ${leg} missing`);
+  }
+  assert(a.measurements.ms_hip_adduction.left.sweep?.kind === 'timing', 'no timing sweep');
+  assert(a.captureChecks.posterior.swapCheckPassed === true, 'swap check');
+  const res2 = analyze({ intake: baseIntake, views: ['posterior'], analysis: mergeSession({ posterior: { analysis: a } }) });
+  const lateralRow = res2.rowsById.ic_knee_flexion.cells.left;
+  assert(!lateralRow.assessed && /needs a lateral/.test(lateralRow.reason), `lateral metric from posterior session: ${lateralRow.reason}`);
+  assert(res2.viewViolations.length === 0, 'violations');
+  const h = res2.rowsById.ms_hip_adduction;
+  return `hip adduction L ${h.cells.left.display ?? h.cells.left.value?.toFixed(1)} / R ${h.cells.right.display ?? h.cells.right.value?.toFixed(1)}; shift ${a.measurements.ms_lateral_shift.mid.display}`;
 });
 
 // ---------------------------------------------------------------------------

@@ -16,12 +16,12 @@ export const UNMEASURED_REASON = 'not measured by this build yet';
 // Metrics that depend on initial-contact timing. Their per-stride medians are recomputed with events
 // detected at each tolerance in IC_SWEEP; if the status (or category) changes anywhere across the
 // sweep, the engine shows the range as "borderline, IC-sensitive" (not scored, not used for patterns).
-const IC_DEPENDENT = ['kneeIC', 'kneeExcursion', 'tibialIC', 'footInclIC', 'footToComShoe', 'trunkIC', 'trunkChange'];
+const IC_DEPENDENT = ['kneeIC', 'kneeExcursion', 'tibialIC', 'footInclIC', 'footToComPx', 'trunkIC', 'trunkChange'];
 
 const ANAT = { L: 'left', R: 'right' };
 
-// One per-stride summary -> one measurement cell.
-function cell(sum, { reason, display } = {}) {
+// One per-stride summary -> one measurement cell (shared with the posterior adapter).
+export function cell(sum, { reason, display } = {}) {
   const base = { quality: sum.quality, strides: sum.n, totalStrides: sum.total, iqr: sum.iqr };
   if (sum.n < MIN_STRIDES || sum.median == null) {
     return { ...base, value: null, reason: reason || `only ${sum.n} of ${sum.total} strides measurable` };
@@ -77,18 +77,14 @@ export function toAnalysis(result, { heightCm } = {}) {
     out.put('ms_knee_ankle_sync', leg, c);
   }
 
-  // Foot-to-COM: status is judged in (approximate) shoe lengths; cm, from the intake height, is shown first.
+  // Foot-to-COM: judged in cm (pixel-to-cm scale from intake height); shoe lengths shown alongside.
   if (heightCm > 0 && metrics.bodyHeightPx > 0) {
     const pxPerCm = metrics.bodyHeightPx / heightCm;
-    const cmPerShoe = result.events[near].footLength / pxPerCm;
-    const display = () => `${(m.footToComPx.median / pxPerCm).toFixed(1)} cm (≈${m.footToComShoe.median.toFixed(2)} shoe lengths)`;
-    const sweepDisplay = (values) => {
-      const v = values.filter((x) => x != null);
-      const lo = Math.min(...v);
-      const hi = Math.max(...v);
-      return `${(lo * cmPerShoe).toFixed(1)}–${(hi * cmPerShoe).toFixed(1)} cm (≈${lo.toFixed(2)}–${hi.toFixed(2)} shoe lengths)`;
-    };
-    out.put('ic_foot_to_com', leg, withSweep(cell(m.footToComShoe, { display }), 'footToComShoe', sweepDisplay));
+    const toCm = (sum) => (sum ? { ...sum, median: sum.median == null ? null : sum.median / pxPerCm, iqr: sum.iqr?.map((v) => v / pxPerCm) } : sum);
+    const c = withSweep(cell(toCm(m.footToComPx)), 'footToComPx');
+    if (c.value != null) c.display = `${c.value.toFixed(1)} cm (≈${m.footToComShoe.median.toFixed(2)} shoe lengths)`;
+    if (c.sweep) c.sweep.values = c.sweep.values.map((v) => (v == null ? null : v / pxPerCm));
+    out.put('ic_foot_to_com', leg, c);
   }
 
   // Midline (trunk) metrics from near-leg events.

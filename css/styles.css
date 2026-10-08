@@ -741,13 +741,15 @@ abbr.p {
   color: var(--muted);
 }
 .cell-ic-sensitive,
-.cell-window-sensitive {
+.cell-window-sensitive,
+.cell-timing-sensitive {
   background: var(--na-bg);
   border-left-color: var(--yellow);
   border-left-style: dashed;
 }
 .status-ic-sensitive,
-.status-window-sensitive {
+.status-window-sensitive,
+.status-timing-sensitive {
   color: var(--yellow);
 }
 
@@ -766,4 +768,14 @@ abbr.p {
 }
 .status-pending-validation {
   color: var(--muted);
+}
+
+.prov {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-left: 4px;
 }

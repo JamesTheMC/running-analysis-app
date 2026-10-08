@@ -20,8 +20,8 @@ export const VIEWS = {
   posterior: { label: 'Posterior (rear)' },
 };
 
-// Clip slots for the planned three-clip session (not built yet: a session currently holds one lateral
-// clip and one posterior clip). Each lateral clip supplies its near leg and near arm only.
+// Clip slots of a session (js/pipeline/session.js), each optional. Each lateral clip supplies its near
+// leg and near arm only; the posterior clip supplies frontal-plane metrics for both legs.
 export const CLIP_SLOTS = {
   lateral_left: { view: 'lateral', leg: 'left', label: 'Lateral, filmed from the left' },
   lateral_right: { view: 'lateral', leg: 'right', label: 'Lateral, filmed from the right' },
@@ -173,7 +173,8 @@ export const METRICS = [
     red: { below: -10, above: 10 },
     greenText: '-10° to +10°',
     redText: 'beyond ±10°',
-    note: 'Descriptive only.',
+    provisional: true,
+    note: 'Descriptive only. ±10° has no published threshold (provisional).',
     priority: false,
     baselineConfidence: 'high',
     summary: 'ANKLE',
@@ -186,14 +187,18 @@ export const METRICS = [
     allowedViews: ['lateral'],
     type: 'range',
     sided: 'lr',
-    unit: 'shoe',
+    unit: 'cm',
     // Horizontal heel to hip midpoint (COM proxy) at IC; + = heel
     // ahead. Shown in cm (pixel-to-cm scale from intake height) with approximate shoe lengths (from the
     // heel-to-toe landmarks); status is judged in shoe lengths.
-    green: { max: 0.5 },
-    red: { above: 1 },
-    greenText: '<½ shoe length',
-    redText: '>1 shoe length',
+    // Provisional cm bands from healthy runners: 9.2 ± 4.0 cm heel to COM at IC (Heiderscheit 2011, 3D):
+    // green <= mean + 1 SD, red > mean + 2 SD. The clinic's shoe-length bands have no published basis.
+    green: { max: 13 },
+    red: { above: 17 },
+    greenText: '≤13 cm',
+    redText: '>17 cm',
+    provisional: true,
+    note: 'Provisional cm bands (healthy 9.2 ± 4.0 cm, Heiderscheit 2011). Clinic template: < ½ shoe length, red > 1 shoe length.',
     priority: true,
     baselineConfidence: 'medium', // depends on the height-based scale and foot landmarks
     requires: ['height'],
@@ -214,7 +219,8 @@ export const METRICS = [
     redText: '<12° or >30°',
     priority: true,
     baselineConfidence: 'high',
-    note: 'Clinic template range (some literature cites ~30–40°).',
+    provisional: true,
+    note: 'Clinic template range; healthy adults 17.8 ± 4.0° (Heiderscheit 2011, 3D). Thresholds provisional.',
     summary: 'KNEE',
   },
   {
@@ -232,6 +238,8 @@ export const METRICS = [
     greenText: '5–10°',
     redText: '<0° or >15°',
     priority: false,
+    provisional: true,
+    note: 'Green 5–10° matches healthy self-selected lean (≈7°); red thresholds are provisional.',
     baselineConfidence: 'high',
     summary: 'LUMBAR',
   },
@@ -246,10 +254,15 @@ export const METRICS = [
     type: 'range',
     sided: 'lr',
     unit: 'deg',
-    green: { min: 35, max: 45 },
-    red: { above: 45 },
-    greenText: '35–45°',
-    redText: '>45°',
+    // Provisional, literature-based (DECISIONS.md): healthy runners 46.3 ± 4.5° (Heiderscheit 2011, 3D),
+    // 44.5 ± 3.6° (Matsuzaki 2024, 2D); low flexion (< 40°) is the concern (Souza 2016). The clinic
+    // template (35–45°, red > 45°) would flag about half of healthy runners; kept for owner review.
+    green: { min: 40, max: 55 },
+    red: { below: 35 },
+    greenText: '40–55°',
+    redText: '<35°',
+    provisional: true,
+    note: 'Provisional, literature-based (healthy ≈ 45°; low flexion is the concern). Clinic template 35–45° / red >45° under review.',
     priority: true,
     baselineConfidence: 'high',
     summary: 'KNEE',
@@ -317,6 +330,7 @@ export const METRICS = [
     greenText: '0–10°',
     redText: '>12°',
     priority: false,
+    provisional: true,
     baselineConfidence: 'high',
     summary: 'LUMBAR',
   },
@@ -327,17 +341,19 @@ export const METRICS = [
     label: 'Contralateral pelvic drop',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'HIP',
     // Change in the pelvis line from loading response (segmentation-derived stance start) to midstance.
     type: 'range',
     sided: 'lr', // side = stance leg
     unit: 'deg',
-    green: { min: 0, max: 6 },
+    green: { max: 6 }, // a negative value (swing-side hip rising) is not a concern
     red: { above: 6 },
     greenText: '0–6°',
     redText: '>6°',
     priority: true,
     baselineConfidence: 'low', // trend only
+    provisional: true,
+    scored: false, // trend only: 2D pelvic drop did not track 3D in one study (SPEC 8)
     note: 'Trend only. Template row "Pelvic tilt" is not measurable in 2D; this is frontal-plane pelvic drop.',
   },
   {
@@ -345,7 +361,7 @@ export const METRICS = [
     label: 'Hip adduction',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'HIP',
     // At midstance: thigh vs the perpendicular to the pelvis line; + = knee toward midline.
     type: 'range',
     sided: 'lr',
@@ -356,13 +372,15 @@ export const METRICS = [
     redText: '>13°',
     priority: true,
     baselineConfidence: 'medium',
+    provisional: true,
+    note: 'Midstance (lowest pelvis), thigh vs the perpendicular to the pelvis line. Red >13° ≈ healthy 3D mean + 1 SD (provisional).',
   },
   {
     id: 'ms_knee_varus_valgus',
     label: 'Knee frontal-plane projection angle',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'KNEE',
     // At midstance: 180 - frontal hip-knee-ankle angle; + = knee medial (valgus).
     type: 'range',
     sided: 'lr',
@@ -373,6 +391,9 @@ export const METRICS = [
     redText: 'beyond ±5°',
     priority: true,
     baselineConfidence: 'low',
+    scored: false, // 2D knee valgus did not relate to 3D knee abduction in running (Dingenen 2018)
+    provisional: true,
+    note: 'Low confidence and unscored: 2D knee valgus did not relate to 3D in running (Dingenen 2018). ±5° range has no published basis.',
   },
   {
     id: 'ms_out_toe',
@@ -395,7 +416,7 @@ export const METRICS = [
     label: 'Crossover pattern',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'ANKLE',
     // Heel vs the pelvis midline at midstance; a leg's pattern is "yes" when >= 50% of its steps cross.
     type: 'boolean',
     sided: 'lr',
@@ -406,14 +427,16 @@ export const METRICS = [
     redText: '—',
     priority: false,
     baselineConfidence: 'medium',
+    note: 'Heel vs the pelvis midline at midstance; "yes" when at least half the steps land on or past the midline.',
   },
   {
     id: 'ms_spine_shift',
     label: 'Spine shift (PSIS rule)',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned',
-    statusReason: 'threshold not confirmed',
+    summary: 'LUMBAR',
+    // Provisional rule: between PSIS when the median |shoulder-midpoint shift| <= 0.25 hip-joint widths
+    // (PSIS assumed about half as far apart as the hip joint centres).
     type: 'boolean',
     sided: 'mid',
     expected: true, // true = stays between PSIS
@@ -423,6 +446,7 @@ export const METRICS = [
     redText: 'beyond PSIS',
     priority: true,
     baselineConfidence: 'medium',
+    note: 'Provisional: between PSIS = median shoulder-midpoint shift within a quarter of the hip-joint width (no PSIS landmark).',
   },
   {
     id: 'ms_achilles_angle',
@@ -461,7 +485,7 @@ export const METRICS = [
     label: 'Foot position vs midline',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'ANKLE',
     type: 'record',
     sided: 'lr',
     unit: 'hipw',
@@ -475,7 +499,7 @@ export const METRICS = [
     label: 'Trunk lateral lean',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'LUMBAR',
     type: 'record',
     sided: 'mid',
     unit: 'deg',
@@ -489,7 +513,7 @@ export const METRICS = [
     label: 'Trunk lateral shift',
     phase: 'midstance',
     allowedViews: ['posterior'],
-    status: 'planned-posterior',
+    summary: 'LUMBAR',
     type: 'record',
     sided: 'mid',
     unit: 'cm',
@@ -572,7 +596,11 @@ export const METRICS = [
 
 // Copy-paste summary sections, in order (Section 5). Interpretation is always last.
 export const SUMMARY_SECTIONS = [
-  { id: 'ANKLE', emptyNote: 'No ankle metrics assessed.' },
+  {
+    id: 'ANKLE',
+    emptyNote: 'No ankle metrics assessed.',
+    footer: 'Out-toe angle, Achilles angle and rearfoot eversion: not built (foot landmarks are too small and unreliable from behind at this distance).',
+  },
   { id: 'KNEE', emptyNote: 'No knee metrics assessed.' },
   { id: 'HIP', emptyNote: 'No hip metrics assessed.' },
   {
@@ -655,6 +683,7 @@ export const PATTERNS = [
       { metric: 'ms_hip_adduction', status: ['yellow', 'red'], text: 'hip adduction high' },
       { metric: 'ms_pelvic_drop', status: ['yellow', 'red'], text: 'pelvic drop high' },
       { metric: 'ms_spine_shift', status: ['red'], text: 'spine shift beyond PSIS' },
+      { metric: 'ms_crossover', status: ['yellow'], text: 'crossover foot placement' },
     ],
     minAny: 2,
     considerations: [
@@ -688,6 +717,8 @@ export const STATUS_LABELS = {
   'ic-sensitive': { report: 'Borderline, IC-sensitive', summary: 'borderline, IC-sensitive' },
   // Status changes across analysis-window choices (hip extension window end): range shown, not scored.
   'window-sensitive': { report: 'Borderline, window-sensitive', summary: 'borderline, window-sensitive' },
+  // Status changes when posterior midstance shifts by ±2 analysed frames: range shown, not scored.
+  'timing-sensitive': { report: 'Borderline, timing-sensitive', summary: 'borderline, timing-sensitive' },
 };
 
 export const UNITS = {

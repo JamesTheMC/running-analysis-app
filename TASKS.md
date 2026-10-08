@@ -8,22 +8,11 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 ## Todo
 
 
-### Phase 3: posterior view
-- [ ] Rear midstance = lowest smoothed pelvis within each stance half-cycle (least timing-sensitive)
-- [ ] Metrics per leg at midstance: hip adduction, knee frontal-plane projection angle, foot position
-      vs midline and crossover (≥ 50% of steps); midline: trunk lateral lean and lateral shift
-      (cm from height, else hip widths); contralateral pelvic drop (loading response → midstance,
-      trend only)
-- [ ] Midstance-timing sweep (±2 analysed frames): status change → "borderline, timing-sensitive"
-- [ ] Left/right swap check gates posterior L/R differences; per-leg quality
-- [ ] Posterior step rate (unvalidated, display only)
-- [ ] Combine posterior and lateral into one result
-
 ### Phase 4: template output
-- [ ] Ranges reviewed against literature; anything not literature-backed marked provisional (DECISIONS.md)
-- [ ] Scores per phase and side; correlated weaknesses (pattern flags) cover side + posterior
-- [ ] Mechanics suggestions: cadence and stride (step length from treadmill speed and step rate)
-- [ ] Plain-language interpretation paragraph; limits statement; copy button
+- [x] Ranges reviewed against literature; anything not literature-backed marked provisional (DECISIONS.md)
+- [x] Mechanics suggestions: step rate (+5–10% when overstride signs) and step length
+- [x] Limits statement
+- [x] Scores per phase and side, pattern flags (side + posterior), interpretation checked on the full run
 
 ### Phase 5: validation against manual measurement
 - [ ] Sample frames from the side and posterior clips; blind manual joint-centre annotation
@@ -43,6 +32,9 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - Hip extension validation (`VALIDATION.hipExtensionValidated`): stays unscored until validated.
 
 ## Done
+- Phase 3: posterior view: midstance = lowest pelvis per stance; per-leg hip adduction, knee FPPA
+  (unscored), pelvic drop (trend only), foot vs midline, crossover; midline lean, shift (cm),
+  spine shift vs PSIS (provisional); ±2-frame timing sweep; swap-check gating; combined with lateral
 - Phase 2: three clip slots (lateral from left, lateral from right, posterior) merged into one
   session; each lateral clip supplies its own leg and arm (arms now L/R); midline values from two
   lateral clips combined (stride-weighted, disagreement note > 3°); per-clip speed/incline with a

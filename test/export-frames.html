@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'" />
+    <title>Frame Export</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg: #0f1419; --fg: #e6e9ec; } }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>Frame export for blind annotation</h1>
+    <p>Reads test-data/debug/annotation_request.json, decodes the listed frames on-device and saves
+      overlay-free crops with a 50 px grid to test-data/debug/annotate_*.png (dev server only).</p>
+    <pre id="log">Starting…</pre>
+    <script type="module" src="export-frames.js"></script>
+  </body>
+</html>

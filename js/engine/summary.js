@@ -5,9 +5,10 @@ import { cellValue, formatDiff, statusLabel, sideLabel, formatSpeed, formatIncli
 
 function cellText(def, cell) {
   const value = cellValue(def, cell, { short: true });
-  const strides = cell.strides ? `median of ${cell.strides} strides` : '';
+  const strides = cell.strides ? `median of ${cell.strides} ${cell.countUnit || 'strides'}` : '';
   if (cell.status === 'ic-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across initial-contact timing, not scored)`;
   if (cell.status === 'pending-validation') return `${value} (${cell.pendingText}; not scored)`;
+  if (cell.status === 'timing-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across midstance timing ±2 frames, not scored)`;
   if (cell.status === 'window-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across analysis-window choices, not scored${excludedText(cell)})`;
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
   const status = def.type === 'record' || def.type === 'category' ? '' : statusLabel(cell.status, 'summary');
@@ -39,7 +40,7 @@ function metricLine(row, filmedFrom) {
   const name = def.summaryLabel || def.label;
   const ref =
     def.type === 'range' && def.greenText
-      ? ` | ref ${def.greenText}`
+      ? ` | ref ${def.greenText}${def.provisional ? ' (provisional)' : ''}`
       : def.type === 'record'
         ? ` | recorded${def.baselineConfidence === 'low' ? ', trend only' : ''}`
         : '';
@@ -73,6 +74,37 @@ export function buildSections(results, intake) {
     if (s.footer) lines.push(s.footer);
     return { title: s.id, lines };
   });
+}
+
+// Mechanics considerations: step rate and step length (CLAUDE.md "mechanics suggestions").
+// A 5–10% step-rate increase reduced heel-to-COM distance, knee flexion at IC demands and knee energy
+// absorption in healthy runners (Heiderscheit 2011); suggested only when overstride signs are present.
+export const STEP_RATE_CHANGE = [0.05, 0.1];
+
+function mechanicsParagraph(results) {
+  const n = results.numbers;
+  const video = results.cadenceVideo?.spm;
+  const spm = n.cadence ?? video ?? null;
+  const spmSource = n.cadence != null ? 'entered' : video ? 'video estimate, unvalidated' : null;
+  const parts = [];
+  if (spm && n.speedMs) {
+    const step = n.speedMs / (spm / 60);
+    parts.push(`Step length is about ${step.toFixed(2)} m at this speed and ${Math.round(spm)} steps/min (${spmSource}).`);
+  }
+  const cell = (id) => Object.values(results.rowsById[id]?.cells || {}).find((c) => c.assessed && ['yellow', 'red'].includes(c.status));
+  const signs = [];
+  if (results.patterns.some((p) => p.def.id === 'overstride')) signs.push('the overstride pattern');
+  if (cell('ic_foot_to_com')) signs.push('foot landing ahead of the centre of mass');
+  if (signs.length && spm) {
+    const [a, b] = STEP_RATE_CHANGE.map((k) => Math.round(spm * (1 + k)));
+    const shorter = n.speedMs ? ` (step length about ${(n.speedMs / (a / 60)).toFixed(2)}–${(n.speedMs / (b / 60)).toFixed(2)} m at the same speed)` : '';
+    parts.push(`Given ${signs.join(' and ')}, consider a 5–10% step-rate increase, from about ${Math.round(spm)} to ${a}–${b} steps/min${shorter}; in healthy runners this reduced heel-to-COM distance and knee loading (Heiderscheit 2011).`);
+  } else if (signs.length) {
+    parts.push(`Given ${signs.join(' and ')}, consider a 5–10% step-rate increase (enter cadence to get target numbers).`);
+  } else if (spm) {
+    parts.push('No overstride signs were found, so no step-rate change is suggested from this analysis.');
+  }
+  return parts.length ? `Mechanics: ${parts.join(' ')}` : '';
 }
 
 // Capture checks from the clips (approximate). Returns warning sentences only.
@@ -164,6 +196,16 @@ export function buildInterpretation(results, intake) {
       `Borderline, IC-sensitive (the green/yellow/red status changes with small shifts in detected initial-contact timing, so no flag is shown and these are not scored or used for patterns until validated): ${sentenceList(icSensitive)}.`,
     );
   }
+  const timingSensitive = results.rows.flatMap((r) =>
+    Object.values(r.cells)
+      .filter((c) => c.status === 'timing-sensitive')
+      .map((c) => describeCell(r.def, c, fp)),
+  );
+  if (timingSensitive.length) {
+    paras.push(
+      `Borderline, timing-sensitive (the status changes when posterior midstance shifts by two frames, so no flag is shown and these are not scored or used for patterns): ${sentenceList(timingSensitive)}.`,
+    );
+  }
   const windowSensitive = results.rows.flatMap((r) =>
     Object.values(r.cells)
       .filter((c) => c.status === 'window-sensitive')
@@ -237,6 +279,9 @@ export function buildInterpretation(results, intake) {
     paras.push(`No ${[...missingViews].map((v) => label[v] || v).join(' or ')} clip in this session, so those metrics were not assessed.`);
   }
 
+  const mech = mechanicsParagraph(results);
+  if (mech) paras.push(mech);
+
   const context = [];
   if (results.numbers.incline > 0) {
     context.push(`Treadmill incline was ${results.numbers.incline}%, which changes hip extension expectations.`);
@@ -244,7 +289,7 @@ export function buildInterpretation(results, intake) {
   if (results.numbers.cadence == null) context.push('Cadence was not entered, so cadence-based pattern triggers were skipped.');
   if (context.length) paras.push(context.join(' '));
 
-  paras.push('These are considerations for clinician review, not diagnoses.');
+  paras.push('This is movement analysis to support clinical judgment, not a diagnosis. Thresholds marked provisional are not published cutoffs.');
   return paras.join('\n\n');
 }
 

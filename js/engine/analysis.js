@@ -6,7 +6,7 @@ import { formatRange, formatValue } from './format.js';
 
 // Statuses for values whose colour depends on an analysis choice (IC timing, window end): range shown,
 // no flag, no score weight, no pattern triggers, no L/R difference.
-export const SENSITIVE = ['ic-sensitive', 'window-sensitive'];
+export const SENSITIVE = ['ic-sensitive', 'window-sensitive', 'timing-sensitive'];
 // Statuses that never raise a flag, score or pattern trigger.
 const NO_TRIGGER = [...SENSITIVE, 'pending-validation'];
 
@@ -54,6 +54,7 @@ export function intakeNumbers(intake) {
   return {
     heightCm,
     speed: num(intake.speedValue),
+    speedMs: num(intake.speedValue) == null ? null : num(intake.speedValue) * (intake.speedUnit === 'km/h' ? 1 / 3.6 : 0.44704),
     incline: num(intake.incline),
     cadence: num(intake.cadence),
   };
@@ -106,6 +107,7 @@ function evaluateCell(def, side, measurement, ctx) {
   cell.value = measurement.value;
   cell.display = measurement.display;
   cell.strides = measurement.strides;
+  cell.countUnit = measurement.countUnit; // 'steps' for values pooled over both legs
   cell.iqr = measurement.iqr;
   cell.excluded = measurement.excluded; // e.g. { rising: 12 } strides excluded and why
   cell.note = measurement.note; // e.g. two lateral clips disagree on a midline value
@@ -124,7 +126,7 @@ function evaluateCell(def, side, measurement, ctx) {
     const classes = new Set(known.map((v) => (def.type === 'category' ? categoryFor(def, v) : statusFor(def, v))));
     cell.sweep = measurement.sweep;
     if (classes.size > 1 || known.length < values.length) {
-      cell.status = measurement.sweep.kind === 'window' ? 'window-sensitive' : 'ic-sensitive';
+      cell.status = { window: 'window-sensitive', timing: 'timing-sensitive' }[measurement.sweep.kind] || 'ic-sensitive';
       const range = formatRange(def, Math.min(...known), Math.max(...known));
       cell.display =
         def.type === 'category' ? `${[...classes].join(' / ')}, ${range}` : (measurement.sweep.display ?? range);
@@ -279,5 +281,6 @@ export function analyze(session) {
     patterns: evaluatePatterns(rowsById, numbers),
     numbers,
     viewViolations: ctx.violations,
+    cadenceVideo: session.analysis.cadenceVideo ?? null, // stride-period estimate (unvalidated)
   };
 }

@@ -29,7 +29,7 @@ export function sourceText(src) {
 
 function sweepText(def, cell) {
   const f = (v) => (v == null ? '–' : formatValue(def, v, { short: true }));
-  const label = cell.sweep.kind === 'window' ? 'Window end' : 'IC tolerance';
+  const label = { window: 'Window end', timing: 'Midstance timing' }[cell.sweep.kind] || 'IC tolerance';
   return `${label} ${cell.sweep.tolerances.join(' / ')}: ${cell.sweep.values.map(f).join(' / ')}`;
 }
 
@@ -55,6 +55,7 @@ function cellHtml(def, cell, colspan = 1) {
     ${cell.note ? `<span class="detail">${esc(cell.note)}</span>` : ''}
     ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}
     ${cell.status === 'ic-sensitive' ? '<span class="detail">Status changes with IC timing; no flag, not scored or used for patterns until validated</span>' : ''}
+    ${cell.status === 'timing-sensitive' ? '<span class="detail">Status changes with posterior midstance timing; not scored or used for patterns</span>' : ''}
     ${cell.status === 'window-sensitive' ? '<span class="detail">Status changes with the analysis window; not scored or used for patterns until validated</span>' : ''}
     ${cell.excluded?.rising ? `<span class="detail">${cell.excluded.rising} strides excluded: angle still rising at the window end</span>` : ''}
     ${cell.prompt ? `<span class="prompt">${esc(cell.prompt)}</span>` : ''}
@@ -65,7 +66,7 @@ function metricRow(row) {
   const { def, cells } = row;
   const diff = formatDiff(def, row.asymmetry);
   const head = `<th scope="row">
-    <span class="metric-name">${esc(def.label)}${def.priority ? ' <abbr class="p" title="Priority metric (double weight)">P</abbr>' : ''}</span>
+    <span class="metric-name">${esc(def.label)}${def.priority ? ' <abbr class="p" title="Priority metric (double weight)">P</abbr>' : ''}${def.provisional ? ' <span class="prov" title="Threshold provisional: not a published cutoff; see DECISIONS.md">provisional</span>' : ''}</span>
     <span class="range"><span class="dot dot-green"></span>${esc(def.greenText)}${
       def.redText && def.redText !== '—' ? ` <span class="dot dot-red"></span>${esc(def.redText)}` : ''
     }</span>
