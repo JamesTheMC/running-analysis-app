@@ -217,3 +217,44 @@ Pose runs on frames downscaled to 0.45 (486×864 for a 1080×1920 clip). MediaPi
 around the person and resizes it to its 256×256 landmark model, and the runner is well over 256 px tall
 at 0.45 scale, so extra input resolution adds little. On the 8 s side excerpt, full resolution was not
 more precise: tibia-length MAD 6.9% vs 7.1%, heel-to-toe length MAD 17% vs 13%, hip jitter equal.
+
+# Phase 5: app vs blind manual joint-centre annotation (2026-10-08)
+
+Frames: 18 side (IMG_0639_2, near leg L: IC, midstance, hip-extension peak for strides 11/25/37/48/59/70)
+and 8 rear (IMG_0640, midstance, 4 per leg). Exported overlay-free with `test/export-frames.html`;
+annotated blind by a separate agent (it never saw landmarks); compared with
+`test/annotation-compare.js` using the app's own formulas. Error = app − manual, at the same frame
+(landmark error only, not event timing). **The reference is a model annotation, mostly "medium"
+confidence, not a clinician's; the owner should spot-check it.**
+
+| Metric (as reported) | n | bias | mean abs error | max |
+|---|---|---|---|---|
+| Knee flexion at IC | 6 | +3.5° | 9.7° | 15.3° |
+| Knee flexion at midstance (≈ max stance) | 6 | +6.8° | 7.0° | 13.8° |
+| Knee excursion IC→MS | 6 | +3.3° | 6.6° | 16.4° |
+| Tibial inclination at IC | 6 | +5.4° | 8.0° | 16.7° |
+| Hip extension at peak frame | 6 | +3.8° | 7.6° | 12.3° |
+| Trunk lean at IC / MS | 6 / 6 | +2.3° / −5.9° | 5.4° / 5.9° | 12.8° / 8.6° |
+| Foot inclination at IC (rel. to MS) | 6 | +11.1° | 12.8° | 46.2° |
+| Ankle DF at midstance | 6 | −20.8° | 20.8° | 38.3° |
+| Foot-to-COM at IC | 6 | +9.1 cm | 9.1 cm | 14.6 cm |
+| Rear hip adduction | 8 | −1.4° | 2.0° | 4.3° |
+| Rear knee FPPA | 8 | −1.6° | 1.9° | 4.3° |
+| Rear trunk lateral lean | 8 | −1.4° | 3.2° | 5.2° |
+| Rear trunk shift / heel vs midline | 8 | −0.1 / 0.0 HW | 0.2 HW | 0.3 HW |
+
+Point errors (full-resolution px, median): side shoulder 29, hip 53, knee 72, ankle 59, heel 73,
+toe 35; rear shoulder 16, hip 11, knee 17, ankle 28.
+
+Findings:
+1. **Rear view agrees well** (≈ 2° on hip adduction and knee FPPA).
+2. **Side view: MediaPipe places hip, knee, ankle and heel 35–75 px ahead (running direction) of the
+   manual joint centres**, a systematic offset, not noise. Overlays show the knee pulled onto the
+   treadmill's diagonal upright where it crosses the leg. Same root cause as the pending hip-anchor
+   correction.
+3. **Foot-to-COM over-reads by ≈ 9 cm**, about the healthy mean itself: it should not be scored until
+   corrected/validated. Ankle DF (already low confidence, trend only) is off by ≈ 20° (heel landmark).
+
+Planned fixes (next session): gate foot-to-COM behind a validation flag (as hip extension);
+lower knee-at-IC and tibial confidence to medium; capture protocol: keep the treadmill upright
+from crossing the near leg; re-run after the owner's hip-anchor clicks.
