@@ -49,3 +49,18 @@ Format: **Date: Decision.** Alternatives considered. Why. Reversible? (Y/N)
   detection abandoned (image height mixes foot height and distance on a treadmill).** Y
 - **2026-10-08: Hip anchor: `HIP_ANCHOR.mode = 'landmark'` until the clinician clicks joint centres
   (test/hip-anchor.html).** Y
+
+## Phase 2 (2026-10-08)
+- **Session = three optional clip slots (lateral from left, lateral from right, posterior), merged
+  per metric; each lateral clip supplies only its near leg and arm.** Alt: one lateral clip with far
+  leg (rejected: far-leg landmarks unreliable). Y
+- **Per-leg scores stay on with a single lateral clip; only the L/R difference needs both near-side
+  clips.** Why: each leg is judged against its own template range; a comparison needs two near legs. Y
+- **Midline (trunk) values from two lateral clips: stride-weighted mean of the clip medians, with a
+  "clips disagree" note above 3°.** Alt: pool per-stride values (needs per-stride storage; deferred). Y
+- **Arm metrics are per side (L/R), each from its own lateral clip.** Y
+- **Speed and incline are recorded per clip; a warning shows when the two lateral clips differ.** Y
+- **Knee/ankle sync (provisional): per stride, peak stance knee flexion and peak ankle dorsiflexion
+  within 15% of stance time (≥ 1 analysed frame); "yes" when ≥ 50% of strides are in sync. Low
+  confidence (ankle angle from heel/toe landmarks).** Source: no published threshold found for this
+  template item; provisional, for owner review. Y

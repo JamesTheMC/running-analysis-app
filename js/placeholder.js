@@ -89,8 +89,8 @@ export const PLACEHOLDER_ANALYSIS = {
 
     // Summary-only
     trunk_change_peak_hip_ext: { mid: { value: 3.2, quality: 0.88 } },
-    arm_elbow_angle: { near: { value: 82.0, quality: 0.9 } },
-    arm_shoulder_rom: { near: { value: 58.5, quality: 0.87 } },
+    arm_elbow_angle: { left: { value: 82.0, quality: 0.9 }, right: { value: 76.5, quality: 0.88 } },
+    arm_shoulder_rom: { left: { value: 58.5, quality: 0.87 }, right: { value: 61.0, quality: 0.85 } },
   },
 };
 

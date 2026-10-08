@@ -27,6 +27,9 @@ const DEG = 180 / Math.PI;
 
 // Segment lengths as a fraction of body height (Winter, Biomechanics and Motor Control of Human
 // Movement, 4th ed.): thigh 0.245, shank (leg) 0.246, trunk greater trochanter -> acromion 0.818-0.530.
+// Knee/ankle sync tolerance as a share of stance duration (provisional, see DECISIONS.md).
+export const SYNC_SHARE = 0.15;
+
 export const SEGMENT_RATIOS = { thigh: 0.245, shank: 0.246, trunk: 0.288 };
 
 const at = (row, k) => [row.lm[k * 4], row.lm[k * 4 + 1], row.lm[k * 4 + 2], row.lm[k * 4 + 3]];
@@ -94,6 +97,7 @@ export function summarise(values, total) {
   const v = values.filter(Number.isFinite);
   return {
     median: v.length ? median(v) : null,
+    mean: v.length ? v.reduce((a, b) => a + b, 0) / v.length : null,
     iqr: v.length ? [percentile(v, 25), percentile(v, 75)] : null,
     n: v.length,
     total,
@@ -112,7 +116,7 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
   const ev = events[side];
   const knee = smoothSeries(rows.map((r, i) => (bad[i] || r[`knee_flex_${side}`] == null ? NaN : r[`knee_flex_${side}`])), seg.fs);
   const total = ev.strides.length;
-  const per = { kneeIC: [], maxStanceKnee: [], kneeExcursion: [], tibialIC: [], footInclIC: [], ankleDFms: [], footToComPx: [], footToComShoe: [], trunkIC: [], trunkMS: [], trunkChange: [] };
+  const per = { kneeIC: [], maxStanceKnee: [], kneeExcursion: [], kneeAnkleSync: [], tibialIC: [], footInclIC: [], ankleDFms: [], footToComPx: [], footToComShoe: [], trunkIC: [], trunkMS: [], trunkChange: [] };
   const trunkIds = [LANDMARKS.L.sho, LANDMARKS.R.sho, LANDMARKS.L.hip, LANDMARKS.R.hip];
   const ok = (i, ...ks) => i != null && !bad[i] && visible(rows[i], ...ks);
 
@@ -132,6 +136,24 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
     if (!near) continue; // far-leg MS is unreliable; MS-referenced and trunk metrics use the near leg only
     if (ok(s.ic, ids.heel, ids.toe) && ok(s.ms, ids.heel, ids.toe)) per.footInclIC.push(footAngle(ic, ids, facing) - footAngle(rows[s.ms], ids, facing));
     if (ok(s.ms, ids.knee, ids.ank, ids.heel, ids.toe)) per.ankleDFms.push(ankleDorsiflexion(rows[s.ms], ids));
+    // Knee/ankle sync (provisional): peak stance knee flexion and peak ankle dorsiflexion within
+    // SYNC_SHARE of stance time of each other (at least one analysed frame).
+    {
+      let kPeak = -1;
+      let dPeak = -1;
+      let dBest = -Infinity;
+      for (let i = s.ic; i <= s.to; i++) {
+        if (Number.isFinite(knee[i]) && (kPeak < 0 || knee[i] > knee[kPeak])) kPeak = i;
+        if (ok(i, ids.knee, ids.ank, ids.heel, ids.toe)) {
+          const df = ankleDorsiflexion(rows[i], ids);
+          if (df > dBest) {
+            dBest = df;
+            dPeak = i;
+          }
+        }
+      }
+      if (kPeak >= 0 && dPeak >= 0) per.kneeAnkleSync.push(Math.abs(kPeak - dPeak) <= Math.max(1, Math.round(SYNC_SHARE * (s.to - s.ic))) ? 1 : 0);
+    }
     // Knee flexion excursion: midstance minus IC (raw per-frame values, as knee flexion at IC).
     const kIC = ic[`knee_flex_${side}`];
     const kMS = rows[s.ms][`knee_flex_${side}`];

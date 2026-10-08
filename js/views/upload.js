@@ -1,14 +1,15 @@
 import { esc } from '../util.js';
-import { VIEWS } from '../config.js';
+import { CLIP_SLOTS } from '../config.js';
 import { protocolHtml } from './intake.js';
 
 export function renderUpload(state) {
   const adding = state.session && Object.keys(state.session.clips).length > 0;
-  const remaining = Object.keys(VIEWS).filter((v) => !state.session?.clips[v]);
+  const remaining = Object.keys(CLIP_SLOTS).filter((v) => !state.session?.clips[v]);
   return `
     <section class="screen">
       <header class="screen-head">
-        <h1>${adding ? `Add ${esc(remaining.join(' / '))}-view clip` : 'New analysis'}</h1>
+        <h1>${adding ? 'Add a clip' : 'New analysis'}</h1>
+        ${adding ? `<p class="muted small">Still open: ${esc(remaining.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' · '))}</p>` : ''}
         ${adding ? `<p class="muted">Session ${esc(state.session.intake.clientCode)} · ${esc(state.session.intake.sessionDate)}</p>` : ''}
       </header>
 

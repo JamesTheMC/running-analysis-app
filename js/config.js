@@ -290,7 +290,6 @@ export const METRICS = [
     id: 'ms_knee_ankle_sync',
     label: 'Knee/ankle sync',
     phase: 'midstance',
-    status: 'planned',
     allowedViews: ['lateral'],
     type: 'boolean',
     sided: 'lr',
@@ -300,7 +299,9 @@ export const METRICS = [
     greenText: 'yes',
     redText: '—',
     priority: false,
-    baselineConfidence: 'medium',
+    baselineConfidence: 'low', // depends on the ankle angle (heel/toe landmarks)
+    note: 'Provisional rule: peak stance knee flexion and peak ankle dorsiflexion within 15% of stance time of each other; "yes" when at least half the strides are in sync.',
+    summary: 'KNEE',
   },
   {
     id: 'ms_spine_lean',
@@ -551,7 +552,7 @@ export const METRICS = [
     phase: null,
     allowedViews: ['lateral'],
     type: 'record',
-    sided: 'near',
+    sided: 'lr', // each lateral clip supplies its near arm
     unit: 'deg',
     baselineConfidence: 'medium',
     summary: 'ARMS',
@@ -562,7 +563,7 @@ export const METRICS = [
     phase: null,
     allowedViews: ['lateral'],
     type: 'record',
-    sided: 'near',
+    sided: 'lr', // each lateral clip supplies its near arm
     unit: 'deg',
     baselineConfidence: 'medium',
     summary: 'ARMS',

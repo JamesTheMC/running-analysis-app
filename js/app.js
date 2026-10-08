@@ -6,8 +6,10 @@ import { renderIntake } from './views/intake.js';
 import { renderResults } from './views/results.js';
 import { renderAnalyzing } from './views/analyzing.js';
 import { analyzeVideo } from './pipeline/run.js';
-import { toAnalysis, UNMEASURED_REASON } from './pipeline/measurements.js';
+import { toAnalysis } from './pipeline/measurements.js';
 import { toPosteriorAnalysis } from './pipeline/posterior.js';
+import { mergeSession } from './pipeline/session.js';
+import { CLIP_SLOTS } from './config.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -15,8 +17,7 @@ import { copyText, today } from './util.js';
 const EMPTY_INTAKE = {
   clientCode: '',
   sessionDate: today(),
-  view: 'lateral',
-  filmedFrom: '',
+  slot: 'lateral_left',
   heightValue: '',
   heightUnit: 'cm',
   speedValue: '',
@@ -32,7 +33,7 @@ const EMPTY_INTAKE = {
 // Everything lives in memory only. Video files are referenced by local object URLs and never leave the device.
 const state = {
   screen: 'upload',
-  session: null, // { intake, clips: { lateral?, posterior? }, views, placeholder, analysis }
+  session: null, // { intake, clips: { lateral_left?, lateral_right?, posterior? }, views, placeholder, analysis }
   pendingClip: null,
   draftIntake: { ...EMPTY_INTAKE },
   interpretation: '',
@@ -43,7 +44,6 @@ const state = {
 
 let abortAnalysis = null;
 
-const emptyAnalysis = () => ({ source: 'pipeline', measurements: {}, unmeasuredReason: UNMEASURED_REASON });
 
 let results = null;
 const root = document.getElementById('app');
@@ -69,11 +69,9 @@ function render() {
 
 function recompute({ resetInterpretation = false } = {}) {
   const s = state.session;
-  s.views = ['lateral', 'posterior'].filter((v) => s.clips[v]);
-  // Provenance for the summary header: which clip supplied which view.
-  s.analysis.clipsUsed = s.views.map((v) =>
-    v === 'lateral' ? `lateral, filmed from the ${s.intake.filmedFrom || 'unknown side'}` : 'posterior (capture checks only; metrics not built yet)',
-  );
+  s.views = [...new Set(Object.keys(s.clips).map((slot) => CLIP_SLOTS[slot].view))];
+  // Real sessions: merge every clip's analysis (each lateral clip supplies its own leg and arm).
+  if (!s.placeholder) s.analysis = mergeSession(s.clips);
   results = analyze(s);
   if (resetInterpretation || !state.interpretationEdited) {
     state.interpretation = buildInterpretation(results, s.intake);
@@ -99,7 +97,17 @@ function pickVideo(file) {
       const el = state.screen === 'intake' && state.pendingClip === clip && root.querySelector('[data-file-check]');
       if (el) el.innerHTML = fileCheckHtml(check);
     });
-  if (state.session) state.draftIntake = { ...state.session.intake, view: '' };
+  if (state.session) {
+    const used = Object.keys(state.session.clips);
+    const last = Object.values(state.session.clips).at(-1) || {};
+    state.draftIntake = {
+      ...state.session.intake,
+      slot: Object.keys(CLIP_SLOTS).find((s) => !used.includes(s)) || '',
+      speedValue: last.speed ?? state.session.intake.speedValue,
+      speedUnit: last.speedUnit ?? state.session.intake.speedUnit,
+      incline: last.incline ?? state.session.intake.incline,
+    };
+  }
   go('intake');
 }
 
@@ -114,9 +122,8 @@ function wireIntake() {
   form.addEventListener('change', () => {
     const data = Object.fromEntries(new FormData(form));
     Object.assign(state.draftIntake, data);
-    root.querySelector('[data-show-for="lateral"]').hidden = data.view !== 'lateral';
     const protocol = root.querySelector('[data-protocol]');
-    if (protocol) protocol.innerHTML = protocolHtml(data.view);
+    if (protocol && data.slot) protocol.innerHTML = protocolHtml(CLIP_SLOTS[data.slot].view);
   });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -131,7 +138,7 @@ function submitIntake(form) {
   const errors = [];
   if (!/^[A-Za-z0-9_-]{1,20}$/.test(shared.clientCode || '')) errors.push('Enter a client code (letters, numbers, - or _; no names).');
   if (!shared.sessionDate) errors.push('Enter the session date.');
-  if (!data.view) errors.push('Choose the camera view.');
+  if (!data.slot) errors.push('Choose the camera view.');
   if (errors.length) {
     errorEl.textContent = errors.join(' ');
     errorEl.hidden = false;
@@ -139,7 +146,15 @@ function submitIntake(form) {
     return;
   }
 
-  const clip = { ...state.pendingClip, view: data.view };
+  // Speed and incline are recorded per clip (the two lateral clips may be filmed at different speeds).
+  const clip = {
+    ...state.pendingClip,
+    slot: data.slot,
+    view: CLIP_SLOTS[data.slot].view,
+    speed: data.speedValue,
+    speedUnit: data.speedUnit,
+    incline: data.incline,
+  };
   // Both views run pose on-device. Posterior clips give capture checks only for now (metrics are
   // awaiting validation).
   analyzeClip(clip, data);
@@ -147,27 +162,13 @@ function submitIntake(form) {
 
 function addClip(clip, data, analysis) {
   state.pendingClip = null;
+  clip.analysis = analysis;
   if (state.session) {
-    state.session.clips[data.view] = clip;
-    if (data.view === 'lateral' && data.filmedFrom) state.session.intake.filmedFrom = data.filmedFrom;
+    state.session.clips[clip.slot] = clip;
   } else {
-    const { view, ...intake } = { ...EMPTY_INTAKE, ...data };
+    const { slot, ...intake } = { ...EMPTY_INTAKE, ...data };
     intake.clientCode = intake.clientCode.toUpperCase();
-    state.session = { intake, clips: { [view]: clip }, placeholder: false, analysis: emptyAnalysis() };
-  }
-  if (analysis) {
-    const prev = state.session.analysis;
-    const captureChecks = { ...prev.captureChecks, ...analysis.captureChecks };
-    state.session.analysis =
-      data.view === 'posterior'
-        ? { ...prev, captureChecks } // posterior: checks only, lateral results untouched
-        : {
-            ...analysis,
-            measurements: { ...prev.measurements, ...analysis.measurements },
-            lateralLegs: [...new Set([...(prev.lateralLegs || []), ...(analysis.lateralLegs || [])])],
-            captureChecks,
-          };
-    if (data.view === 'lateral' && !state.session.intake.filmedFrom) state.session.intake.filmedFrom = analysis.nearSide;
+    state.session = { intake, clips: { [slot]: clip }, placeholder: false };
   }
   state.tab = 'summary';
   recompute();
@@ -175,7 +176,7 @@ function addClip(clip, data, analysis) {
 }
 
 async function analyzeClip(clip, data) {
-  const filmedFrom = data.filmedFrom || state.session?.intake.filmedFrom || '';
+  const { view, leg } = CLIP_SLOTS[clip.slot];
   const controller = new AbortController();
   abortAnalysis = () => controller.abort();
   state.progress = { phase: 'starting', done: 0, total: 0, clipName: clip.name };
@@ -183,8 +184,8 @@ async function analyzeClip(clip, data) {
   let lastPaint = 0;
   try {
     const result = await analyzeVideo(clip.file, {
-      view: data.view,
-      nearSide: filmedFrom === 'left' ? 'L' : filmedFrom === 'right' ? 'R' : undefined,
+      view,
+      nearSide: leg === 'left' ? 'L' : leg === 'right' ? 'R' : undefined,
       signal: controller.signal,
       onProgress: (p) => {
         Object.assign(state.progress, p);
@@ -197,7 +198,7 @@ async function analyzeClip(clip, data) {
     });
     state.progress = null;
     const intake = state.session ? state.session.intake : data;
-    addClip(clip, data, data.view === 'posterior' ? toPosteriorAnalysis(result) : toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
+    addClip(clip, data, view === 'posterior' ? toPosteriorAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }) : toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
   } catch (e) {
     if (e.name === 'AbortError') {
       state.progress = null;
@@ -217,7 +218,7 @@ function startDemo() {
   state.pendingClip = null;
   state.session = {
     intake: { ...EMPTY_INTAKE, ...DEMO_INTAKE },
-    clips: { lateral: { name: 'demo-lateral', demo: true }, posterior: { name: 'demo-posterior', demo: true } },
+    clips: { lateral_left: { name: 'demo-left', demo: true }, posterior: { name: 'demo-posterior', demo: true } },
     placeholder: true,
     analysis: PLACEHOLDER_ANALYSIS,
   };

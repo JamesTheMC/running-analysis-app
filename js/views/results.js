@@ -1,5 +1,5 @@
 import { esc } from '../util.js';
-import { VIEWS, SCORING, NOT_MEASURABLE } from '../config.js';
+import { VIEWS, SCORING, NOT_MEASURABLE, CLIP_SLOTS } from '../config.js';
 import { cellValue, formatDiff, formatValue, statusLabel, sideLabel } from '../engine/format.js';
 import { buildHeader, buildSections, captureWarnings } from '../engine/summary.js';
 
@@ -21,6 +21,7 @@ function scoreRow(score) {
 
 // Provenance of a value, e.g. "lateral clip (filmed from the left)".
 export function sourceText(src) {
+  if (src.view === 'lateral' && src.filmedFrom === 'both') return 'both lateral clips (stride-weighted)';
   if (src.view === 'lateral') return `lateral clip${src.filmedFrom ? ` (filmed from the ${src.filmedFrom})` : ''}`;
   if (src.view === 'posterior') return 'posterior clip';
   return `${src.view} clip`;
@@ -51,6 +52,7 @@ function cellHtml(def, cell, colspan = 1) {
     ${cell.status === 'pending-validation' ? `<span class="detail">${esc(cell.pendingText)}; no flag, not scored, no pattern trigger</span>` : ''}
     ${def.scored === false && cell.status !== 'review' && !['ic-sensitive', 'window-sensitive'].includes(cell.status) && def.type !== 'record' ? '<span class="detail">Not scored</span>' : ''}
     ${cell.source ? `<span class="detail">From ${esc(sourceText(cell.source))}</span>` : ''}
+    ${cell.note ? `<span class="detail">${esc(cell.note)}</span>` : ''}
     ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}
     ${cell.status === 'ic-sensitive' ? '<span class="detail">Status changes with IC timing; no flag, not scored or used for patterns until validated</span>' : ''}
     ${cell.status === 'window-sensitive' ? '<span class="detail">Status changes with the analysis window; not scored or used for patterns until validated</span>' : ''}
@@ -200,12 +202,13 @@ ${sections.map((s) => `<strong>${esc(s.title)}</strong>\n${esc(s.lines.join('\n'
 
 export function renderResults(state, results) {
   const { session } = state;
-  const missing = Object.keys(VIEWS).filter((v) => !session.views.includes(v));
+  const missing = Object.keys(CLIP_SLOTS).filter((s) => !session.clips[s]);
   return `
     <section class="screen">
       <header class="screen-head">
         <h1>${esc(session.intake.clientCode)} <span class="muted">· ${esc(session.intake.sessionDate)}</span></h1>
-        <p class="muted small">Clips: ${session.views.map((v) => esc(VIEWS[v].label)).join(', ')}</p>
+        <p class="muted small">Clips: ${Object.keys(session.clips).map((s) => esc(CLIP_SLOTS[s].label)).join(' · ')}</p>
+        ${(session.analysis?.sessionWarnings || []).map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`).join('')}
         ${(() => {
           const p = session.analysis?.captureChecks?.posterior;
           if (!p) return '';
@@ -218,7 +221,9 @@ export function renderResults(state, results) {
         })()}
         ${
           session.analysis?.cadenceVideo
-            ? `<p class="muted small">${session.analysis.cyclesDetected} strides analysed · cadence from stride period ${Math.round(session.analysis.cadenceVideo.spm)} spm <em>(unvalidated, not used for scoring)</em></p>`
+            ? `<p class="muted small">${(session.analysis.cadenceByClip || [session.analysis.cadenceVideo])
+                .map((c) => `${c.slot ? `${esc(CLIP_SLOTS[c.slot].label)}: ` : ''}${c.strides ?? session.analysis.cyclesDetected} strides · ${Math.round(c.spm)} spm`)
+                .join(' · ')} <em>(cadence from stride period: unvalidated, not used for scoring)</em></p>`
             : ''
         }
       </header>
@@ -233,7 +238,7 @@ export function renderResults(state, results) {
       </nav>
       ${state.tab === 'summary' ? summaryTab(state, results) : reportTab(state, results)}
       <div class="actions">
-        ${missing.map((v) => `<button class="btn btn-secondary" data-action="add-clip">Add ${esc(v)}-view clip</button>`).join('')}
+        ${missing.length ? `<button class="btn btn-secondary" data-action="add-clip">Add clip (${esc(missing.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' / '))})</button>` : ''}
         <button class="btn btn-link" data-action="new-session">New session</button>
       </div>
     </section>`;

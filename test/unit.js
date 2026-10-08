@@ -9,6 +9,7 @@ import { toAnalysis } from '../js/pipeline/measurements.js';
 import { postProcess, postProcessRear } from '../js/pipeline/run.js';
 import { applyHipAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
 import { CANDIDATES } from './rear-midstance.js';
+import { mergeSession } from '../js/pipeline/session.js';
 
 const out = document.getElementById('out');
 const results = [];
@@ -172,21 +173,21 @@ test('missing view: posterior metrics need a posterior clip', () => {
 
 // ---------------------------------------------------------------------------
 section = 'Lateral adapter (synthetic fixture, near leg = left)';
-const sum = (median, n = 20, total = 25) => ({ median, iqr: [median - 1, median + 1], n, total, quality: n / total });
-function fixture() {
+const sum = (median, n = 20, total = 25) => ({ median, mean: median, iqr: [median - 1, median + 1], n, total, quality: n / total });
+function fixture(near = 'L', base = 10) {
   const keys = ['kneeIC', 'maxStanceKnee', 'kneeExcursion', 'tibialIC', 'footInclIC', 'ankleDFms', 'footToComPx', 'footToComShoe', 'trunkIC', 'trunkMS', 'trunkChange'];
-  const summary = (base) => Object.fromEntries(keys.map((k, i) => [k, sum(base + i)]));
+  const summary = (b) => ({ ...Object.fromEntries(keys.map((k, i) => [k, sum(b + i)])), kneeAnkleSync: sum(0.8) });
   return {
-    seg: { near: { side: 'L', source: 'given' }, cycles: Array.from({ length: 25 }, () => ({ windows: {} })) },
-    hipExt: { L: { median: 12, iqr: [10, 14], n: 20, total: 25, rising: 2 }, R: { median: 30, iqr: [28, 32], n: 20, total: 25, rising: 0 } },
+    seg: { near: { side: near, source: 'given' }, cycles: Array.from({ length: 25 }, () => ({ windows: {} })) },
+    hipExt: { [near]: { median: 12, iqr: [10, 14], n: 20, total: 25, rising: 2 } },
     hipWindows: [{ end: 'late-stance', median: 12, n: 20, total: 25, rising: 0 }, { end: 0.05, median: 12, n: 20, total: 25, rising: 2 }],
-    rows: Array.from({ length: 50 }, () => ({ elbow_L: 70, elbow_R: 90 })),
+    rows: Array.from({ length: 50 }, () => ({ [`elbow_${near}`]: 70 })),
     bad: Array(50).fill(false),
     meta: {},
-    metrics: { L: { summary: summary(10) }, R: { summary: summary(100) }, shoulderSwing: sum(60), bodyHeightPx: 500 },
-    sweep: Object.fromEntries([0.2, 0.3, 0.4].map((t) => [t, { L: { summary: summary(10) } }])),
+    metrics: { [near]: { summary: summary(base) }, shoulderSwing: sum(60), bodyHeightPx: 500 },
+    sweep: Object.fromEntries([0.2, 0.3, 0.4].map((t) => [t, { [near]: { summary: summary(base) } }])),
     cadence: { spm: 164 },
-    events: { L: { footLength: 60 } },
+    events: { [near]: { footLength: 60 } },
   };
 }
 test('adapter emits only lateral-allowed metrics, near leg only (strict mode)', () => {
@@ -237,6 +238,34 @@ test('hip extension is never scored', () => {
   const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: toAnalysis(fixture(), {}) });
   const c = res.rowsById.to_hip_extension.cells.left;
   assert(c.assessed && c.weight == null, JSON.stringify({ s: c.status, w: c.weight }));
+});
+
+// ---------------------------------------------------------------------------
+section = 'Session: two lateral clips + posterior';
+test('left-side and right-side clips supply each leg; midline combined; L/R difference on separate clips', () => {
+  const left = toAnalysis(fixture('L', 10), { heightCm: 170 });
+  const right = toAnalysis(fixture('R', 14), { heightCm: 170 });
+  const merged = mergeSession({
+    lateral_left: { analysis: left, speed: '6.5', speedUnit: 'mph', incline: '1' },
+    lateral_right: { analysis: right, speed: '7.0', speedUnit: 'mph', incline: '1' },
+  });
+  const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: merged });
+  const knee = res.rowsById.ic_knee_flexion;
+  assert(knee.cells.left.assessed && knee.cells.right.assessed, 'both legs not assessed');
+  assert(knee.cells.left.source.filmedFrom === 'left' && knee.cells.right.source.filmedFrom === 'right', 'wrong clip provenance');
+  assert(knee.asymmetry?.separateClips === true, 'L/R difference not labelled separate clips');
+  const arm = res.rowsById.arm_elbow_angle;
+  assert(arm.cells.left.assessed && arm.cells.right.assessed, 'arms not bilateral');
+  const trunk = res.rowsById.ic_spine_lean.cells.mid;
+  // trunkIC medians are base + 8: 18 (left clip) and 22 (right clip), equal strides -> 20, differ by 4 > 3
+  assert(Math.abs(trunk.value - 20) < 1e-9 && /differ/.test(trunk.note || ''), JSON.stringify({ v: trunk.value, note: trunk.note }));
+  assert(merged.sessionWarnings.some((w) => /speed differs/.test(w)), 'no speed warning');
+  return `${merged.sessionWarnings.length} warning(s)`;
+});
+test('knee/ankle sync: share of strides in sync → yes/no', () => {
+  const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: mergeSession({ lateral_left: { analysis: toAnalysis(fixture(), {}) } }) });
+  const c = res.rowsById.ms_knee_ankle_sync.cells.left;
+  assert(c.assessed && c.value === true && /80% of strides/.test(c.display), JSON.stringify({ v: c.value, d: c.display }));
 });
 
 // ---------------------------------------------------------------------------

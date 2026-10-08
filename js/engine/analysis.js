@@ -108,6 +108,8 @@ function evaluateCell(def, side, measurement, ctx) {
   cell.strides = measurement.strides;
   cell.iqr = measurement.iqr;
   cell.excluded = measurement.excluded; // e.g. { rising: 12 } strides excluded and why
+  cell.note = measurement.note; // e.g. two lateral clips disagree on a midline value
+  cell.perClip = measurement.perClip;
   cell.confidence = confidence;
   cell.status = statusFor(def, measurement.value);
   if (def.type === 'category') {

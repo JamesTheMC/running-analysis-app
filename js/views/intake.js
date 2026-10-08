@@ -1,5 +1,5 @@
 import { esc, formatBytes, formatDuration } from '../util.js';
-import { VIEWS } from '../config.js';
+import { CLIP_SLOTS } from '../config.js';
 import { CAPTURE } from '../pipeline/file-check.js';
 
 // File checks read from the movie header at upload (frame rate, length, orientation, HDR).
@@ -42,9 +42,10 @@ function select(name, options, value) {
 export function renderIntake(state) {
   const clip = state.pendingClip;
   const f = state.draftIntake;
-  const usedViews = Object.keys(state.session?.clips || {});
-  const sharedLocked = usedViews.length > 0;
-  const view = f.view && !usedViews.includes(f.view) ? f.view : Object.keys(VIEWS).find((v) => !usedViews.includes(v));
+  const usedSlots = Object.keys(state.session?.clips || {});
+  const sharedLocked = usedSlots.length > 0;
+  const slot = f.slot && !usedSlots.includes(f.slot) ? f.slot : Object.keys(CLIP_SLOTS).find((v) => !usedSlots.includes(v));
+  const view = CLIP_SLOTS[slot]?.view || 'lateral';
 
   return `
     <section class="screen">
@@ -81,29 +82,13 @@ export function renderIntake(state) {
           <legend>Clip</legend>
           <div class="field">
             <span class="label">Camera view <span class="req">required</span></span>
-            ${radios('view', Object.entries(VIEWS).map(([v, d]) => [v, d.label]), view, { disabled: usedViews })}
-          </div>
-          <div class="field" data-show-for="lateral" ${view === 'lateral' ? '' : 'hidden'}>
-            <span class="label">Runner's side facing the camera</span>
-            ${radios('filmedFrom', [['left', 'Left'], ['right', 'Right']], f.filmedFrom)}
-            <p class="hint">A lateral clip measures the leg and arm on this side only. The other side needs its own clip.</p>
+            ${radios('slot', Object.entries(CLIP_SLOTS).map(([v, d]) => [v, d.label]), slot, { disabled: usedSlots })}
+            <p class="hint">"Filmed from the left" = the runner's left side faces the camera. A lateral clip measures the leg and arm on that side only; film the other side for both legs.</p>
           </div>
           <p class="hint" data-protocol>${protocolHtml(view)}</p>
-        </fieldset>
-
-        <fieldset ${sharedLocked ? 'disabled' : ''}>
-          <legend>Treadmill and runner <span class="muted small">optional</span></legend>
-          <div class="field">
-            <label for="heightValue">Height</label>
-            <div class="with-unit">
-              <input id="heightValue" name="heightValue" type="number" inputmode="decimal" min="0" step="0.1" value="${esc(f.heightValue)}" />
-              ${select('heightUnit', [['cm', 'cm'], ['in', 'in']], f.heightUnit)}
-            </div>
-            <p class="hint">Scales pixels to cm for foot-to-COM distance.</p>
-          </div>
           <div class="grid-2">
             <div class="field">
-              <label for="speedValue">Speed</label>
+              <label for="speedValue">Treadmill speed for this clip</label>
               <div class="with-unit">
                 <input id="speedValue" name="speedValue" type="number" inputmode="decimal" min="0" step="0.1" value="${esc(f.speedValue)}" />
                 ${select('speedUnit', [['mph', 'mph'], ['km/h', 'km/h']], f.speedUnit)}
@@ -116,6 +101,18 @@ export function renderIntake(state) {
                 <span class="unit-static">%</span>
               </div>
             </div>
+          </div>
+        </fieldset>
+
+        <fieldset ${sharedLocked ? 'disabled' : ''}>
+          <legend>Treadmill and runner <span class="muted small">optional</span></legend>
+          <div class="field">
+            <label for="heightValue">Height</label>
+            <div class="with-unit">
+              <input id="heightValue" name="heightValue" type="number" inputmode="decimal" min="0" step="0.1" value="${esc(f.heightValue)}" />
+              ${select('heightUnit', [['cm', 'cm'], ['in', 'in']], f.heightUnit)}
+            </div>
+            <p class="hint">Scales pixels to cm (foot-to-COM distance, trunk lateral shift, step length).</p>
           </div>
           <div class="field">
             <label for="cadence">Cadence</label>

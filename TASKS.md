@@ -7,14 +7,6 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 
 ## Todo
 
-### Phase 2: side-view metrics, left/right per phase
-- [ ] Session holds a lateral clip per side (left-side and right-side) plus a posterior clip; each
-      lateral clip supplies its near leg and arm, so both legs get side-view values per phase
-- [ ] L/R differences for lateral metrics only when both legs come from near-side clips ("measured on
-      separate clips"; warn if speed or incline differ between clips)
-- [ ] Knee/ankle sync at midstance (timing of peak stance knee flexion vs peak ankle dorsiflexion),
-      provisional rule
-- [ ] Results and summary show which clip each value came from
 
 ### Phase 3: posterior view
 - [ ] Rear midstance = lowest smoothed pelvis within each stance half-cycle (least timing-sensitive)
@@ -44,11 +36,18 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - [ ] Run the full flow in the app (side + posterior) and confirm intake values feed the analysis
 
 ## Blocked (needs the owner)
+- A right-side lateral clip of the same runner (only a left-side clip exists), to exercise and
+  validate bilateral side-view values on real video.
 - Hip anchor offset: click the hip joint centre on ~20 frames in test/hip-anchor.html; until then the
   hip landmark is used as-is (hip-dependent angles carry a known anchor uncertainty).
 - Hip extension validation (`VALIDATION.hipExtensionValidated`): stays unscored until validated.
 
 ## Done
+- Phase 2: three clip slots (lateral from left, lateral from right, posterior) merged into one
+  session; each lateral clip supplies its own leg and arm (arms now L/R); midline values from two
+  lateral clips combined (stride-weighted, disagreement note > 3°); per-clip speed/incline with a
+  warning when they differ; L/R difference labelled "measured on separate clips"; knee/ankle sync
+  (provisional rule); provenance shown per value
 - Scaffold: upload, intake, results screens (copy button, scored report)
 - On-device pose pipeline (MediaPipe, bundled locally; no external hosts), validated against the
   Python reference

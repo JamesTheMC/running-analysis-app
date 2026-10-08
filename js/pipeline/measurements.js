@@ -66,6 +66,16 @@ export function toAnalysis(result, { heightCm } = {}) {
   out.put('ic_foot_inclination', leg, withSweep(cell(m.footInclIC), 'footInclIC')); // vs the midstance flat foot
   out.put('ic_foot_strike', leg, withSweep(cell(m.footInclIC), 'footInclIC')); // same angle, categorised
   out.put('ms_ankle', leg, cell(m.ankleDFms));
+  // Knee/ankle sync: share of strides in sync; the leg reads "yes" when at least half are.
+  {
+    const k = m.kneeAnkleSync;
+    const c = cell(k);
+    if (c.value != null) {
+      const share = k.mean;
+      Object.assign(c, { value: share >= 0.5, share, display: `${share >= 0.5 ? 'yes' : 'no'} (${Math.round(share * 100)}% of strides in sync)` });
+    }
+    out.put('ms_knee_ankle_sync', leg, c);
+  }
 
   // Foot-to-COM: status is judged in (approximate) shoe lengths; cm, from the intake height, is shown first.
   if (heightCm > 0 && metrics.bodyHeightPx > 0) {
@@ -109,10 +119,10 @@ export function toAnalysis(result, { heightCm } = {}) {
   const elbow = rows.map((r) => r[`elbow_${near}`]).filter((v) => v != null);
   out.put(
     'arm_elbow_angle',
-    'near',
+    leg,
     elbow.length ? { value: median(elbow), quality: rows.length ? elbow.length / rows.length : 0 } : { value: null, quality: 0, reason: 'near-side arm not tracked' },
   );
-  out.put('arm_shoulder_rom', 'near', cell(metrics.shoulderSwing));
+  out.put('arm_shoulder_rom', leg, cell(metrics.shoulderSwing));
 
   return {
     source: 'pipeline',

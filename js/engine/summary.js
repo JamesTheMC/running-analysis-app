@@ -12,7 +12,7 @@ function cellText(def, cell) {
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
   const status = def.type === 'record' || def.type === 'category' ? '' : statusLabel(cell.status, 'summary');
   const unscored = def.scored === false && status && cell.status !== 'review' ? 'not scored' : '';
-  const parts = [status, unscored, conf, strides + excludedText(cell)].filter(Boolean);
+  const parts = [status, unscored, conf, strides + excludedText(cell), cell.note].filter(Boolean);
   return parts.length ? `${value} (${parts.join(', ')})` : value;
 }
 
