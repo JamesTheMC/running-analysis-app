@@ -6,7 +6,9 @@ import { EMIT, ViewViolation, allowed, createEmitter } from '../js/pipeline/emit
 import { analyze } from '../js/engine/analysis.js';
 import { buildInterpretation, buildSections } from '../js/engine/summary.js';
 import { toAnalysis } from '../js/pipeline/measurements.js';
-import { postProcess } from '../js/pipeline/run.js';
+import { postProcess, postProcessRear } from '../js/pipeline/run.js';
+import { applyHipAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
+import { CANDIDATES } from './rear-midstance.js';
 
 const out = document.getElementById('out');
 const results = [];
@@ -295,6 +297,85 @@ test('no load-prediction language for foot or tibial inclination', () => {
   const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: toAnalysis(fixture(), { heightCm: 170 }) });
   const lines = buildSections(res, baseIntake).find((x) => x.title === 'ANKLE').lines.join(' ');
   assert(!LOAD.test(lines), `summary: ${lines}`);
+});
+
+// ---------------------------------------------------------------------------
+section = 'Hip anchor';
+function syntheticRow() {
+  // Side view, runner facing -x: shoulder above hip, thigh straight down, knee and ankle below.
+  const lm = new Float32Array(132);
+  const put = (k, x, y) => lm.set([x, y, 0, 1], k * 4);
+  for (const [k, x, y] of [[11, 200, 100], [12, 205, 100], [23, 200, 300], [24, 205, 300], [25, 200, 400], [26, 205, 400], [27, 200, 500], [28, 205, 500]]) put(k, x, y);
+  return { frame: 0, facing: -1, lm };
+}
+test('offset sign: a point behind the hip gives a negative perpendicular offset', () => {
+  const row = syntheticRow();
+  const o = offsetOf(row, 'L', -1, [210, 300]); // +x = behind when facing -x
+  assert(Math.abs(o.along) < 1e-9 && Math.abs(o.perp + 0.1) < 1e-9, JSON.stringify(o));
+});
+test('zero offset leaves every hip-dependent angle unchanged', () => {
+  const row = syntheticRow();
+  const [c] = applyHipAnchor([row], 'L', -1, { along: 0, perp: 0 });
+  for (let k = 0; k < 132; k++) assert(c.lm[k] === row.lm[k], `lm[${k}] changed`);
+});
+await testAsync('corrected mode matches its fixture (IMG_0639_2)', async () => {
+  const res = await fetch('../test-data/debug/IMG_0639_2.rows.json');
+  if (!res.ok) return 'skip';
+  const fx = await (await fetch('fixtures/IMG_0639_2.corrected.json')).json();
+  const { meta, rows } = await res.json();
+  for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
+  const r = postProcess(rows, meta, { nearSide: fx.near, hipAnchor: fx.hipAnchor });
+  for (const [k, v] of Object.entries(fx.metrics)) assert(Math.abs(r.metrics[fx.near].summary[k].median - v.median) < 1e-9, `${k} changed`);
+  for (const h of fx.hipExtension) assert(Math.abs(r.hipWindows.find((w) => w.end === h.end).median - h.median) < 1e-9, `hip ext ${h.end} changed`);
+  return `offset ${JSON.stringify(fx.hipAnchor.offset)} (${fx.offsetSource})`;
+});
+
+// ---------------------------------------------------------------------------
+section = 'Posterior symmetry (mirror x and swap left/right)';
+const PAIRS = [[1, 4], [2, 5], [3, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22], [23, 24], [25, 26], [27, 28], [29, 30], [31, 32]];
+const swapIdx = Array.from({ length: 33 }, (_, i) => i);
+for (const [a, b] of PAIRS) [swapIdx[a], swapIdx[b]] = [b, a];
+const mirrorRow = (row, W) => {
+  if (!row.lm) return row;
+  const lm = new Float32Array(132);
+  for (let k = 0; k < 33; k++) {
+    const s = swapIdx[k];
+    lm.set([W - row.lm[s * 4], row.lm[s * 4 + 1], row.lm[s * 4 + 2], row.lm[s * 4 + 3]], k * 4);
+  }
+  return { ...row, lm };
+};
+test('synthetic asymmetric pose: every candidate equals the mirrored other leg', () => {
+  const lm = new Float32Array(132);
+  const put = (k, x, y) => lm.set([x, y, 0, 1], k * 4);
+  // Rear view, left on image left; deliberately asymmetric (tilted pelvis, knee in, heel out).
+  for (const [k, x, y] of [[11, 180, 100], [12, 260, 104], [23, 195, 300], [24, 255, 292], [25, 215, 400], [26, 250, 395], [27, 205, 500], [28, 262, 497], [29, 200, 520], [30, 268, 515], [31, 207, 530], [32, 262, 527]]) put(k, x, y);
+  const row = { lm };
+  const m = mirrorRow(row, 480);
+  for (const [name, fn] of Object.entries(CANDIDATES)) {
+    for (const [a, b] of [['L', 'R'], ['R', 'L']]) {
+      const d = Math.abs(fn(row, a) - fn(m, b));
+      assert(d < 1e-4, `${name} ${a}: ${fn(row, a)} vs mirrored ${b}: ${fn(m, b)}`);
+    }
+  }
+});
+await testAsync('cached IMG_0640: candidates and midstance swap legs exactly under mirroring', async () => {
+  const res = await fetch('../test-data/debug/IMG_0640.rows.json');
+  if (!res.ok) return 'skip';
+  const { meta, rows } = await res.json();
+  for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
+  const W = meta.analysedSize[0];
+  const a = postProcessRear(rows, meta);
+  const mrows = rows.map((r) => mirrorRow(r, W));
+  const b = postProcessRear(mrows, meta);
+  let worst = 0;
+  for (const [sd, other] of [['L', 'R'], ['R', 'L']]) {
+    const fa = a.midstancePelvis[sd].filter((h) => h.valid).map((h) => h.ms);
+    const fb = b.midstancePelvis[other].filter((h) => h.valid).map((h) => h.ms);
+    assert(JSON.stringify(fa) === JSON.stringify(fb), `midstance frames differ for ${sd}`);
+    for (const fn of Object.values(CANDIDATES)) for (const i of fa) worst = Math.max(worst, Math.abs(fn(rows[i], sd) - fn(mrows[i], other)));
+  }
+  assert(worst < 1e-3, `max difference ${worst}`);
+  return `max per-frame difference ${worst.toExponential(1)}`;
 });
 
 // ---------------------------------------------------------------------------

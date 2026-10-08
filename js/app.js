@@ -7,6 +7,7 @@ import { renderResults } from './views/results.js';
 import { renderAnalyzing } from './views/analyzing.js';
 import { analyzeVideo } from './pipeline/run.js';
 import { toAnalysis, UNMEASURED_REASON } from './pipeline/measurements.js';
+import { toPosteriorAnalysis } from './pipeline/posterior.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -71,7 +72,7 @@ function recompute({ resetInterpretation = false } = {}) {
   s.views = ['lateral', 'posterior'].filter((v) => s.clips[v]);
   // Provenance for the summary header: which clip supplied which view.
   s.analysis.clipsUsed = s.views.map((v) =>
-    v === 'lateral' ? `lateral, filmed from the ${s.intake.filmedFrom || 'unknown side'}` : 'posterior (metrics not built yet)',
+    v === 'lateral' ? `lateral, filmed from the ${s.intake.filmedFrom || 'unknown side'}` : 'posterior (capture checks only; metrics not built yet)',
   );
   results = analyze(s);
   if (resetInterpretation || !state.interpretationEdited) {
@@ -139,12 +140,9 @@ function submitIntake(form) {
   }
 
   const clip = { ...state.pendingClip, view: data.view };
-  if (data.view === 'lateral') {
-    analyzeClip(clip, data);
-    return;
-  }
-  // Posterior metrics arrive in Milestone 4: the clip is kept, its metrics show as not built yet.
-  addClip(clip, data, null);
+  // Both views run pose on-device. Posterior clips give capture checks only for now (metrics are
+  // awaiting validation).
+  analyzeClip(clip, data);
 }
 
 function addClip(clip, data, analysis) {
@@ -159,12 +157,17 @@ function addClip(clip, data, analysis) {
   }
   if (analysis) {
     const prev = state.session.analysis;
-    state.session.analysis = {
-      ...analysis,
-      measurements: { ...prev.measurements, ...analysis.measurements },
-      lateralLegs: [...new Set([...(prev.lateralLegs || []), ...(analysis.lateralLegs || [])])],
-    };
-    if (!state.session.intake.filmedFrom) state.session.intake.filmedFrom = analysis.nearSide;
+    const captureChecks = { ...prev.captureChecks, ...analysis.captureChecks };
+    state.session.analysis =
+      data.view === 'posterior'
+        ? { ...prev, captureChecks } // posterior: checks only, lateral results untouched
+        : {
+            ...analysis,
+            measurements: { ...prev.measurements, ...analysis.measurements },
+            lateralLegs: [...new Set([...(prev.lateralLegs || []), ...(analysis.lateralLegs || [])])],
+            captureChecks,
+          };
+    if (data.view === 'lateral' && !state.session.intake.filmedFrom) state.session.intake.filmedFrom = analysis.nearSide;
   }
   state.tab = 'summary';
   recompute();
@@ -180,6 +183,7 @@ async function analyzeClip(clip, data) {
   let lastPaint = 0;
   try {
     const result = await analyzeVideo(clip.file, {
+      view: data.view,
       nearSide: filmedFrom === 'left' ? 'L' : filmedFrom === 'right' ? 'R' : undefined,
       signal: controller.signal,
       onProgress: (p) => {
@@ -193,7 +197,7 @@ async function analyzeClip(clip, data) {
     });
     state.progress = null;
     const intake = state.session ? state.session.intake : data;
-    addClip(clip, data, toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
+    addClip(clip, data, data.view === 'posterior' ? toPosteriorAnalysis(result) : toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
   } catch (e) {
     if (e.name === 'AbortError') {
       state.progress = null;

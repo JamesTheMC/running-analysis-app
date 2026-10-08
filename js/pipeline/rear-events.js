@@ -216,3 +216,46 @@ export function segmentationMidstance(seg) {
   }
   return out;
 }
+
+// Candidate rear midstance (deepest landing position): the lowest point of the smoothed pelvis
+// (hip midpoint) within each stance half-cycle from segmentationMidstance(). Image y grows downward,
+// so the lowest pelvis is the largest smoothed hip-midpoint y. Returns the same shape, with `ms`
+// replaced and the stance centre kept as `centre`.
+export function pelvisLowMidstance(rows, bad, seg, centres) {
+  const y = rows.map((r, i) => (r.lm && !bad[i] ? hipMidY(r) : NaN));
+  const sm = savgol(fillGaps(y, Math.round(0.1 * seg.fs)), oddAtLeast(Math.round(0.11 * seg.fs), 5), 2);
+  const out = {};
+  for (const side of ['L', 'R']) {
+    out[side] = centres[side].map((h) => {
+      let best = -1;
+      for (let i = Math.ceil(h.start); i <= Math.floor(h.end); i++) if (Number.isFinite(sm[i]) && (best < 0 || sm[i] > sm[best])) best = i;
+      return { ...h, centre: h.ms, ms: best >= 0 ? best : h.ms, valid: h.valid && best >= 0 };
+    });
+  }
+  return out;
+}
+
+// Posterior capture check: how far the runner's pelvis midline sits from the frame centre, in hip
+// widths (+ = runner right of centre in the image). Approximate: the runner drifts on the belt.
+export const CAPTURE_CHECK = { offCentreWarnHipWidths: 0.5 };
+
+export function posteriorCaptureChecks(rows, bad, width) {
+  const offs = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r.lm || bad[i]) continue;
+    const lx = r.lm[LANDMARKS.L.hip * 4];
+    const rx = r.lm[LANDMARKS.R.hip * 4];
+    const w = Math.abs(rx - lx);
+    if (w > 0) offs.push(((lx + rx) / 2 - width / 2) / w);
+  }
+  const med = median(offs);
+  const sorted = [...offs].sort((a, b) => a - b);
+  const q = (p) => sorted[Math.min(sorted.length - 1, Math.floor(p * (sorted.length - 1)))];
+  return {
+    offCentreHipWidths: med,
+    offCentreRange: [q(0.1), q(0.9)],
+    offCentreWarning: Math.abs(med) > CAPTURE_CHECK.offCentreWarnHipWidths,
+    swapFrames: orderViolations(rows).filter(Boolean).length,
+  };
+}

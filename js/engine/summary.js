@@ -75,6 +75,18 @@ export function buildSections(results, intake) {
   });
 }
 
+// Capture checks from the clips (approximate). Returns warning sentences only.
+export function captureWarnings(analysis) {
+  const p = analysis?.captureChecks?.posterior;
+  const out = [];
+  if (p?.offCentreWarning) {
+    const side = p.offCentreHipWidths > 0 ? 'right' : 'left';
+    out.push(`posterior clip: runner's pelvis midline about ${Math.abs(p.offCentreHipWidths).toFixed(1)} hip widths ${side} of the frame centre (approximate; the runner drifts on the belt). Re-film centred on the belt midline.`);
+  }
+  if (p?.swapFrames > 0) out.push(`posterior clip: left/right landmarks out of order in ${p.swapFrames} frame(s).`);
+  return out;
+}
+
 export function buildHeader(intake, { placeholder, analysis } = {}) {
   const lines = [
     `GAIT ANALYSIS SUMMARY | ${intake.clientCode} | ${intake.sessionDate}`,
@@ -82,6 +94,7 @@ export function buildHeader(intake, { placeholder, analysis } = {}) {
   ];
   const clips = analysis?.clipsUsed;
   if (clips?.length) lines.push(`Clips: ${clips.join(' | ')}`);
+  for (const w of captureWarnings(analysis)) lines.push(`Capture warning: ${w}`);
   const v = analysis?.cadenceVideo;
   if (v) {
     lines.push(`Video: ${analysis.cyclesDetected} strides analysed | Cadence from stride period: ${Math.round(v.spm)} spm (unvalidated, not used for scoring)`);

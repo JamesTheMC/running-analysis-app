@@ -8,7 +8,9 @@ import { series, tibiaGate } from './gate.js';
 import { STRIDE, hipExtensionPeaks, segmentStrides } from './strides.js';
 import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
 import { cadenceFromStrides, computeMetrics } from './metrics.js';
-import { REAR_EVENTS, detectRearEvents, segmentRear, segmentationMidstance } from './rear-events.js';
+import { applyHipAnchor } from './hip-anchor.js';
+import { HIP_ANCHOR } from '../config.js';
+import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
 import { max, median, min } from './stats.js';
 
 export const PIPELINE = {
@@ -85,7 +87,10 @@ export function postProcessRear(rows, meta) {
   );
   // Midstance from the segmentation alone (centre of each stance half-cycle); used for rear metrics.
   const midstance = segmentationMidstance(seg);
-  return { bad, seg, events, sweep, midstance, view: 'posterior', summary: referenceSummary(rows, bad) };
+  // Candidate: lowest smoothed pelvis within each stance half-cycle (deepest landing position).
+  const midstancePelvis = pelvisLowMidstance(rows, bad, seg, midstance);
+  const capture = posteriorCaptureChecks(rows, bad, meta.analysedSize[0]);
+  return { bad, seg, events, sweep, midstance, midstancePelvis, capture, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
 
 // Everything after pose estimation. Pure: can be re-run on cached rows (test page).
@@ -93,20 +98,23 @@ export function postProcess(rows, meta, opts = {}) {
   const bad = tibiaGate(rows);
   const seg = segmentStrides(rows, bad, meta.fs, { nearSide: opts.nearSide });
   seg.fs = meta.fs;
+  // Events always come from the uncorrected landmarks; metrics use the selected hip anchor.
   const events = detectEvents(rows, bad, seg);
-  const hipExt = hipExtensionPeaks(rows, bad, meta.fs, seg, events);
+  const anchor = opts.hipAnchor ?? HIP_ANCHOR;
+  const mrows = anchor.mode === 'corrected' ? applyHipAnchor(rows, seg.near.side, seg.ref.facing, anchor.offset) : rows;
+  const hipExt = hipExtensionPeaks(mrows, bad, meta.fs, seg, events);
   // Near-leg hip extension under each window end (window-sensitivity rule).
   const hipWindows = STRIDE.windowSweep.map((end) => ({
     end,
-    ...(end === 'late-stance' ? hipExtensionPeaks(rows, bad, meta.fs, seg) : hipExtensionPeaks(rows, bad, meta.fs, seg, events, { afterToeOffSec: end }))[seg.near.side],
+    ...(end === 'late-stance' ? hipExtensionPeaks(mrows, bad, meta.fs, seg) : hipExtensionPeaks(mrows, bad, meta.fs, seg, events, { afterToeOffSec: end }))[seg.near.side],
   }));
-  const metrics = computeMetrics({ rows, bad, seg, events, hipExt });
+  const metrics = computeMetrics({ rows: mrows, bad, seg, events, hipExt });
   // IC-timing sensitivity: the same metrics with events detected at each swept contact tolerance.
   const sweep = Object.fromEntries(
-    IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows, bad, seg, hipExt, events: detectEvents(rows, bad, seg, { contactTolerance: t }) })]),
+    IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows: mrows, bad, seg, hipExt, events: detectEvents(rows, bad, seg, { contactTolerance: t }) })]),
   );
   const cadence = cadenceFromStrides(rows, seg);
-  return { bad, seg, hipExt, hipWindows, events, metrics, sweep, cadence, summary: referenceSummary(rows, bad) };
+  return { bad, seg, hipExt, hipWindows, events, metrics, sweep, cadence, hipAnchor: anchor, summary: referenceSummary(rows, bad) };
 }
 
 // Same keys and semantics as summarize() in reference/reference_gait_pipeline.py (minus the

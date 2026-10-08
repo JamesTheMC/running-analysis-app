@@ -16,3 +16,19 @@ not a calcaneal bisection). Achilles angle: not requested for this build.
 
 All of these are taken at midstance, so all are event-dependent and go through the IC-sensitivity
 rule (sweep over the rear-view event threshold).
+
+## Midstance candidates (IMG_0640, October 2026)
+
+Files: `test-data/debug/IMG_0640.midstance-candidates-strip.png`, `test-data/debug/IMG_0640.midstance-candidates.md`.
+
+- (i) Lowest smoothed pelvis (hip midpoint) inside each stance half-cycle vs (ii) the stance centre:
+  (i) is 7 analysed frames (117 ms) earlier in every half-cycle (168/168 differ by more than 2 frames),
+  about 15–20% into the half-cycle.
+- In the strip, (i) frames show the stance foot planted with the other foot just after its toe-off;
+  (ii) frames show the swing foot passing the stance leg.
+- Timing sensitivity (±1/±2/±3 frames): (i) 0 of 8 measures timing-sensitive; (ii) 3 of 8.
+- Mirror test: mirroring x and swapping left/right reproduces every candidate value with the legs
+  swapped (max 3e-5, float rounding) and swaps the midstance frames exactly, so the sign convention
+  (+ = toward the midline for both legs) is consistent. Left/right differences are in the data.
+- Posterior capture check: pelvis midline about 0.14 hip widths left of frame centre (approximate),
+  below the 0.5 warning threshold.

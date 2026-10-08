@@ -1,7 +1,7 @@
 import { esc } from '../util.js';
 import { VIEWS, SCORING, NOT_MEASURABLE } from '../config.js';
 import { cellValue, formatDiff, formatValue, statusLabel, sideLabel } from '../engine/format.js';
-import { buildHeader, buildSections } from '../engine/summary.js';
+import { buildHeader, buildSections, captureWarnings } from '../engine/summary.js';
 
 function scoreChip(label, value) {
   const band = value == null ? 'none' : value >= SCORING.bands.green ? 'green' : value >= SCORING.bands.yellow ? 'yellow' : 'red';
@@ -206,6 +206,16 @@ export function renderResults(state, results) {
       <header class="screen-head">
         <h1>${esc(session.intake.clientCode)} <span class="muted">· ${esc(session.intake.sessionDate)}</span></h1>
         <p class="muted small">Clips: ${session.views.map((v) => esc(VIEWS[v].label)).join(', ')}</p>
+        ${(() => {
+          const p = session.analysis?.captureChecks?.posterior;
+          if (!p) return '';
+          const side = p.offCentreHipWidths > 0 ? 'right' : 'left';
+          const line = `Posterior capture check: pelvis midline about ${Math.abs(p.offCentreHipWidths).toFixed(2)} hip widths ${side} of the frame centre (approximate; the runner drifts on the belt).`;
+          return `<p class="small ${p.offCentreWarning ? 'warn' : 'muted'}">${p.offCentreWarning ? '⚠ ' : ''}${esc(line)}</p>${captureWarnings(session.analysis)
+            .filter((w) => w.includes('out of order'))
+            .map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`)
+            .join('')}`;
+        })()}
         ${
           session.analysis?.cadenceVideo
             ? `<p class="muted small">${session.analysis.cyclesDetected} strides analysed · cadence from stride period ${Math.round(session.analysis.cadenceVideo.spm)} spm <em>(unvalidated, not used for scoring)</em></p>`

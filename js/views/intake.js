@@ -16,7 +16,7 @@ export function fileCheckHtml(check) {
 // Capture protocol per view (also shown on the upload screen).
 export function protocolHtml(view) {
   const common = `level and fixed (tripod), lens at about pelvis height, as far back as the room allows with the whole body in frame, good light. At least ${CAPTURE.minSeconds} s of steady running (more than 7 steps per leg for a stable mean). ${CAPTURE.recommendedFps} fps recommended, ${CAPTURE.minFps} fps minimum; native camera file, not a screen recording.`;
-  if (view === 'posterior') return `<strong>Posterior:</strong> camera directly behind the runner, centred on the belt, ${common}`;
+  if (view === 'posterior') return `<strong>Posterior:</strong> camera directly behind the runner and centred on the belt midline, ${common} The app estimates how far off-centre the runner is after analysis (approximate).`;
   return `<strong>Lateral:</strong> camera perpendicular to the belt, ${common} Measures the leg and arm facing the camera only; film the other side for bilateral values.`;
 }
 

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; img-src 'self' blob: data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'" />
+    <title>Hip Anchor Tool</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; --muted: #5b6670; --line: #d9dee3; --card: #f6f8fa; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) { --bg: #0f1419; --fg: #e6e9ec; --muted: #9aa5b1; --line: #2b333b; --card: #161c22; }
+      }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; max-width: 1200px; }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      h2 { font-size: 15px; margin: 18px 0 6px; }
+      .muted { color: var(--muted); }
+      .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+      .layout { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: 16px; align-items: start; }
+      @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+      canvas { width: 100%; max-width: 600px; border-radius: 8px; cursor: crosshair; border: 1px solid var(--line); }
+      table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 13px; }
+      th, td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+      button, select, input { font: inherit; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+      code { font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Hip anchor tool</h1>
+    <p class="muted">Click the hip joint centre on each frame. Each click is stored as an offset from the near hip landmark in thigh lengths: along the thigh (+ toward the knee) and perpendicular (+ forward). Markers: blue = near hip landmark, orange = far hip, yellow = their midpoint, white = knee; green cross = your click.</p>
+    <div class="card row">
+      <label>Clip <select id="clip"><option>IMG_0639_2.mov</option></select></label>
+      <label>Frame <select id="frames"></select></label>
+      <button id="prev">‹ Prev</button><button id="next">Next ›</button>
+      <label>or source frame # <input id="frameNo" type="number" style="width: 6em" /></label><button id="go">Go</button>
+      <button id="random">Random stance frame</button>
+      <button id="undo">Undo click on this frame</button>
+      <span id="status" class="muted">Loading…</span>
+    </div>
+    <div class="layout" style="margin-top: 12px">
+      <canvas id="view" width="600" height="800"></canvas>
+      <div>
+        <h2>Clicked offsets</h2>
+        <div id="summary"></div>
+        <div id="clicks"></div>
+        <h2>Landmark jitter (whole clip)</h2>
+        <div id="jitter"></div>
+      </div>
+    </div>
+    <script type="module" src="hip-anchor-tool.js"></script>
+  </body>
+</html>

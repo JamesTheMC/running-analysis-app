@@ -43,6 +43,15 @@ export const VALIDATION = {
   hipExtensionValidated: false, // set true once hip extension (trunk axis, late-stance window) is validated
 };
 
+// Hip anchor for lateral clips (js/pipeline/hip-anchor.js). 'landmark' = MediaPipe hip landmark;
+// 'corrected' = near hip moved by `offset` (thigh lengths: along the thigh toward the knee, and
+// perpendicular, + = forward), the median of clinician clicks on the hip joint centre
+// (test/hip-anchor.html). Events are always detected on the uncorrected landmarks.
+export const HIP_ANCHOR = {
+  mode: 'landmark',
+  offset: { along: 0, perp: 0, frames: 0, source: 'placeholder: no frames clicked yet (offset 0, corrected = landmark)' },
+};
+
 // Not measurable from 2D video at all; listed so they are never implied (check clinically).
 export const NOT_MEASURABLE = ['Pelvic tilt (anterior/posterior)', 'Lordosis', 'Transverse-plane motion (rotation)'];
 
