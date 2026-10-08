@@ -98,7 +98,7 @@ function mechanicsParagraph(results) {
   if (signs.length && spm) {
     const [a, b] = STEP_RATE_CHANGE.map((k) => Math.round(spm * (1 + k)));
     const shorter = n.speedMs ? ` (step length about ${(n.speedMs / (a / 60)).toFixed(2)}–${(n.speedMs / (b / 60)).toFixed(2)} m at the same speed)` : '';
-    parts.push(`Given ${signs.join(' and ')}, consider a 5–10% step-rate increase, from about ${Math.round(spm)} to ${a}–${b} steps/min${shorter}; in healthy runners this reduced heel-to-COM distance and knee loading (Heiderscheit 2011).`);
+    parts.push(`Given ${signs.join(' and ')}, consider a 5–10% step-rate increase, from about ${Math.round(spm)} to ${a}–${b} steps/min${shorter}; in healthy runners this reduced heel-to-COM distance and knee energy absorption (Heiderscheit 2011).`);
   } else if (signs.length) {
     parts.push(`Given ${signs.join(' and ')}, consider a 5–10% step-rate increase (enter cadence to get target numbers).`);
   } else if (spm) {

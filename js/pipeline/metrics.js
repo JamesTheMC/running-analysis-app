@@ -39,7 +39,7 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 // Angle of vector v from "straight down" (0, +1), signed so + points in the running direction.
 const fromVerticalDown = (v, facing) => Math.atan2(facing * v[0], v[1]) * DEG;
 
-function tibialInclination(row, ids, facing) {
+export function tibialInclination(row, ids, facing) {
   const k = at(row, ids.knee);
   const a = at(row, ids.ank);
   return fromVerticalDown([a[0] - k[0], a[1] - k[1]], facing);
@@ -54,7 +54,7 @@ export function trunkLean(row, facing) {
   return Math.atan2(facing * (s[0] - h[0]), h[1] - s[1]) * DEG;
 }
 
-function ankleDorsiflexion(row, ids) {
+export function ankleDorsiflexion(row, ids) {
   const k = at(row, ids.knee);
   const a = at(row, ids.ank);
   const he = at(row, ids.heel);
@@ -66,7 +66,7 @@ function ankleDorsiflexion(row, ids) {
 }
 
 // Image angle of the foot (heel -> foot index); + = toes up, in the running direction.
-function footAngle(row, ids, facing) {
+export function footAngle(row, ids, facing) {
   const he = at(row, ids.heel);
   const t = at(row, ids.toe);
   return Math.atan2(-(t[1] - he[1]), facing * (t[0] - he[0])) * DEG;

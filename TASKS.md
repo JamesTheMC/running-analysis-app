@@ -19,11 +19,6 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - [ ] Error per metric in degrees (or cm / hip widths); fix what is off
 - [ ] Report in reference/VALIDATION.md
 
-### Phase 6: intake end to end
-- [ ] Height → cm metrics (foot-to-COM, lateral shift); speed → step length; incline → hip extension
-      and trunk-lean context; cadence (if entered) → pattern triggers
-- [ ] Run the full flow in the app (side + posterior) and confirm intake values feed the analysis
-
 ## Blocked (needs the owner)
 - A right-side lateral clip of the same runner (only a left-side clip exists), to exercise and
   validate bilateral side-view values on real video.
@@ -32,6 +27,11 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - Hip extension validation (`VALIDATION.hipExtensionValidated`): stays unscored until validated.
 
 ## Done
+- Phase 6: intake feeds the analysis, covered by tests: height → cm (foot-to-COM scored in cm,
+  unscored shoe lengths without height; lateral shift cm); speed → step length; cadence (entered) →
+  pattern triggers and step-rate targets (else the video estimate, labelled unvalidated); incline →
+  interpretation context; full app run (left lateral + posterior) checked, copy button works
+- Phase 4: template output with provisional literature ranges, mechanics suggestions, limits statement
 - Phase 3: posterior view: midstance = lowest pelvis per stance; per-leg hip adduction, knee FPPA
   (unscored), pelvic drop (trend only), foot vs midline, crossover; midline lean, shift (cm),
   spine shift vs PSIS (provisional); ±2-frame timing sweep; swap-check gating; combined with lateral

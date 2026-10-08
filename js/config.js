@@ -640,7 +640,7 @@ export const PATTERNS = [
     ],
     minAny: 2, // [CONFIRM] how many triggers make a combination
     considerations: [
-      'Consider a modest cadence increase (commonly 5–10%; verify before shipping).',
+      'Consider a 5–10% step-rate increase (reduced heel-to-COM distance in healthy runners; Heiderscheit 2011).',
       'Consider cueing landing closer under the body.',
       'Consider reviewing hip flexor/extensor control.',
     ],

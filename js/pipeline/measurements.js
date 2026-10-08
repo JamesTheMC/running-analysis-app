@@ -85,6 +85,10 @@ export function toAnalysis(result, { heightCm } = {}) {
     if (c.value != null) c.display = `${c.value.toFixed(1)} cm (≈${m.footToComShoe.median.toFixed(2)} shoe lengths)`;
     if (c.sweep) c.sweep.values = c.sweep.values.map((v) => (v == null ? null : v / pxPerCm));
     out.put('ic_foot_to_com', leg, c);
+  } else {
+    // No height: the cm range cannot be applied. Shoe lengths are shown, unscored.
+    const c = cell(m.footToComShoe);
+    out.put('ic_foot_to_com', leg, { ...c, value: null, reason: c.value == null ? c.reason : `≈${c.value.toFixed(2)} shoe lengths, unscored` });
   }
 
   // Midline (trunk) metrics from near-leg events.

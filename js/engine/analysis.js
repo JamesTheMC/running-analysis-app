@@ -85,7 +85,7 @@ function evaluateCell(def, side, measurement, ctx) {
   }
   const missing = (def.requires || []).filter((f) => ctx.numbers[`${f}Cm`] == null && ctx.numbers[f] == null);
   if (missing.length) {
-    cell.reason = `needs ${missing.join(', ')} from intake for pixel-to-cm scale`;
+    cell.reason = `needs ${missing.join(', ')} from intake for pixel-to-cm scale${measurement?.reason ? ` (${measurement.reason})` : ''}`;
     return cell;
   }
   if (!measurement) {

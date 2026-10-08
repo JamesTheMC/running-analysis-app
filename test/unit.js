@@ -330,6 +330,45 @@ test('no load-prediction language for foot or tibial inclination', () => {
   assert(!LOAD.test(lines), `summary: ${lines}`);
 });
 
+section = 'Intake feeds the analysis (height, speed, incline, cadence)';
+const intakeRun = (intake, { heightCm = 170, footPx } = {}) => {
+  const f = fixture();
+  if (footPx != null) for (const m of [f.metrics, ...Object.values(f.sweep)]) m.L.summary.footToComPx = sum(footPx);
+  const res = analyze({ intake, views: ['lateral'], analysis: mergeSession({ lateral_left: { analysis: toAnalysis(f, { heightCm }) } }) });
+  return { res, text: buildInterpretation(res, intake) };
+};
+test('height: foot-to-COM scored in cm with height, unscored (shoe lengths) without', () => {
+  const withH = intakeRun(baseIntake).res.rowsById.ic_foot_to_com.cells.left;
+  const noH = intakeRun({ ...baseIntake, heightValue: '' }, { heightCm: null }).res.rowsById.ic_foot_to_com.cells.left;
+  assert(withH.assessed && / cm /.test(withH.display), JSON.stringify(withH));
+  assert(!noH.assessed && /height/.test(noH.reason) && /shoe lengths/.test(noH.reason), JSON.stringify(noH));
+  return `${withH.display} | without height: ${noH.reason}`;
+});
+test('speed: step length = speed / step rate, from the entered speed', () => {
+  const a = intakeRun({ ...baseIntake, speedValue: '6.5', speedUnit: 'mph' }).text;
+  const b = intakeRun({ ...baseIntake, speedValue: '12', speedUnit: 'km/h' }).text;
+  // 6.5 mph = 2.906 m/s at 164 spm (video) -> 1.06 m; 12 km/h = 3.333 m/s -> 1.22 m
+  assert(/Step length is about 1\.06 m/.test(a), a);
+  assert(/Step length is about 1\.22 m/.test(b), b);
+  assert(!/Step length/.test(intakeRun(baseIntake).text), 'step length without speed');
+});
+test('cadence: entered cadence is used and triggers the overstride pattern with foot-to-COM high', () => {
+  const intake = { ...baseIntake, speedValue: '10', speedUnit: 'km/h', cadence: '150' };
+  const { res, text } = intakeRun(intake, { footPx: 60 }); // 60 px / (500/170) = 20.4 cm
+  assert(res.patterns.some((p) => p.def.id === 'overstride'), res.patterns.map((p) => p.def.id).join());
+  assert(/150 steps\/min \(entered\)/.test(text) && /from about 150 to 158–165 steps\/min/.test(text), text);
+  const none = intakeRun({ ...intake, cadence: '' }, { footPx: 60 });
+  assert(!none.res.patterns.some((p) => p.def.id === 'overstride' && p.matched?.some?.((m) => /cadence/.test(m))), 'cadence trigger without cadence');
+  return text.split('\n\n').find((l) => l.startsWith('Mechanics'));
+});
+test('incline: mentioned in the interpretation when above 0', () => {
+  assert(/incline was 1%/.test(intakeRun({ ...baseIntake, incline: '1' }).text), 'no incline sentence');
+  assert(!/incline was/.test(intakeRun({ ...baseIntake, incline: '0' }).text), 'incline sentence at 0%');
+});
+test('limits statement is always present', () => {
+  assert(/not a diagnosis/.test(intakeRun(baseIntake).text), 'missing limits statement');
+});
+
 // ---------------------------------------------------------------------------
 section = 'Hip anchor';
 function syntheticRow() {
