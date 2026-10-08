@@ -438,3 +438,10 @@ if (regression.rows.length) {
   );
 }
 window.__unit = { results, regression, passed: fails.length === 0 };
+// Machine-readable results for the one-command runner (tools/test.py reads the dumped DOM).
+const tag = document.createElement('script');
+tag.type = 'application/json';
+tag.id = 'results';
+tag.textContent = JSON.stringify({ results: results.map(({ section: s, name, ok, skip, detail }) => ({ section: s, name, ok, skip: !!skip, detail: detail == null ? null : String(detail) })) }).replace(/</g, '\\u003c');
+document.body.append(tag);
+if (new URLSearchParams(location.search).has('headless')) fetch('/__results', { method: 'POST', body: tag.textContent.replace(/\\u003c/g, '<') });
