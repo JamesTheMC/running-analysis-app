@@ -48,6 +48,7 @@ function cellHtml(def, cell, colspan = 1) {
     </span>
     ${cell.strides ? `<span class="detail">Median of ${cell.strides} strides${esc(iqr)}</span>` : ''}
     ${cell.status === 'review' ? '<span class="detail">Reference under review; not scored</span>' : ''}
+    ${cell.status === 'pending-validation' ? `<span class="detail">${esc(cell.pendingText)}; no flag, not scored, no pattern trigger</span>` : ''}
     ${def.scored === false && cell.status !== 'review' && !['ic-sensitive', 'window-sensitive'].includes(cell.status) && def.type !== 'record' ? '<span class="detail">Not scored</span>' : ''}
     ${cell.source ? `<span class="detail">From ${esc(sourceText(cell.source))}</span>` : ''}
     ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}

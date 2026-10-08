@@ -1,12 +1,14 @@
 // Turns raw measurements + intake into statuses, confidence tags, scores and pattern flags.
 // Pure functions; all thresholds come from config.js.
 
-import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY, STATUS_REASONS } from '../config.js';
+import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY, STATUS_REASONS, VALIDATION } from '../config.js';
 import { formatRange, formatValue } from './format.js';
 
 // Statuses for values whose colour depends on an analysis choice (IC timing, window end): range shown,
 // no flag, no score weight, no pattern triggers, no L/R difference.
 export const SENSITIVE = ['ic-sensitive', 'window-sensitive'];
+// Statuses that never raise a flag, score or pattern trigger.
+const NO_TRIGGER = [...SENSITIVE, 'pending-validation'];
 
 const SIDE_KEYS = { lr: ['left', 'right'], mid: ['mid'], near: ['near'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 };
@@ -127,6 +129,13 @@ function evaluateCell(def, side, measurement, ctx) {
       return cell;
     }
   }
+  // Awaiting clinician validation: a below-range value is informational only (no flag, prompt or trigger).
+  const pv = def.pendingValidation;
+  if (pv && !VALIDATION[pv.flag] && cell.status === 'red') {
+    cell.status = 'pending-validation';
+    cell.pendingText = pv.text;
+    return cell;
+  }
   if (def.clinicalPrompt && def.clinicalPrompt.when.includes(cell.status)) {
     cell.prompt = def.clinicalPrompt.text;
   }
@@ -191,7 +200,7 @@ function evalTrigger(trigger, side, rowsById, numbers, fired) {
   const row = rowsById[trigger.metric];
   const cell = cellForSide(row, side);
   // Far-side and IC-sensitive values never trigger patterns.
-  if (!cell?.assessed || SENSITIVE.includes(cell.status)) return null;
+  if (!cell?.assessed || NO_TRIGGER.includes(cell.status)) return null;
   let hit = false;
   if (trigger.status) hit = trigger.status.includes(cell.status);
   if (trigger.below != null) hit = typeof cell.value === 'number' && cell.value < trigger.below;
@@ -203,6 +212,7 @@ export function evaluatePatterns(rowsById, numbers) {
   const fired = {};
   const results = [];
   for (const p of PATTERNS) {
+    if (p.requiresValidation && !VALIDATION[p.requiresValidation]) continue; // switched off until validated
     fired[p.id] = {};
     const bySide = {};
     for (const side of ['left', 'right']) {

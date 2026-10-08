@@ -1,9 +1,10 @@
 // Browser unit tests (no dependencies): view-to-metric map enforcement and regression.
 // Open test/unit.html on the dev server. window.__unit holds the results for automation.
 
-import { METRICS, NOT_MEASURABLE } from '../js/config.js';
+import { METRICS, NOT_MEASURABLE, PATTERNS, VALIDATION } from '../js/config.js';
 import { EMIT, ViewViolation, allowed, createEmitter } from '../js/pipeline/emit.js';
 import { analyze } from '../js/engine/analysis.js';
+import { buildInterpretation, buildSections } from '../js/engine/summary.js';
 import { toAnalysis } from '../js/pipeline/measurements.js';
 import { postProcess } from '../js/pipeline/run.js';
 
@@ -234,6 +235,66 @@ test('hip extension is never scored', () => {
   const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: toAnalysis(fixture(), {}) });
   const c = res.rowsById.to_hip_extension.cells.left;
   assert(c.assessed && c.weight == null, JSON.stringify({ s: c.status, w: c.weight }));
+});
+
+// ---------------------------------------------------------------------------
+section = 'Hip extension validation flag';
+function lowHipFixture() {
+  const f = fixture();
+  f.hipExt.L = { median: 3, iqr: [2, 4], n: 20, total: 25, rising: 1 };
+  f.hipWindows = [{ end: 'late-stance', median: 3.5, n: 20, total: 25, rising: 0 }, { end: 0.05, median: 3, n: 20, total: 25, rising: 1 }];
+  return f;
+}
+const fastCadence = { ...baseIntake, cadence: '200' }; // limited-hip-extension "any" trigger: cadence above 190
+test('flag defaults to false', () => {
+  assert(VALIDATION.hipExtensionValidated === false, `hipExtensionValidated = ${VALIDATION.hipExtensionValidated}`);
+  assert(PATTERNS.find((p) => p.id === 'limited_hip_extension').requiresValidation === 'hipExtensionValidated', 'pattern not gated');
+});
+test('unvalidated: below 5° is informational only (no flag, score, prompt or pattern)', () => {
+  const res = analyze({ intake: fastCadence, views: ['lateral'], analysis: toAnalysis(lowHipFixture(), {}) });
+  const c = res.rowsById.to_hip_extension.cells.left;
+  assert(c.status === 'pending-validation' && c.weight == null && !c.prompt, JSON.stringify({ s: c.status, w: c.weight, p: c.prompt }));
+  assert(!res.patterns.some((p) => p.def.id === 'limited_hip_extension'), 'limited hip extension pattern fired');
+  const text = buildInterpretation(res, fastCadence);
+  assert(text.includes('Hip extension below 5°: pending validation'), 'informational line missing');
+  assert(!/limited hip extension/i.test(text), 'pattern text present');
+  return text.split('\n\n').find((p) => p.includes('pending validation'));
+});
+test('validated: the pattern can fire again', () => {
+  VALIDATION.hipExtensionValidated = true;
+  try {
+    const res = analyze({ intake: fastCadence, views: ['lateral'], analysis: toAnalysis(lowHipFixture(), {}) });
+    const c = res.rowsById.to_hip_extension.cells.left;
+    assert(c.status === 'red', `status ${c.status}`);
+    assert(res.patterns.some((p) => p.def.id === 'limited_hip_extension'), 'pattern did not fire');
+  } finally {
+    VALIDATION.hipExtensionValidated = false;
+  }
+});
+
+section = 'Summary and wording';
+test('foot-to-COM is in the ANKLE section, after tibial inclination', () => {
+  const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: toAnalysis(fixture(), { heightCm: 170 }) });
+  const ankle = buildSections(res, baseIntake).find((x) => x.title === 'ANKLE').lines;
+  const iT = ankle.findIndex((l) => l.startsWith('Tibial inclination'));
+  const iF = ankle.findIndex((l) => l.startsWith('Foot-to-COM'));
+  assert(iT >= 0 && iF === iT + 1, ankle.join(' | '));
+  return ankle[iF];
+});
+test('no load-prediction language for foot or tibial inclination', () => {
+  const LOAD = /load|impact|braking|shock|injur/i;
+  const ids = ['ic_foot_strike', 'ic_foot_inclination', 'ic_tibial_inclination'];
+  for (const id of ids) {
+    const d = byId.get(id);
+    for (const t of [d.label, d.summaryLabel, d.note, d.greenText, d.redText].filter(Boolean)) assert(!LOAD.test(t), `${id}: "${t}"`);
+  }
+  for (const p of PATTERNS) {
+    const uses = [...p.all, ...p.any].filter((t) => ids.includes(t.metric));
+    if (uses.length) for (const t of [p.label, ...p.considerations, ...uses.map((u) => u.text)]) assert(!LOAD.test(t), `${p.id}: "${t}"`);
+  }
+  const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: toAnalysis(fixture(), { heightCm: 170 }) });
+  const lines = buildSections(res, baseIntake).find((x) => x.title === 'ANKLE').lines.join(' ');
+  assert(!LOAD.test(lines), `summary: ${lines}`);
 });
 
 // ---------------------------------------------------------------------------

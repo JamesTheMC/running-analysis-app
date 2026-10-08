@@ -37,6 +37,12 @@ export const STATUS_REASONS = {
   'not-measurable': 'not measurable in 2D',
 };
 
+// Clinician validation switches. While false, the metric is shown but its below-range values raise no
+// flag, score or pattern trigger; a single informational line says "pending validation" instead.
+export const VALIDATION = {
+  hipExtensionValidated: false, // set true once hip extension (trunk axis, late-stance window) is validated
+};
+
 // Not measurable from 2D video at all; listed so they are never implied (check clinically).
 export const NOT_MEASURABLE = ['Pelvic tilt (anterior/posterior)', 'Lordosis', 'Transverse-plane motion (rotation)'];
 
@@ -110,8 +116,9 @@ export const METRICS = [
     sided: 'lr',
     unit: 'deg',
     // Foot angle at IC relative to the same foot flat at midstance (as foot inclination). Two
-    // categories only. Cutoff 8° for rearfoot: source to be verified (Altman & Davis 2012 classify
-    // foot strike angle > 8.0° as rearfoot).
+    // categories only. Altman & Davis 2012 define the foot strike angle relative to the standing foot
+    // angle; their cutoffs (> 8° rearfoot, < -1.6° forefoot) are to be verified. Only 8° is used.
+    // Descriptive only: not shown to predict impact loading rate.
     categories: [
       { above: 8, label: 'rearfoot' },
       { label: 'non-rearfoot' },
@@ -120,7 +127,7 @@ export const METRICS = [
     redText: '—',
     scored: false,
     baselineConfidence: 'low',
-    note: 'Two categories from the foot angle at IC relative to the flat-foot midstance angle; 8° cutoff, source to be verified.',
+    note: 'Descriptive only. Foot angle at IC relative to the flat-foot midstance angle (Altman & Davis 2012 reference the standing foot angle). Rearfoot above 8°; the 8° and -1.6° cutoffs are to be verified.',
     summary: 'ANKLE',
   },
   {
@@ -133,7 +140,7 @@ export const METRICS = [
     sided: 'lr',
     unit: 'deg',
     // Sign: foot (heel -> foot index) angle at IC relative to the same foot flat at midstance; + = toes up.
-    note: "Measured relative to each foot's own flat-foot angle at midstance, because the heel landmark sits higher on the shoe than the toe landmark.",
+    note: "Descriptive only. Measured relative to each foot's own flat-foot angle at midstance, because the heel landmark sits higher on the shoe than the toe landmark.",
     green: { max: 10 },
     red: { above: 10 },
     greenText: '<10° DF (rearfoot strike)',
@@ -157,6 +164,7 @@ export const METRICS = [
     red: { below: -10, above: 10 },
     greenText: '-10° to +10°',
     redText: 'beyond ±10°',
+    note: 'Descriptive only.',
     priority: false,
     baselineConfidence: 'high',
     summary: 'ANKLE',
@@ -180,6 +188,7 @@ export const METRICS = [
     priority: true,
     baselineConfidence: 'medium', // depends on the height-based scale and foot landmarks
     requires: ['height'],
+    summary: 'ANKLE',
   },
   {
     id: 'ic_knee_flexion',
@@ -497,6 +506,8 @@ export const METRICS = [
     redText: '<5° (with lordosis)',
     priority: false,
     scored: false, // unscored until the clinician validates the trunk-axis reference and window
+    // Until VALIDATION.hipExtensionValidated, a value below the range gets this line instead of a flag.
+    pendingValidation: { flag: 'hipExtensionValidated', text: 'hip extension below 5°: pending validation' },
     baselineConfidence: 'medium',
     note: 'Measured relative to the trunk axis; unscored until validated.',
     // Lordosis is not measurable in 2D; prompt the clinician instead.
@@ -614,6 +625,7 @@ export const PATTERNS = [
   {
     id: 'limited_hip_extension',
     label: 'Limited hip extension',
+    requiresValidation: 'hipExtensionValidated', // off until hip extension is validated
     all: [{ metric: 'to_hip_extension', below: 5, text: 'hip extension below 5°' }],
     any: [
       { pattern: 'overstride', text: 'overstride pattern present' },
@@ -660,6 +672,8 @@ export const STATUS_LABELS = {
   red: { report: 'Flag', summary: 'flag' },
   record: { report: 'Recorded', summary: 'recorded' },
   review: { report: 'Above template range', summary: 'above template range, reference under review' },
+  // Below range while the metric awaits clinician validation: informational only.
+  'pending-validation': { report: 'Below range: pending validation', summary: 'pending validation' },
   // IC-dependent metric whose status changes across the IC-tolerance sweep: range shown, not scored.
   'ic-sensitive': { report: 'Borderline, IC-sensitive', summary: 'borderline, IC-sensitive' },
   // Status changes across analysis-window choices (hip extension window end): range shown, not scored.

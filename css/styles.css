@@ -760,3 +760,10 @@ abbr.p {
 [data-file-check] p {
   margin: 4px 0 0;
 }
+.cell-pending-validation {
+  background: var(--na-bg);
+  border-left-color: var(--muted);
+}
+.status-pending-validation {
+  color: var(--muted);
+}

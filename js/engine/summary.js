@@ -7,6 +7,7 @@ function cellText(def, cell) {
   const value = cellValue(def, cell, { short: true });
   const strides = cell.strides ? `median of ${cell.strides} strides` : '';
   if (cell.status === 'ic-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across initial-contact timing, not scored)`;
+  if (cell.status === 'pending-validation') return `${value} (${cell.pendingText}; not scored)`;
   if (cell.status === 'window-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across analysis-window choices, not scored${excludedText(cell)})`;
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
   const status = def.type === 'record' || def.type === 'category' ? '' : statusLabel(cell.status, 'summary');
@@ -27,6 +28,7 @@ function notAssessedText(cell) {
 
 // Lowercase the first letter for use mid-sentence, leaving acronyms (COM, IC, DF) intact.
 const PROPER = ['Achilles'];
+const capitalise = (t) => t[0].toUpperCase() + t.slice(1);
 function midSentence(text) {
   if (PROPER.some((p) => text.startsWith(p))) return text;
   return /^[A-Z][a-z]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
@@ -132,6 +134,13 @@ export function buildInterpretation(results, intake) {
       )}.`,
     );
   }
+  // Informational lines for values awaiting clinician validation (no flag, no score, no pattern).
+  const pending = results.rows.flatMap((r) =>
+    Object.values(r.cells)
+      .filter((c) => c.status === 'pending-validation')
+      .map((c) => `${capitalise(c.pendingText)} (${sideLabel(c.side, fp)} ${cellValue(r.def, c, { short: true })}).`),
+  );
+  if (pending.length) paras.push(pending.join(' '));
   const icSensitive = results.rows.flatMap((r) =>
     Object.values(r.cells)
       .filter((c) => c.status === 'ic-sensitive')

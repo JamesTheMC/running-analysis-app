@@ -11,15 +11,15 @@ Near leg and near arm only. Far-leg values are never used.
 
 | Metric (config id) | Confidence cap | Scored | Timing rule | Notes |
 |---|---|---|---|---|
-| Foot strike pattern (`ic_foot_strike`) | low | no | IC-sensitive | Two categories, rearfoot vs non-rearfoot; foot angle at IC vs flat-foot midstance angle; 8° cutoff, source to be verified |
-| Foot inclination at IC (`ic_foot_inclination`) | low | yes | IC-sensitive | Relative to the flat-foot midstance angle (heel-landmark offset) |
-| Tibial inclination at IC (`ic_tibial_inclination`) | high | yes | IC-sensitive | + = ankle ahead of knee |
+| Foot strike pattern (`ic_foot_strike`) | low | no | IC-sensitive | Two categories, rearfoot (> 8°) vs non-rearfoot. Foot angle at IC relative to the flat-foot midstance angle; Altman & Davis 2012 define it relative to the standing foot angle. The 8° and −1.6° cutoffs are to be verified (only 8° is used). Descriptive only |
+| Foot inclination at IC (`ic_foot_inclination`) | low | yes | IC-sensitive | Relative to the flat-foot midstance angle (heel-landmark offset). Descriptive only |
+| Tibial inclination at IC (`ic_tibial_inclination`) | high | yes | IC-sensitive | + = ankle ahead of knee. Descriptive only |
 | Knee flexion at IC (`ic_knee_flexion`) | high | yes | IC-sensitive | 180 − interior angle |
 | Max stance knee flexion (`ms_max_knee_flexion`) | high | yes | — | |
 | Knee flexion excursion, IC → midstance (`ms_knee_flexion_excursion`) | high | no | IC-dependent | Midstance minus IC |
 | Foot-to-COM distance (`ic_foot_to_com`) | medium | yes | IC-sensitive | Heel vs hip midpoint; + = overstride; cm from intake height |
 | Forward trunk lean at IC / midstance (`ic_spine_lean`, `ms_spine_lean`) | high | yes | IC-sensitive (IC) | Trunk-angle proxy |
-| Hip extension, late stance (`to_hip_extension`) | medium | no (until validated) | window-sensitive | Relative to the trunk axis |
+| Hip extension, late stance (`to_hip_extension`) | medium | no (until validated) | window-sensitive | Relative to the trunk axis. Until `VALIDATION.hipExtensionValidated` is true, a value below 5° shows only "hip extension below 5°: pending validation" (no flag, no score) and the limited-hip-extension pattern is off |
 | Trunk change, IC → peak hip extension (`trunk_change_peak_hip_ext`) | medium | no | IC-sensitive | Trunk-angle proxy |
 | Ankle dorsiflexion at midstance (`ms_ankle`) | low | no | — | |
 | Knee/ankle sync (`ms_knee_ankle_sync`) | — | — | — | Not measured by this build yet |
@@ -40,6 +40,9 @@ L/R differences only when the swap check passes. Status: awaiting validation, no
 | Spine shift, PSIS rule (`ms_spine_shift`) | — | Not assessed: threshold not confirmed |
 | Foot position vs midline (`ms_foot_midline`) and crossover (`ms_crossover`) | medium | Heel vs pelvis midline at midstance; a leg's crossover pattern is "yes" when ≥ 50% of its steps cross |
 | Step rate | — | Unvalidated |
+
+Foot inclination, foot strike and tibial inclination are descriptive. They have not been shown to
+predict impact loading rate, so the app never uses load-prediction language for them.
 
 ## Never
 
