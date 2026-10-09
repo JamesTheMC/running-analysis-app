@@ -122,3 +122,11 @@ the output.
 - **2026-10-09: Clinician decision: hip extension stays unscored (`hipExtensionValidated = false`).**
   Why: ≈ 8° error vs manual annotation at the peak frame, about the width of the 5–15° range.
   Revisit after the whole-leg landmark correction. Y
+- **2026-10-09: Clinician decision: max stance knee flexion uses the clinic template (green 35–45°,
+  red > 45°), not the provisional 40–55°.** Literature context kept in the config note (healthy
+  ≈ 45°). Confidence lowered to medium (validation). Y
+- **2026-10-09: Clinician decisions on provisional thresholds:** foot-to-COM keeps ≤ 13 / > 17 cm;
+  hip adduction keeps 0–13°, red > 13°; spine shift "beyond PSIS" = median shoulder-midpoint shift
+  > 5 cm (needs height; without height the provisional 0.25 hip-width rule is used). Y
+- **2026-10-09: Clinician decisions:** crossover keeps ≥ 50% of steps; knee/ankle sync becomes
+  record-only (no flag, unscored) because the ankle angle is ≈ 20° off vs manual annotation. Y

@@ -260,17 +260,16 @@ export const METRICS = [
     type: 'range',
     sided: 'lr',
     unit: 'deg',
-    // Provisional, literature-based (DECISIONS.md): healthy runners 46.3 ± 4.5° (Heiderscheit 2011, 3D),
-    // 44.5 ± 3.6° (Matsuzaki 2024, 2D); low flexion (< 40°) is the concern (Souza 2016). The clinic
-    // template (35–45°, red > 45°) would flag about half of healthy runners; kept for owner review.
-    green: { min: 40, max: 55 },
-    red: { below: 35 },
-    greenText: '40–55°',
-    redText: '<35°',
-    provisional: true,
-    note: 'Provisional, literature-based (healthy ≈ 45°; low flexion is the concern). Clinic template 35–45° / red >45° under review.',
+    // Clinic template, chosen by the clinician 2026-10-09 (DECISIONS.md). Literature for context:
+    // healthy runners 46.3 ± 4.5° (Heiderscheit 2011, 3D), 44.5 ± 3.6° (Matsuzaki 2024, 2D), so many
+    // healthy runners fall above 45°. Below 35° is outside green (caution), not red.
+    green: { min: 35, max: 45 },
+    red: { above: 45 },
+    greenText: '35–45°',
+    redText: '>45°',
+    note: 'Clinic template range. Healthy runners average ≈ 45° in published data, so values just above 45° are common.',
     priority: true,
-    baselineConfidence: 'high',
+    baselineConfidence: 'medium', // ≈ 7–15° error vs manual annotation at midstance (reference/VALIDATION.md)
     summary: 'KNEE',
   },
   {
@@ -310,16 +309,15 @@ export const METRICS = [
     label: 'Knee/ankle sync',
     phase: 'midstance',
     allowedViews: ['lateral'],
-    type: 'boolean',
+    // Clinician decision 2026-10-09: recorded only, no flag (ankle angle ≈ 20° off vs manual).
+    type: 'record',
     sided: 'lr',
-    expected: true,
-    mismatchStatus: 'yellow', // [CONFIRM] template gives yes/no without a red rule
     display: { true: 'Yes', false: 'No' },
-    greenText: 'yes',
-    redText: '—',
+    greenText: 'record value',
+    redText: 'none defined',
     priority: false,
     baselineConfidence: 'low', // depends on the ankle angle (heel/toe landmarks)
-    note: 'Provisional rule: peak stance knee flexion and peak ankle dorsiflexion within 15% of stance time of each other; "yes" when at least half the strides are in sync.',
+    note: 'Recorded only, not flagged. Rule: peak stance knee flexion and peak ankle dorsiflexion within 15% of stance time of each other; "yes" when at least half the strides are in sync.',
     summary: 'KNEE',
   },
   {
@@ -441,8 +439,8 @@ export const METRICS = [
     phase: 'midstance',
     allowedViews: ['posterior'],
     summary: 'LUMBAR',
-    // Provisional rule: between PSIS when the median |shoulder-midpoint shift| <= 0.25 hip-joint widths
-    // (PSIS assumed about half as far apart as the hip joint centres).
+    // Clinician rule (2026-10-09): beyond PSIS = median |shoulder-midpoint shift| > 5 cm (needs height).
+    // Without height: provisional 0.25 hip-joint widths.
     type: 'boolean',
     sided: 'mid',
     expected: true, // true = stays between PSIS
@@ -452,7 +450,7 @@ export const METRICS = [
     redText: 'beyond PSIS',
     priority: true,
     baselineConfidence: 'medium',
-    note: 'Provisional: between PSIS = median shoulder-midpoint shift within a quarter of the hip-joint width (no PSIS landmark).',
+    note: 'Beyond PSIS = shoulder midpoint more than 5 cm from the pelvis midpoint (clinic rule; no PSIS landmark). Without height: a quarter of the hip-joint width (provisional).',
   },
   {
     id: 'ms_achilles_angle',

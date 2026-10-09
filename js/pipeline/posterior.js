@@ -10,7 +10,8 @@ import { median } from './stats.js';
 
 // "Beyond PSIS" (provisional): median |shoulder-midpoint shift| above a quarter of the hip-joint
 // width, assuming the PSIS sit about half as far apart as the hip joint centres. See DECISIONS.md.
-export const PSIS_HALF_WIDTH_HW = 0.25;
+export const PSIS_HALF_WIDTH_HW = 0.25; // fallback without height
+export const PSIS_BEYOND_CM = 5; // clinician decision 2026-10-09: beyond PSIS = shift > 5 cm
 
 const ANAT = { L: 'left', R: 'right' };
 
@@ -62,11 +63,15 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
   }
   out.put('ms_lateral_shift', 'mid', shiftCell);
   // Spine shift (template "between / beyond PSIS"), provisional rule on the shift magnitude.
+  // Clinician rule: beyond PSIS = median |shift| > 5 cm (needs height); without height, the
+  // provisional 0.25 hip-width rule.
   const absShift = { ...shiftHW, median: shiftHW.values.length ? median(shiftHW.values.map(Math.abs)) : null };
+  const absCm = pxPerCm && shiftPx.values.length ? median(shiftPx.values.map(Math.abs)) / pxPerCm : null;
   const psis = { ...cell(absShift), countUnit: 'steps' };
   if (psis.value != null) {
-    const between = absShift.median <= PSIS_HALF_WIDTH_HW;
-    Object.assign(psis, { value: between, display: `${between ? 'between' : 'beyond'} PSIS (median |shift| ${absShift.median.toFixed(2)} hip widths; provisional rule)` });
+    const between = absCm != null ? absCm <= PSIS_BEYOND_CM : absShift.median <= PSIS_HALF_WIDTH_HW;
+    const how = absCm != null ? `median |shift| ${absCm.toFixed(1)} cm; beyond = more than ${PSIS_BEYOND_CM} cm` : `median |shift| ${absShift.median.toFixed(2)} hip widths; provisional rule, enter height for the cm rule`;
+    Object.assign(psis, { value: between, display: `${between ? 'between' : 'beyond'} PSIS (${how})` });
   }
   out.put('ms_spine_shift', 'mid', psis);
 
