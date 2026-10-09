@@ -258,3 +258,14 @@ Findings:
 Planned fixes (next session): gate foot-to-COM behind a validation flag (as hip extension);
 lower knee-at-IC and tibial confidence to medium; capture protocol: keep the treadmill upright
 from crossing the near leg; re-run after the owner's hip-anchor clicks.
+
+## Owner spot-check of the hand marks (2026-10-09)
+Three side frames reviewed by the clinician. Shoulder, hip, ankle, heel and toe marks were confirmed
+on the initial-contact frame. The knee mark was inconsistent: about 45 px too low at initial contact
+(stride 25), correct at midstance (stride 59), and about 80 px too high at toe-off (stride 48).
+Because it is not a constant offset, it cannot be corrected across the board. The knee in the other
+15 side frames is unverified.
+
+With the clinician's knee points, the app's knee flexion error was +4.6° at initial contact, +12.1°
+at midstance and −21.3° at toe-off. Side-view knee accuracy therefore stays about ±10–20°, and the
+knee flexion confidence stays medium. Hip extension at the toe-off frame: +14.1°.
