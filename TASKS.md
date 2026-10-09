@@ -22,7 +22,7 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 ## Blocked (needs the owner)
 - A right-side lateral clip of the same runner (only a left-side clip exists), to exercise and
   validate bilateral side-view values on real video.
-- Hip extension validation (`VALIDATION.hipExtensionValidated`): stays unscored until validated.
+- Hip extension validation (`VALIDATION.hipExtensionValidated`): reviewed 2026-10-09, stays unscored; revisit after the whole-leg correction.
 
 ## Done
 - Phase 6: intake feeds the analysis, covered by tests: height → cm (foot-to-COM scored in cm,

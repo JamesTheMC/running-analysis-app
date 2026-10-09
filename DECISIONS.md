@@ -119,3 +119,6 @@ the output.
   applied.** Why: applied to the hip alone it made knee, hip-extension and foot-to-COM errors larger
   vs manual annotation (other leg landmarks share the forward bias). Alt: apply anyway (rejected:
   less accurate); whole-leg correction (next). Y
+- **2026-10-09: Clinician decision: hip extension stays unscored (`hipExtensionValidated = false`).**
+  Why: ≈ 8° error vs manual annotation at the peak frame, about the width of the 5–15° range.
+  Revisit after the whole-leg landmark correction. Y
