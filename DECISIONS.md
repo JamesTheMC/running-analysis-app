@@ -134,3 +134,7 @@ the output.
   hip-only (made angles worse), none (≈ 50–75 px forward bias). Why: leave-one-stride-out errors
   lower for point positions and most angles (reference/VALIDATION.md). Limits: fitted on one runner
   and setup; refit when new clips are annotated. Y
+- **2026-10-09: Far leg re-tested at the owner's request; still not used.** Why: 26% of far-leg
+  points swapped onto the near leg, 2 of 6 far midstances with whole-foot swaps (knee errors up to
+  61°), 1 of 6 far ICs wrong; not detectable from visibility or foot spacing. A whole-leg offset
+  cannot fix this. Bilateral side values = one clip per side. Y

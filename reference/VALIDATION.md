@@ -319,3 +319,20 @@ medians on IMG_0639_2: knee at IC 27.7–33.0° → 19.4–25.6°, max stance kn
 extension 9.7–18.8° (window-sensitive) → 10.0°, foot-to-COM 12.5–22.0 → 6.1–15.6 cm, trunk at MS
 3.1° → 6.4°. Limits: one runner, one camera setup, reference partly model-annotated. Foot-to-COM
 stays pending validation (still ≈ 6 cm high).
+
+## Far leg on a lateral clip (2026-10-09)
+15 frames at the far (right) leg's own detected IC / midstance / toe-off (6 strides; 3 detected far
+midstances fell on the IC frame), both legs hand-marked blind, near/far decided by occlusion.
+
+- **Left/right label swaps:** in 17 of 65 far-leg point checks (26%) the app's far-leg point was
+  closer to the near leg's true position than to the far leg's. At 2 of 6 far midstances the whole
+  far foot (ankle, heel, toe) sat on the near foot (≈ 250–360 px error), giving knee errors of +38°
+  and +61° and tibial errors of −57° and −66°. Visibility scores were normal (0.88) and the two feet
+  were not coincident, so the swaps cannot be caught by a simple rule.
+- **Far events:** at 1 of 6 detected far ICs the far foot was not on the belt (event wrong, points
+  swapped: knee error −47°).
+- **Unswapped frames:** far knee flexion bias ≈ −8° (toe-off frames −19 to +3°); far hip hidden
+  behind the near hip (≈ 40–60 px).
+
+A fixed offset cannot correct swaps of this size. **Decision: far-leg values stay out of the
+output.** Bilateral side-view values need a clip from each side.
