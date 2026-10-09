@@ -56,6 +56,23 @@ export const HIP_ANCHOR = {
   offset: { along: -0.062, perp: -0.159, frames: 20, source: 'clinician clicks on IMG_0639_2, 2026-10-09 (median of 20 frames)' },
 };
 
+// Whole-leg anchor for lateral clips (js/pipeline/hip-anchor.js applyLegAnchor): each near-leg point
+// moved by a fixed offset (thigh lengths; fwd = running direction, down = image down). Fitted
+// 2026-10-09 on IMG_0639_2: hip from 20 clinician clicks, knee/ankle/heel/toe from blind hand marks
+// (18 frames, 3 knees clinician-corrected). Leave-one-stride-out test: point errors ≈ 40% lower,
+// most angle errors lower (reference/VALIDATION.md). One runner and one camera setup so far.
+export const LEG_ANCHOR = {
+  mode: 'corrected',
+  offsets: {
+    hip: { fwd: -0.159, down: -0.043 },
+    knee: { fwd: -0.24, down: 0.074 },
+    ank: { fwd: -0.23, down: 0.022 },
+    heel: { fwd: -0.25, down: 0.127 },
+    toe: { fwd: -0.082, down: -0.028 },
+  },
+  source: 'IMG_0639_2, 2026-10-09: clinician hip clicks (20) + hand marks (18 frames)',
+};
+
 // Not measurable from 2D video at all; listed so they are never implied (check clinically).
 export const NOT_MEASURABLE = ['Pelvic tilt (anterior/posterior)', 'Lordosis', 'Transverse-plane motion (rotation)'];
 

@@ -52,7 +52,8 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)
 - [x] Owner spot-check of hand marks (3 frames; knee marks inconsistent)
-- [ ] Whole-leg landmark correction (hip, knee, ankle, heel share a forward bias); hip-only offset from 20 clinician clicks is stored but makes angles worse
+- [x] Whole-leg landmark correction (near leg), tested leave-one-stride-out, applied
+- [ ] Far leg: measure accuracy against hand marks (incl. left/right swaps) before any far-leg values are shown
 - [x] Hip anchor clicks (20 frames, 2026-10-09)
 - [x] Gate foot-to-COM behind a validation flag (over-reads ≈ 9 cm vs manual)
 - [x] Knee flexion at IC and tibial inclination confidence → medium (≈ 8–10° error)

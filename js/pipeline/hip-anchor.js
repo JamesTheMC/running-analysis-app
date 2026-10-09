@@ -58,3 +58,55 @@ export function applyHipAnchor(rows, side, facing, offset) {
     return out;
   });
 }
+
+// ---------------------------------------------------------------------------
+// Whole-leg anchor. MediaPipe places the near hip, knee, ankle and heel forward of the joint centres
+// on side clips (reference/VALIDATION.md), so moving the hip alone bends the thigh line the wrong
+// way. Each near-leg point gets its own fixed offset in a body frame:
+//   fwd  = along the running direction, in thigh lengths (+ = forward)
+//   down = image down, in thigh lengths (+ = down)
+// Thigh length = the clip's median near-side hip-knee distance, so the offset does not depend on
+// the (biased) landmarks of a single frame.
+
+export const LEG_POINTS = ['hip', 'knee', 'ank', 'heel', 'toe'];
+
+export function medianThighPx(rows, side) {
+  const ids = LANDMARKS[side];
+  const v = [];
+  for (const r of rows) {
+    if (!r?.lm || !(r.lm[ids.hip * 4 + 3] > VIS_MIN && r.lm[ids.knee * 4 + 3] > VIS_MIN)) continue;
+    v.push(Math.hypot(r.lm[ids.knee * 4] - r.lm[ids.hip * 4], r.lm[ids.knee * 4 + 1] - r.lm[ids.hip * 4 + 1]));
+  }
+  v.sort((a, b) => a - b);
+  return v.length ? v[Math.floor(v.length / 2)] : null;
+}
+
+// Offset of a reference point from a landmark position, in the body frame.
+export function legOffsetOf(landmark, point, facing, thighPx) {
+  return { fwd: (facing * (point[0] - landmark[0])) / thighPx, down: (point[1] - landmark[1]) / thighPx };
+}
+
+/**
+ * Rows with each near-leg point moved by offsets[point] = { fwd, down } and that side's derived
+ * angles recomputed. Points without an offset are unchanged.
+ */
+export function applyLegAnchor(rows, side, facing, offsets, thighPx) {
+  const ids = LANDMARKS[side];
+  const vis = (row, ...ks) => ks.every((k) => row.lm[k * 4 + 3] > VIS_MIN);
+  return rows.map((row) => {
+    if (!row.lm) return row;
+    const lm = Float32Array.from(row.lm);
+    for (const p of LEG_POINTS) {
+      const o = offsets[p];
+      if (!o) continue;
+      lm[ids[p] * 4] += facing * o.fwd * thighPx;
+      lm[ids[p] * 4 + 1] += o.down * thighPx;
+    }
+    const P = (k) => [lm[k * 4], lm[k * 4 + 1]];
+    const out = { ...row, lm };
+    out[`knee_flex_${side}`] = vis(row, ids.hip, ids.knee, ids.ank) ? kneeFlexion(P(ids.hip), P(ids.knee), P(ids.ank)) : null;
+    out[`hip_ext_${side}`] = vis(row, ids.sho, ids.hip, ids.knee) ? hipExtensionSigned(P(ids.sho), P(ids.hip), P(ids.knee), row.facing) : null;
+    out[`trunk_${side}`] = vis(row, ids.sho, ids.hip) ? trunkFromVertical(P(ids.sho), P(ids.hip)) : null;
+    return out;
+  });
+}

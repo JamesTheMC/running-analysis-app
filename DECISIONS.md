@@ -130,3 +130,7 @@ the output.
   > 5 cm (needs height; without height the provisional 0.25 hip-width rule is used). Y
 - **2026-10-09: Clinician decisions:** crossover keeps ≥ 50% of steps; knee/ankle sync becomes
   record-only (no flag, unscored) because the ankle angle is ≈ 20° off vs manual annotation. Y
+- **2026-10-09: Whole-leg anchor applied to near-leg points on lateral clips (`LEG_ANCHOR`).** Alt:
+  hip-only (made angles worse), none (≈ 50–75 px forward bias). Why: leave-one-stride-out errors
+  lower for point positions and most angles (reference/VALIDATION.md). Limits: fitted on one runner
+  and setup; refit when new clips are annotated. Y

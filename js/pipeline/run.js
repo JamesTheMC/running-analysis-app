@@ -8,8 +8,8 @@ import { series, tibiaGate } from './gate.js';
 import { STRIDE, hipExtensionPeaks, segmentStrides } from './strides.js';
 import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
 import { cadenceFromStrides, computeMetrics } from './metrics.js';
-import { applyHipAnchor } from './hip-anchor.js';
-import { HIP_ANCHOR } from '../config.js';
+import { applyHipAnchor, applyLegAnchor, medianThighPx } from './hip-anchor.js';
+import { HIP_ANCHOR, LEG_ANCHOR } from '../config.js';
 import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
 import { frontalBodyHeightPx, posteriorMetrics } from './posterior-metrics.js';
 import { max, median, min } from './stats.js';
@@ -105,7 +105,14 @@ export function postProcess(rows, meta, opts = {}) {
   // Events always come from the uncorrected landmarks; metrics use the selected hip anchor.
   const events = detectEvents(rows, bad, seg);
   const anchor = opts.hipAnchor ?? HIP_ANCHOR;
-  const mrows = anchor.mode === 'corrected' ? applyHipAnchor(rows, seg.near.side, seg.ref.facing, anchor.offset) : rows;
+  const leg = opts.legAnchor ?? LEG_ANCHOR;
+  // Hip-only anchor (kept for the tool and its fixture) takes precedence; otherwise the whole-leg anchor.
+  const mrows =
+    anchor.mode === 'corrected'
+      ? applyHipAnchor(rows, seg.near.side, seg.ref.facing, anchor.offset)
+      : leg.mode === 'corrected'
+        ? applyLegAnchor(rows, seg.near.side, seg.ref.facing, leg.offsets, medianThighPx(rows, seg.near.side))
+        : rows;
   const hipExt = hipExtensionPeaks(mrows, bad, meta.fs, seg, events);
   // Near-leg hip extension under each window end (window-sensitivity rule).
   const hipWindows = STRIDE.windowSweep.map((end) => ({
@@ -118,7 +125,7 @@ export function postProcess(rows, meta, opts = {}) {
     IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows: mrows, bad, seg, hipExt, events: detectEvents(rows, bad, seg, { contactTolerance: t }) })]),
   );
   const cadence = cadenceFromStrides(rows, seg);
-  return { bad, seg, hipExt, hipWindows, events, metrics, sweep, cadence, hipAnchor: anchor, summary: referenceSummary(rows, bad) };
+  return { bad, seg, hipExt, hipWindows, events, metrics, sweep, cadence, hipAnchor: anchor, legAnchor: leg, summary: referenceSummary(rows, bad) };
 }
 
 // Same keys and semantics as summarize() in reference/reference_gait_pipeline.py (minus the

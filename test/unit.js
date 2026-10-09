@@ -7,7 +7,8 @@ import { analyze } from '../js/engine/analysis.js';
 import { buildInterpretation, buildSections } from '../js/engine/summary.js';
 import { toAnalysis } from '../js/pipeline/measurements.js';
 import { postProcess, postProcessRear } from '../js/pipeline/run.js';
-import { applyHipAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
+import { applyHipAnchor, applyLegAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
+import { LEG_ANCHOR } from '../js/config.js';
 import { CANDIDATES } from './rear-midstance.js';
 import { mergeSession } from '../js/pipeline/session.js';
 import { POSTERIOR as POSTERIOR_MEASURES, pelvisDropAngle } from '../js/pipeline/posterior-metrics.js';
@@ -409,6 +410,27 @@ await testAsync('corrected mode matches its fixture (IMG_0639_2)', async () => {
   return `offset ${JSON.stringify(fx.hipAnchor.offset)} (${fx.offsetSource})`;
 });
 
+test('leg anchor: zero offsets leave the landmarks unchanged; offsets move only the near leg', () => {
+  const row = syntheticRow();
+  const zero = Object.fromEntries(['hip', 'knee', 'ank', 'heel', 'toe'].map((p) => [p, { fwd: 0, down: 0 }]));
+  const [z] = applyLegAnchor([row], 'L', -1, zero, 100);
+  for (let k = 0; k < 132; k++) assert(z.lm[k] === row.lm[k], `lm[${k}] changed`);
+  const [c] = applyLegAnchor([row], 'L', -1, { knee: { fwd: 0.1, down: 0.2 } }, 100);
+  assert(Math.abs(c.lm[25 * 4] - (row.lm[25 * 4] - 10)) < 1e-4 && Math.abs(c.lm[25 * 4 + 1] - (row.lm[25 * 4 + 1] + 20)) < 1e-4, 'near knee not moved forward/down');
+  assert(c.lm[26 * 4] === row.lm[26 * 4], 'far knee moved');
+});
+await testAsync('leg anchor on cached IMG_0639_2: gait events unchanged', async () => {
+  const res = await fetch('../test-data/debug/IMG_0639_2.rows.json');
+  if (!res.ok) return 'skip';
+  const { meta, rows } = await res.json();
+  for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
+  const a = postProcess(rows, meta, { nearSide: 'L', hipAnchor: { mode: 'landmark' }, legAnchor: { mode: 'landmark' } });
+  const b = postProcess(rows, meta, { nearSide: 'L', hipAnchor: { mode: 'landmark' }, legAnchor: LEG_ANCHOR });
+  const ev = (r) => JSON.stringify(r.events.L.strides.map((s) => [s.ic, s.ms, s.to]));
+  assert(ev(a) === ev(b), 'events changed');
+  return `${b.events.L.strides.length} strides, same IC/MS/TO`;
+});
+
 // ---------------------------------------------------------------------------
 section = 'Posterior symmetry (mirror x and swap left/right)';
 const PAIRS = [[1, 4], [2, 5], [3, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16], [17, 18], [19, 20], [21, 22], [23, 24], [25, 26], [27, 28], [29, 30], [31, 32]];
@@ -489,7 +511,7 @@ await testAsync('near-leg metrics match the pre-refactor values', async () => {
   const base = await (await fetch('fixtures/IMG_0639_2.baseline.json')).json();
   const { meta, rows } = await res.json();
   for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
-  const r = postProcess(rows, meta, { nearSide: base.near, hipAnchor: { mode: 'landmark' } }); // baseline uses the uncorrected hip
+  const r = postProcess(rows, meta, { nearSide: base.near, hipAnchor: { mode: 'landmark' }, legAnchor: { mode: 'landmark' } }); // baseline uses uncorrected landmarks
   const now = r.metrics[base.near].summary;
   const tol = 1e-9;
   let fails = 0;

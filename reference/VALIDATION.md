@@ -290,3 +290,32 @@ Clip medians would change: hip extension (late stance) 18.2° → 4.6°, knee at
 stance knee 55.5° → 64.0°. Because knee, ankle and heel are shifted forward too, correcting the hip
 alone makes the angles worse. **Decision: offset stored, not applied (`HIP_ANCHOR.mode = 'landmark'`).**
 Next step: a whole-leg (hip, knee, ankle, heel) correction, checked against the same frames.
+
+## Whole-leg anchor (2026-10-09)
+Each near-leg point (hip, knee, ankle, heel, toe) gets a fixed offset in a body frame (thigh
+lengths, forward / down; thigh = clip median hip-knee distance). Hip offset from the 20 clinician
+clicks; knee, ankle, heel and toe from the 18 hand-marked frames (3 knees clinician-corrected).
+Offsets (fwd, down): hip −0.159, −0.043; knee −0.240, +0.074; ankle −0.230, +0.022; heel −0.250,
++0.127; toe −0.082, −0.028.
+
+Tested leave-one-stride-out (offsets fitted on 5 strides, errors measured on the 6th), bias / mean
+absolute error:
+
+| Metric | landmarks | whole-leg anchor |
+|---|---|---|
+| Point error hip / knee / ankle / heel / toe (px) | 56 / 69 / 68 / 76 / 44 | 32 / 44 / 38 / 33 / 41 |
+| Knee flexion at IC | +2.9 / 9.1° | −5.3 / 8.2° |
+| Knee flexion at MS | +6.6 / 6.7° | +0.4 / 5.1° |
+| Knee flexion at toe-off frame | −4.6 / 9.5° | −5.9 / 8.8° |
+| Tibial inclination at IC | +5.3 / 7.9° | +6.5 / 8.6° |
+| Hip extension at peak frame | +4.6 / 8.3° | +0.3 / 7.5° |
+| Foot inclination at IC (rel. MS) | +11.1 / 12.8° | +7.5 / 9.6° |
+| Ankle DF at MS | −20.8 / 20.8° | −5.0 / 6.6° |
+| Foot-to-COM at IC | +9.1 / 9.1 cm | +5.7 / 5.7 cm |
+| Trunk lean at IC / MS | 5.4 / 5.9° | 6.2 / 2.6° |
+
+Applied (`LEG_ANCHOR.mode = 'corrected'`). Gait events still use the raw landmarks (unit test). Clip
+medians on IMG_0639_2: knee at IC 27.7–33.0° → 19.4–25.6°, max stance knee 55.5° → 49.8°, hip
+extension 9.7–18.8° (window-sensitive) → 10.0°, foot-to-COM 12.5–22.0 → 6.1–15.6 cm, trunk at MS
+3.1° → 6.4°. Limits: one runner, one camera setup, reference partly model-annotated. Foot-to-COM
+stays pending validation (still ≈ 6 cm high).
