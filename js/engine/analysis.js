@@ -135,7 +135,7 @@ function evaluateCell(def, side, measurement, ctx) {
   }
   // Awaiting clinician validation: a below-range value is informational only (no flag, prompt or trigger).
   const pv = def.pendingValidation;
-  if (pv && !VALIDATION[pv.flag] && cell.status === 'red') {
+  if (pv && !VALIDATION[pv.flag] && (pv.when || ['red']).includes(cell.status)) {
     cell.status = 'pending-validation';
     cell.pendingText = pv.text;
     return cell;

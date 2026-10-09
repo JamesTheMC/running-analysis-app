@@ -52,7 +52,7 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - One-command tests: `python3 tools/test.py` (headless Chrome)
 
 ## Next (Phase 5 follow-up)
-- [ ] Gate foot-to-COM behind a validation flag (over-reads ≈ 9 cm vs manual)
-- [ ] Knee flexion at IC and tibial inclination confidence → medium (≈ 8–10° error)
-- [ ] Capture plan: treadmill upright must not cross the near leg
+- [x] Gate foot-to-COM behind a validation flag (over-reads ≈ 9 cm vs manual)
+- [x] Knee flexion at IC and tibial inclination confidence → medium (≈ 8–10° error)
+- [x] Capture protocol: treadmill upright must not cross the near leg
 - [ ] Owner spot-check of the manual annotations; re-run after hip-anchor clicks

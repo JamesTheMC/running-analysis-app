@@ -104,3 +104,14 @@ the output.
   cadence, else the video estimate (labelled unvalidated). Y
 - **Limits statement in every interpretation: movement analysis to support clinical judgment, not a
   diagnosis; provisional thresholds are not published cutoffs.** Y
+
+## Phase 5: validation follow-up (2026-10-09)
+- **Foot-to-COM gated behind `VALIDATION.footToComValidated` (false): above-range values show
+  "pending validation", unscored, no pattern trigger.** Why: over-reads ≈ 9 cm vs blind manual
+  annotation (reference/VALIDATION.md), about the size of the healthy mean. Y
+- **Knee flexion at IC and tibial inclination confidence lowered from high to medium.** Why: ≈ 10° and
+  ≈ 8° mean absolute error vs manual annotation. Y
+- **Capture protocol: the treadmill's side upright must not cross the near leg.** Why: overlays show
+  the knee landmark pulled onto the upright. Y
+- **Frames for annotation are exported in the browser (test/export-frames.html), not with OpenCV.**
+  Why: no Python OpenCV on this Mac; uses the app's own decoder, so frame indices match exactly. Y

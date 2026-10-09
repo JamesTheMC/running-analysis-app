@@ -62,7 +62,7 @@ const NEVER_POSTERIOR = [
 const NEVER_LATERAL = ['ms_hip_adduction', 'ms_pelvic_drop', 'ms_knee_varus_valgus', 'ms_lateral_shift', 'ms_trunk_lateral_lean', 'ms_crossover', 'ms_foot_midline', 'ms_spine_shift'];
 const NOT_BUILT = ['ms_rearfoot_eversion', 'ms_achilles_angle', 'ms_out_toe'];
 const CAPS = {
-  ic_knee_flexion: 'high', ic_tibial_inclination: 'high', ms_hip_adduction: 'medium', ms_pelvic_drop: 'low',
+  ic_knee_flexion: 'medium', ic_tibial_inclination: 'medium', ms_hip_adduction: 'medium', ms_pelvic_drop: 'low',
   ms_knee_varus_valgus: 'low', to_hip_extension: 'medium', ic_foot_strike: 'low', ic_foot_inclination: 'low',
 };
 const UNSCORED = ['to_hip_extension', 'ic_foot_strike', 'ms_knee_flexion_excursion'];
@@ -352,7 +352,7 @@ test('speed: step length = speed / step rate, from the entered speed', () => {
   assert(/Step length is about 1\.22 m/.test(b), b);
   assert(!/Step length/.test(intakeRun(baseIntake).text), 'step length without speed');
 });
-test('cadence: entered cadence is used and triggers the overstride pattern with foot-to-COM high', () => {
+test('cadence: entered cadence is used and triggers the overstride pattern (with low knee flexion at IC)', () => {
   const intake = { ...baseIntake, speedValue: '10', speedUnit: 'km/h', cadence: '150' };
   const { res, text } = intakeRun(intake, { footPx: 60 }); // 60 px / (500/170) = 20.4 cm
   assert(res.patterns.some((p) => p.def.id === 'overstride'), res.patterns.map((p) => p.def.id).join());
@@ -360,6 +360,15 @@ test('cadence: entered cadence is used and triggers the overstride pattern with 
   const none = intakeRun({ ...intake, cadence: '' }, { footPx: 60 });
   assert(!none.res.patterns.some((p) => p.def.id === 'overstride' && p.matched?.some?.((m) => /cadence/.test(m))), 'cadence trigger without cadence');
   return text.split('\n\n').find((l) => l.startsWith('Mechanics'));
+});
+test('foot-to-COM above range is pending validation: no flag, no pattern trigger', () => {
+  const { res, text } = intakeRun(baseIntake, { footPx: 60 });
+  const c = res.rowsById.ic_foot_to_com.cells.left;
+  assert(c.status === 'pending-validation' && c.weight == null, JSON.stringify({ s: c.status, w: c.weight }));
+  const o = res.patterns.find((p) => p.def.id === 'overstride');
+  assert(!o || !JSON.stringify(o.triggers).includes('foot-to-COM'), `foot-to-COM used as a trigger: ${JSON.stringify(o?.triggers)}`);
+  assert(/pending validation/.test(text), text);
+  return c.display;
 });
 test('incline: mentioned in the interpretation when above 0', () => {
   assert(/incline was 1%/.test(intakeRun({ ...baseIntake, incline: '1' }).text), 'no incline sentence');

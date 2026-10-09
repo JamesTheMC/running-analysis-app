@@ -41,6 +41,7 @@ export const STATUS_REASONS = {
 // flag, score or pattern trigger; a single informational line says "pending validation" instead.
 export const VALIDATION = {
   hipExtensionValidated: false, // set true once hip extension (trunk axis, late-stance window) is validated
+  footToComValidated: false, // app over-read ≈ 9 cm vs manual annotation (reference/VALIDATION.md, Phase 5)
 };
 
 // Hip anchor for lateral clips (js/pipeline/hip-anchor.js). 'landmark' = MediaPipe hip landmark;
@@ -176,7 +177,7 @@ export const METRICS = [
     provisional: true,
     note: 'Descriptive only. ±10° has no published threshold (provisional).',
     priority: false,
-    baselineConfidence: 'high',
+    baselineConfidence: 'medium', // ≈8° mean abs error vs manual annotation (reference/VALIDATION.md)
     summary: 'ANKLE',
   },
   {
@@ -201,6 +202,8 @@ export const METRICS = [
     note: 'Provisional cm bands (healthy 9.2 ± 4.0 cm, Heiderscheit 2011). Clinic template: < ½ shoe length, red > 1 shoe length.',
     priority: true,
     baselineConfidence: 'medium', // depends on the height-based scale and foot landmarks
+    // Until VALIDATION.footToComValidated, an above-range value is informational only (no flag/trigger).
+    pendingValidation: { flag: 'footToComValidated', when: ['yellow', 'red'], text: 'foot-to-COM above range: pending validation (reads ≈ 9 cm high vs manual measurement)' },
     requires: ['height'],
     summary: 'ANKLE',
   },
@@ -218,7 +221,7 @@ export const METRICS = [
     greenText: '15–25°',
     redText: '<12° or >30°',
     priority: true,
-    baselineConfidence: 'high',
+    baselineConfidence: 'medium', // ≈10° mean abs error vs manual annotation (reference/VALIDATION.md)
     provisional: true,
     note: 'Clinic template range; healthy adults 17.8 ± 4.0° (Heiderscheit 2011, 3D). Thresholds provisional.',
     summary: 'KNEE',
@@ -712,7 +715,7 @@ export const STATUS_LABELS = {
   record: { report: 'Recorded', summary: 'recorded' },
   review: { report: 'Above template range', summary: 'above template range, reference under review' },
   // Below range while the metric awaits clinician validation: informational only.
-  'pending-validation': { report: 'Below range: pending validation', summary: 'pending validation' },
+  'pending-validation': { report: 'Out of range: pending validation', summary: 'pending validation' },
   // IC-dependent metric whose status changes across the IC-tolerance sweep: range shown, not scored.
   'ic-sensitive': { report: 'Borderline, IC-sensitive', summary: 'borderline, IC-sensitive' },
   // Status changes across analysis-window choices (hip extension window end): range shown, not scored.
