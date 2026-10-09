@@ -269,3 +269,24 @@ Because it is not a constant offset, it cannot be corrected across the board. Th
 With the clinician's knee points, the app's knee flexion error was +4.6° at initial contact, +12.1°
 at midstance and −21.3° at toe-off. Side-view knee accuracy therefore stays about ±10–20°, and the
 knee flexion confidence stays medium. Hip extension at the toe-off frame: +14.1°.
+
+## Hip anchor from clinician clicks (2026-10-09)
+The clinician clicked the hip joint centre on 20 side frames (test/hip-anchor.html). Median offset
+from the MediaPipe near-hip landmark: 0.159 thigh lengths backward, 0.062 thigh lengths up the thigh
+(≈ 40 px full resolution), which confirms the forward hip bias.
+
+Applying it to the hip alone (other landmarks unchanged), against the hand-marked frames:
+
+| | landmark hip | corrected hip |
+|---|---|---|
+| Hip point error (mean px) | 56 | 36 |
+| Knee flexion at IC, bias / mean abs | +2.9 / 9.1° | +11.4 / 12.4° |
+| Knee flexion at MS | +6.6 / 6.7° | +15.1 / 15.1° |
+| Hip extension at peak frame | +4.6 / 8.3° | −9.3 / 9.3° |
+| Foot-to-COM at IC | +9.1 / 9.1 cm | +15.1 / 15.1 cm |
+| Trunk lean at MS | −5.9 / 5.9° | −2.5 / 2.5° |
+
+Clip medians would change: hip extension (late stance) 18.2° → 4.6°, knee at IC 32.4° → 40.9°, max
+stance knee 55.5° → 64.0°. Because knee, ankle and heel are shifted forward too, correcting the hip
+alone makes the angles worse. **Decision: offset stored, not applied (`HIP_ANCHOR.mode = 'landmark'`).**
+Next step: a whole-leg (hip, knee, ankle, heel) correction, checked against the same frames.

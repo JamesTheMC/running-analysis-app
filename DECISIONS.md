@@ -115,3 +115,7 @@ the output.
   the knee landmark pulled onto the upright. Y
 - **Frames for annotation are exported in the browser (test/export-frames.html), not with OpenCV.**
   Why: no Python OpenCV on this Mac; uses the app's own decoder, so frame indices match exactly. Y
+- **2026-10-09: Clinician hip offset (20 frames: 0.159 back, 0.062 up, thigh lengths) stored but not
+  applied.** Why: applied to the hip alone it made knee, hip-extension and foot-to-COM errors larger
+  vs manual annotation (other leg landmarks share the forward bias). Alt: apply anyway (rejected:
+  less accurate); whole-leg correction (next). Y

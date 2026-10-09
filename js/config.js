@@ -49,8 +49,11 @@ export const VALIDATION = {
 // perpendicular, + = forward), the median of clinician clicks on the hip joint centre
 // (test/hip-anchor.html). Events are always detected on the uncorrected landmarks.
 export const HIP_ANCHOR = {
+  // Clinician offset measured (20 frames) but NOT applied: hip-only correction made knee, hip-extension
+  // and foot-to-COM errors larger vs manual annotation, because knee/ankle/heel are shifted too
+  // (reference/VALIDATION.md, 2026-10-09). Whole-leg correction is the open follow-up.
   mode: 'landmark',
-  offset: { along: 0, perp: 0, frames: 0, source: 'placeholder: no frames clicked yet (offset 0, corrected = landmark)' },
+  offset: { along: -0.062, perp: -0.159, frames: 20, source: 'clinician clicks on IMG_0639_2, 2026-10-09 (median of 20 frames)' },
 };
 
 // Not measurable from 2D video at all; listed so they are never implied (check clinically).
