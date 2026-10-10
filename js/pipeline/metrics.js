@@ -120,22 +120,31 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
   const trunkIds = [LANDMARKS.L.sho, LANDMARKS.R.sho, LANDMARKS.L.hip, LANDMARKS.R.hip];
   const ok = (i, ...ks) => i != null && !bad[i] && visible(rows[i], ...ks);
 
+  // Per-stride table (aligned across metrics) for correlation analysis.
+  const table = [];
+  let rec = null;
+  const put = (k, v) => {
+    per[k].push(v);
+    rec[k] = v;
+  };
   for (const s of ev.strides) {
     if (!s.valid) continue;
+    rec = { cycle: s.cycle };
+    table.push(rec);
     const ic = rows[s.ic];
-    if (ok(s.ic, ids.hip, ids.knee, ids.ank) && ic[`knee_flex_${side}`] != null) per.kneeIC.push(ic[`knee_flex_${side}`]);
+    if (ok(s.ic, ids.hip, ids.knee, ids.ank) && ic[`knee_flex_${side}`] != null) put('kneeIC', ic[`knee_flex_${side}`]);
     let mx = -Infinity;
     for (let i = s.ic; i <= s.to; i++) if (Number.isFinite(knee[i])) mx = Math.max(mx, knee[i]);
-    if (Number.isFinite(mx)) per.maxStanceKnee.push(mx);
-    if (ok(s.ic, ids.knee, ids.ank)) per.tibialIC.push(tibialInclination(ic, ids, facing));
+    if (Number.isFinite(mx)) put('maxStanceKnee', mx);
+    if (ok(s.ic, ids.knee, ids.ank)) put('tibialIC', tibialInclination(ic, ids, facing));
     if (ok(s.ic, ids.heel)) {
       const px = facing * (at(ic, ids.heel)[0] - hipMidX(ic));
-      per.footToComPx.push(px);
-      per.footToComShoe.push(px / ev.footLength);
+      put('footToComPx', px);
+      put('footToComShoe', px / ev.footLength);
     }
     if (!near) continue; // far-leg MS is unreliable; MS-referenced and trunk metrics use the near leg only
-    if (ok(s.ic, ids.heel, ids.toe) && ok(s.ms, ids.heel, ids.toe)) per.footInclIC.push(footAngle(ic, ids, facing) - footAngle(rows[s.ms], ids, facing));
-    if (ok(s.ms, ids.knee, ids.ank, ids.heel, ids.toe)) per.ankleDFms.push(ankleDorsiflexion(rows[s.ms], ids));
+    if (ok(s.ic, ids.heel, ids.toe) && ok(s.ms, ids.heel, ids.toe)) put('footInclIC', footAngle(ic, ids, facing) - footAngle(rows[s.ms], ids, facing));
+    if (ok(s.ms, ids.knee, ids.ank, ids.heel, ids.toe)) put('ankleDFms', ankleDorsiflexion(rows[s.ms], ids));
     // Knee/ankle sync (provisional): peak stance knee flexion and peak ankle dorsiflexion within
     // SYNC_SHARE of stance time of each other (at least one analysed frame).
     {
@@ -152,20 +161,20 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
           }
         }
       }
-      if (kPeak >= 0 && dPeak >= 0) per.kneeAnkleSync.push(Math.abs(kPeak - dPeak) <= Math.max(1, Math.round(SYNC_SHARE * (s.to - s.ic))) ? 1 : 0);
+      if (kPeak >= 0 && dPeak >= 0) put('kneeAnkleSync', Math.abs(kPeak - dPeak) <= Math.max(1, Math.round(SYNC_SHARE * (s.to - s.ic))) ? 1 : 0);
     }
     // Knee flexion excursion: midstance minus IC (raw per-frame values, as knee flexion at IC).
     const kIC = ic[`knee_flex_${side}`];
     const kMS = rows[s.ms][`knee_flex_${side}`];
-    if (ok(s.ic, ids.hip, ids.knee, ids.ank) && ok(s.ms, ids.hip, ids.knee, ids.ank) && kIC != null && kMS != null) per.kneeExcursion.push(kMS - kIC);
-    if (ok(s.ic, ...trunkIds)) per.trunkIC.push(trunkLean(ic, facing));
-    if (ok(s.ms, ...trunkIds)) per.trunkMS.push(trunkLean(rows[s.ms], facing));
+    if (ok(s.ic, ids.hip, ids.knee, ids.ank) && ok(s.ms, ids.hip, ids.knee, ids.ank) && kIC != null && kMS != null) put('kneeExcursion', kMS - kIC);
+    if (ok(s.ic, ...trunkIds)) put('trunkIC', trunkLean(ic, facing));
+    if (ok(s.ms, ...trunkIds)) put('trunkMS', trunkLean(rows[s.ms], facing));
     const peak = hipExt[side].strides[s.cycle];
     if (peak?.valid && peak.index > s.ic && ok(s.ic, ...trunkIds) && ok(peak.index, ...trunkIds)) {
-      per.trunkChange.push(trunkLean(rows[peak.index], facing) - trunkLean(ic, facing));
+      put('trunkChange', trunkLean(rows[peak.index], facing) - trunkLean(ic, facing));
     }
   }
-  return { side, near, total, perStride: per, summary: Object.fromEntries(Object.entries(per).map(([k, v]) => [k, summarise(v, total)])) };
+  return { side, near, total, perStride: per, strideTable: table, summary: Object.fromEntries(Object.entries(per).map(([k, v]) => [k, summarise(v, total)])) };
 }
 
 // Near-side arm: shoulder swing ROM (max - min of the arm-vs-trunk angle) per stride cycle.

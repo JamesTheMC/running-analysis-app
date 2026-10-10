@@ -78,13 +78,24 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [x] Input: mirrored video undone at decode, frame-timing check, time-based sweeps
 - [x] Pose stabilisation: visibility threshold, gap fill ≤ 0.1 s, SG 0.1 s; no double smoothing
 
+- [x] Event tables per view and leg with per-stride confidence (gait-events.js); step timing from
+      running-mean crossings; rear IC/TO low confidence (timing only)
+- [x] Reconciliation layer (reconcile.js): L/R convention + depth check (auto re-slot), gait-cycle
+      alignment, cross-checks with tolerances, authoritative view, per-metric confidence + reasons,
+      one-view handling, intake-derived quantities
+- [x] Debug tab (skeleton overlay, events, confidence); full flow in the app (T2 side + rear);
+      phone/tablet layout checked
+- [x] Committed landmark fixtures for all 8 clips (test/fixtures/clips, 4.1 MB, no video)
+
+### Doing
+- [ ] Event validation vs blind frame marking (28 strips) — agent running
+- [ ] Joint-angle validation T1–T3 (30 frames) — agent running; decide leg anchor (C0 fit does not
+      transfer: leave-one-client-out test)
+
 ### Todo
-- [ ] Events per leg per view with confidence; manual frame-marking validation per clip
-- [ ] Reconciliation layer: L/R convention, time alignment, authoritative view, cross-checks, confidence
-- [ ] Intake: real-unit stride length, vertical oscillation; graceful blanks
-- [ ] Joint-angle validation per clip and view; fix > 5° or explain
-- [ ] Prototype: full flow, regression fixtures (derived JSON), debug view, mobile layout
-- [ ] HANDOFF.md
+- [ ] Expected-range regression test on fixtures (after the anchor decision)
+- [ ] Correlated-metric candidates (per-stride, within client)
+- [ ] HANDOFF.md, final report
 
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)

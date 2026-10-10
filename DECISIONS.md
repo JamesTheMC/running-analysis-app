@@ -200,3 +200,12 @@ the output.
   T1–T3 (wrists hidden from behind, visibility 0.1–0.2). Y
 - **Debug tab: skeleton overlay on the clip's frames, event timeline with confidence, per-metric
   confidence and reasons, cross-view checks, copy-JSON.** Y
+- **Treadmill speed is not estimated from video (rejected).** Belt speed from the planted foot plus
+  the height scale gave 3.7–9.5 mph for clips entered as 6–8 mph, not even in rank order (30 fps
+  foot velocity too noisy). Step and stride length need the entered speed; blank speed → not
+  computed, noted in the result. Y
+- **Rear-view IC/TO shifted back by a calibrated lag (IC 100 ms, TO 120 ms) measured against blind
+  frame marking on 4 clients; pelvic-drop loading response uses the calibrated IC.** Alt: no
+  correction (pelvic drop measured from almost midstance); a per-clip foot-speed detector (abandoned
+  earlier: perspective). Recalibrate when more marked clips exist. Y
+- **Side-view events accepted as is (IC within one frame, TO within 1–2 frames at 30 fps).** Y

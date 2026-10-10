@@ -237,6 +237,11 @@ export function pelvisLowMidstance(rows, bad, seg, centres) {
 
 // Posterior capture check: how far the runner's pelvis midline sits from the frame centre, in hip
 // widths (+ = runner right of centre in the image). Approximate: the runner drifts on the belt.
+// Rear-view contact/toe-off are the foot-height crossings, which lag the true events: against blind
+// frame marking (27 rear stances, 4 clients, 2026-10-10) IC +103 ms and TO +122 ms on average
+// (range 67–167 ms). The crossings are shifted back by these lags (calibration from 4 clients).
+export const REAR_EVENT_LAG_SEC = { ic: 0.1, to: 0.12 };
+
 export const CAPTURE_CHECK = { offCentreWarnHipWidths: 0.5 };
 
 export function posteriorCaptureChecks(rows, bad, width) {

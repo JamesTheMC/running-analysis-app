@@ -16,6 +16,7 @@
 
 import { cadenceFromDurations } from './metrics.js';
 import { IC_SWEEP, EVENTS } from './events.js';
+import { REAR_EVENT_LAG_SEC } from './rear-events.js';
 import { fillGaps, median, savgol } from './stats.js';
 
 // IC timing spread across contact tolerances (0.2–0.4 foot lengths): above `medium` ms the stride's
@@ -183,14 +184,16 @@ export function posteriorEventTable(result, rows, meta) {
     const strides = midstancePelvis[side].map((h, k) => {
       const flags = h.reason ? [h.reason] : [];
       if (!swapsOk) flags.push('left/right swaps in this clip');
+      const icRow = Math.max(0, h.start - REAR_EVENT_LAG_SEC.ic * fs);
+      const toRow = Math.max(0, h.end - REAR_EVENT_LAG_SEC.to * fs);
       return {
         cycle: k,
         valid: h.valid,
         // MS (lowest pelvis) is medium; IC/TO from height crossings are low (see header).
         confidence: !h.valid ? 'low' : swapsOk ? 'medium' : 'low',
-        ic: { t: h.start / fs + (rows[0]?.t ?? 0), frame: fAt(rows, h.start), row: h.start, confidence: 'low' },
+        ic: { t: icRow / fs + (rows[0]?.t ?? 0), frame: fAt(rows, icRow), row: icRow, confidence: 'low', method: 'foot-height crossing − 100 ms (calibrated)' },
         ms: { t: tAt(rows, h.ms), frame: fAt(rows, h.ms), row: h.ms, method: 'lowest pelvis in stance half-cycle' },
-        to: { t: h.end / fs + (rows[0]?.t ?? 0), frame: fAt(rows, h.end), row: h.end, confidence: 'low' },
+        to: { t: toRow / fs + (rows[0]?.t ?? 0), frame: fAt(rows, toRow), row: toRow, confidence: 'low', method: 'foot-height crossing − 120 ms (calibrated)' },
         contactMs: null, // not estimable from behind (see header)
         flags,
       };

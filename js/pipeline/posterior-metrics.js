@@ -17,6 +17,7 @@
 import { LANDMARKS } from './kinematics.js';
 import { median, percentile } from './stats.js';
 import { SEGMENT_RATIOS } from './metrics.js';
+import { REAR_EVENT_LAG_SEC } from './rear-events.js';
 
 const DEG = 180 / Math.PI;
 const P = (row, k) => [row.lm[k * 4], row.lm[k * 4 + 1]];
@@ -130,18 +131,24 @@ export function posteriorMetrics(rows, bad, ms, fs) {
     const halves = ms[side];
     const total = halves.length;
     const at = (shift) => {
+      const table = [];
       const per = { hipAdduction: [], kneeValgus: [], trunkShift: [], trunkShiftPx: [], trunkLateralLean: [], heelFromMidline: [], heelFromMidlinePx: [], pelvicDrop: [] };
       for (const h of halves) {
         if (!h.valid) continue;
         const i = h.ms + shift;
         if (!usable(i)) continue;
-        for (const [k, fn] of Object.entries(POSTERIOR)) per[k].push(fn(rows[i], side));
+        const rec = { ms: i };
+        table.push(rec);
+        for (const [k, fn] of Object.entries(POSTERIOR)) per[k].push((rec[k] = fn(rows[i], side)));
         per.trunkShiftPx.push(POSTERIOR.trunkShift(rows[i], side) * frame(rows[i], side).hipW);
         per.heelFromMidlinePx.push(POSTERIOR.heelFromMidline(rows[i], side) * frame(rows[i], side).hipW);
-        const lr = Math.max(0, Math.ceil(h.start)); // loading response: segmentation-derived stance start
-        if (usable(lr) && lr < i) per.pelvicDrop.push(pelvisDropAngle(rows[i], side) - pelvisDropAngle(rows[lr], side));
+        // Loading response = estimated IC: the stance-start crossing minus the calibrated lag.
+        const lr = Math.max(0, Math.ceil(h.start - REAR_EVENT_LAG_SEC.ic * (fs || 60)));
+        if (usable(lr) && lr < i) per.pelvicDrop.push((rec.pelvicDrop = pelvisDropAngle(rows[i], side) - pelvisDropAngle(rows[lr], side)));
       }
-      return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, summarise(v, total)]));
+      const sum = Object.fromEntries(Object.entries(per).map(([k, v]) => [k, summarise(v, total)]));
+      Object.defineProperty(sum, 'table', { value: table, enumerable: false }); // per-step, aligned
+      return sum;
     };
     out[side] = { total, shifts, sweep: Object.fromEntries(shifts.map((d) => [d, at(d)])) };
     out[side].summary = out[side].sweep[0];

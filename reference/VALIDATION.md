@@ -336,3 +336,35 @@ midstances fell on the IC frame), both legs hand-marked blind, near/far decided 
 
 A fixed offset cannot correct swaps of this size. **Decision: far-leg values stay out of the
 output.** Bilateral side-view values need a clip from each side.
+
+# Reconciliation phase (2026-10-10): events, T1–T3
+
+## Gait events vs blind manual frame marking
+28 frame strips (consecutive frames around one stance; side: 3 near-leg stances per clip; rear: 2
+stances per leg per clip), marked blind by a separate agent (first frame touching the belt = IC, last
+frame touching = TO). Error = app − manual.
+
+| View | Clips | IC bias / mean abs error | TO bias / mean abs error |
+|---|---|---|---|
+| Side | T1, T2, T3 (30 fps) | +33 / 33 ms (n 9; every stride exactly 1 frame) | +28 / 44 ms (n 12; 1–2 frames) |
+| Side | C0 (120 fps) | not measurable (contact before the first tile) | −33 / 33 ms (n 3) |
+| Rear | all (before calibration) | +103 / 103 ms (n 11; range 67–133) | +122 / 122 ms (n 16; low-confidence marks) |
+
+- Side view: within 1–2 frames at 30 fps. The marker notes that their IC tile is the blurred landing
+  tile, one frame before the sharp heel-down frame, so the true side IC error is 0–1 frame. Contact
+  time is over-read by about one frame (+33 ms) on T2.
+- Rear view: the foot-height crossings lag contact by a consistent ~100 ms and toe-off by ~120 ms.
+  The lags are now subtracted (`REAR_EVENT_LAG_SEC`, calibrated on these 4 clients). Step timing is
+  unaffected (a constant lag cancels). Rear contact time stays not reported.
+- Pelvic drop used the uncalibrated crossing as loading response, which put it close to midstance.
+  After calibration, pelvic drop reads −2 to −4.5° (swing-side hip rising) on all four clients,
+  opposite to the expected contralateral drop. 2D pelvic drop is not trustworthy here (likely the hip
+  landmarks follow the thighs); it stays unscored and should not be presented.
+
+## Cross-view timing (same client, separate recordings)
+| Client | Cadence side / rear (spm) | Step time L side / rear (ms) | Step time R side / rear (ms) |
+|---|---|---|---|
+| C0 | 165.3 / 166.4 | — / 370 (side step timing unreliable: far-ankle swaps) | — / 351 |
+| T1 | 183.9 / 182.7 | 326 / 327 | 327 / 322 |
+| T2 | 177.4 / 181.6 | 338 / 339 | 339 / 321 |
+| T3 | 179.1 / 176.6 | 333 / 345 | 336 / 333 |
