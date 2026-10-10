@@ -368,3 +368,50 @@ frame touching = TO). Error = app − manual.
 | T1 | 183.9 / 182.7 | 326 / 327 | 327 / 322 |
 | T2 | 177.4 / 181.6 | 338 / 339 | 339 / 321 |
 | T3 | 179.1 / 176.6 | 333 / 345 | 336 / 333 |
+
+## Joint angles vs blind hand marks, T1–T3 (and C0 for comparison)
+30 frames from T1–T3 (side: IC / midstance / toe-off on 2 strides per clip; rear: midstance, 2 per
+leg per clip), joint centres marked blind by a separate agent. Error = app − manual, same frame.
+Whole-leg anchor OFF (see below).
+
+### Rear view (T1–T3, n = 12 frames; C0, n = 8)
+| Metric | T1–T3 bias / mean abs (max) | C0 bias / mean abs |
+|---|---|---|
+| Hip adduction | −3.1 / 3.1° (5.9) | −1.4 / 2.0° |
+| Knee frontal-plane projection angle | −0.5 / 1.5° (3.3) | −1.6 / 1.9° |
+| Trunk lateral lean | −1.5 / 1.7° (3.4) | −1.4 / 3.2° |
+| Trunk shift | −0.1 / 0.1 hip widths | −0.1 / 0.2 |
+| Heel vs midline | +0.1 / 0.1 hip widths | 0.0 / 0.2 |
+All rear-view angles are within the ~5° target.
+
+### Side view
+| Metric | C0 (owner spot-checked reference) | T1–T3 |
+|---|---|---|
+| Knee flexion at IC | +2.9 / 9.1° | reference not plausible (see below) |
+| Knee flexion at midstance (≈ max stance) | +6.6 / 6.7° | reference not plausible |
+| Tibial inclination at IC | +5.3 / 7.9° | −5.5 / 5.5° (uses the knee mark) |
+| Hip extension at toe-off/peak | +4.6 / 8.3° | reference not plausible (uses the knee mark) |
+| Trunk lean at midstance | −5.9 / 5.9° | +6.9 / 6.9° |
+| Ankle dorsiflexion at midstance | −20.8 / 20.8° | −3.6 / 3.8° |
+| Foot-to-COM at IC | +9.1 / 9.1 cm | +5.4 / 5.4 cm |
+
+- **T1–T3 side-view knee marks failed a plausibility check**: hand-marked knee flexion at midstance
+  was 1–21° (running midstance is typically 35–50°; C0's marks gave 43–59°). The annotator placed
+  knees so the leg looks nearly straight (knees blur against dark shorts, legs cross at midstance).
+  Knee-based side metrics are therefore validated on C0 only.
+- Trunk lean error has opposite signs for runners facing left (C0, −6°) and right (T, +7°), i.e. the
+  same tilt in image space: an image-space bias between the app's shoulder/hip points and the hand
+  marks. Not correctable without a better reference; trunk lean stays medium confidence.
+- Ankle dorsiflexion: 21° off on C0 (heel landmark on the red shoe), 4° on T1–T3.
+- Metrics with error above ~5° are not fixable with the single 2D camera and these landmarks;
+  their confidence is capped automatically (reconcile.js `VALIDATION_ERROR`: > 5 → medium,
+  > 10 → low).
+
+### Whole-leg anchor: leave-one-client-out
+Offsets fitted on the other clients' hand marks and applied to the held-out client:
+- offsets fitted on T1–T3 point the opposite way to C0's (hip +0.12 thigh lengths forward and
+  0.21 down vs C0 −0.16 back);
+- on C0, the T-fitted offsets doubled hip-extension error (8 → 19°); on T1–T3 the C0 offsets raised
+  ankle-dorsiflexion error from 3–4° to 10–12° and trunk-lean error from 7 to 10°.
+**Decision: anchor off for all clips.** A fixed landmark correction does not transfer between camera
+setups/runners; it would need per-setup calibration (clinician clicks on each new setup).

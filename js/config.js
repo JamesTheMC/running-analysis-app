@@ -61,8 +61,11 @@ export const HIP_ANCHOR = {
 // 2026-10-09 on IMG_0639_2: hip from 20 clinician clicks, knee/ankle/heel/toe from blind hand marks
 // (18 frames, 3 knees clinician-corrected). Leave-one-stride-out test: point errors ≈ 40% lower,
 // most angle errors lower (reference/VALIDATION.md). One runner and one camera setup so far.
+// 2026-10-10: OFF. Leave-one-client-out on T1–T3 showed the C0 offsets do not transfer (offsets fitted
+// on other clients point the other way; ankle DF error 3–4° -> 10–12° on T clips). Kept for a future
+// per-setup calibration (clinician clicks on each new camera setup).
 export const LEG_ANCHOR = {
-  mode: 'corrected',
+  mode: 'landmark',
   offsets: {
     hip: { fwd: -0.159, down: -0.043 },
     knee: { fwd: -0.24, down: 0.074 },

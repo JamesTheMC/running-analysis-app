@@ -41,7 +41,27 @@ export const RECONCILE = {
 // Mean absolute error vs manual measurement (reference/VALIDATION.md); filled by the validation
 // step. Units as the metric. A metric's confidence is capped by its error: > 10 (deg) -> low,
 // > 5 -> medium. Missing = not yet validated -> capped at medium.
-export const VALIDATION_ERROR = {};
+// Values: worst credible mean absolute error across the validated clients (reference/VALIDATION.md,
+// 2026-10-10). Side-view knee-based values use C0 only (T1–T3 hand-marked knees were not plausible).
+export const VALIDATION_ERROR = {
+  ic_knee_flexion: 9.1,
+  ms_max_knee_flexion: 6.7,
+  ms_knee_flexion_excursion: 6.6,
+  ic_tibial_inclination: 7.9,
+  to_hip_extension: 8.3,
+  ic_spine_lean: 7.1,
+  ms_spine_lean: 7.1,
+  trunk_change_peak_hip_ext: 7.1,
+  ms_ankle: 20.8,
+  ic_foot_inclination: 12.8,
+  ic_foot_strike: 12.8,
+  ic_foot_to_com: 9.1, // cm
+  ms_hip_adduction: 3.1,
+  ms_knee_varus_valgus: 1.9,
+  ms_trunk_lateral_lean: 3.2,
+  ms_lateral_shift: 3.5, // cm (0.1 hip widths)
+  ms_foot_midline: 0.2, // hip widths
+};
 
 const RANK = { none: -1, low: 0, medium: 1, high: 2 };
 const minConf = (...c) => c.filter(Boolean).reduce((a, b) => (RANK[b] < RANK[a] ? b : a), 'high');

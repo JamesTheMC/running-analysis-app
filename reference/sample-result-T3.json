@@ -1,0 +1,1623 @@
+{
+ "schema": "gait-session/1",
+ "client": {
+  "code": "T3",
+  "sessionDate": "fixture"
+ },
+ "intake": {
+  "heightCm": 170,
+  "speed": null,
+  "speedUnit": null,
+  "inclinePct": 1,
+  "cadenceEntered": null
+ },
+ "views": [
+  "lateral",
+  "posterior"
+ ],
+ "clips": [
+  {
+   "slot": "lateral_right",
+   "view": "lateral",
+   "speed": 6,
+   "speedUnit": "mph",
+   "inclinePct": 1,
+   "fps": 30.00291573525124,
+   "analysedHz": 30.00291573525124,
+   "frames": 1030,
+   "durationSec": 34.329996760609006,
+   "rotation": 90,
+   "mirrored": false,
+   "frameTiming": null,
+   "analysedSize": [
+    486,
+    864
+   ],
+   "facing": "image-right",
+   "nearLeg": "right",
+   "landmarkQuality": {
+    "posedShare": 1,
+    "meanVisibility": 0.9774864128897491,
+    "lowVisibilityShare": 0
+   }
+  },
+  {
+   "slot": "posterior",
+   "view": "posterior",
+   "speed": 6,
+   "speedUnit": "mph",
+   "inclinePct": 1,
+   "fps": 30.0016911889058,
+   "analysedHz": 30.0016911889058,
+   "frames": 888,
+   "durationSec": 29.598331454340475,
+   "rotation": 90,
+   "mirrored": false,
+   "frameTiming": null,
+   "analysedSize": [
+    486,
+    864
+   ],
+   "leftOnImage": "left",
+   "swapFrames": 0,
+   "nearLeg": null,
+   "landmarkQuality": {
+    "posedShare": 1,
+    "meanVisibility": 0.9440619353708383,
+    "lowVisibilityShare": 0
+   }
+  }
+ ],
+ "convention": {
+  "rule": "anatomical left/right in every view",
+  "lateral": [
+   {
+    "slot": "lateral_right",
+    "nearLeg": "right",
+    "slotLeg": "right",
+    "depthCheck": {
+     "leg": "right",
+     "zGap": 0.59,
+     "decisive": true
+    },
+    "agrees": true,
+    "runnerFaces": "image-right",
+    "mirrored": false
+   }
+  ],
+  "posterior": [
+   {
+    "slot": "posterior",
+    "leftOnImage": "left",
+    "mirrored": false,
+    "swapFrames": 0,
+    "swapCheckPassed": true
+   }
+  ],
+  "issues": []
+ },
+ "alignment": {
+  "synchronised": false,
+  "method": "gait-cycle alignment: each view is segmented into its own strides; views are compared on cadence, step times, step-time symmetry and vertical oscillation, never on clock time"
+ },
+ "timing": {
+  "perView": {
+   "lateral_right": {
+    "view": "lateral",
+    "analysedHz": 30.00291573525124,
+    "cadenceSpm": 179.1,
+    "strides": 50,
+    "stepSecL": 0.333,
+    "stepSecR": 0.336,
+    "stepAsymmetryPct": -0.7,
+    "stepTimingReliable": true,
+    "contactMs": {
+     "right": 367,
+     "left": null
+    },
+    "oscillation": {
+     "px": 21.1,
+     "shareOfHeight": 0.0371,
+     "strides": 50
+    },
+    "legEvents": {
+     "right": {
+      "role": "near",
+      "detected": 50,
+      "valid": 50,
+      "high": 48,
+      "medium": 2,
+      "low": 0,
+      "contactMs": 366.6310333657272,
+      "confidence": "high"
+     },
+     "left": {
+      "role": "far",
+      "detected": 50,
+      "valid": 50,
+      "high": 0,
+      "medium": 0,
+      "low": 50,
+      "contactMs": 333.3009394233884,
+      "confidence": "low"
+     }
+    },
+    "confidence": "high",
+    "landmarkVisibility": 0.977,
+    "method": "step times between the feet passing each other (inter-ankle separation, running-mean crossings)"
+   },
+   "posterior": {
+    "view": "posterior",
+    "analysedHz": 30.0016911889058,
+    "cadenceSpm": 176.6,
+    "strides": 42,
+    "stepSecL": 0.345,
+    "stepSecR": 0.333,
+    "stepAsymmetryPct": 3.4,
+    "stepTimingReliable": true,
+    "contactMs": {
+     "left": null,
+     "right": null
+    },
+    "oscillation": {
+     "px": 29.8,
+     "shareOfHeight": 0.0528,
+     "strides": 42
+    },
+    "legEvents": {
+     "left": {
+      "role": "rear",
+      "detected": 42,
+      "valid": 42,
+      "high": 0,
+      "medium": 42,
+      "low": 0,
+      "contactMs": null,
+      "confidence": "high"
+     },
+     "right": {
+      "role": "rear",
+      "detected": 43,
+      "valid": 43,
+      "high": 0,
+      "medium": 43,
+      "low": 0,
+      "contactMs": null,
+      "confidence": "high"
+     }
+    },
+    "confidence": "high",
+    "landmarkVisibility": 0.944,
+    "method": "step times from the feet's height alternation (running-mean crossings)"
+   }
+  },
+  "crossChecks": [
+   {
+    "quantity": "cadence",
+    "unit": "spm",
+    "status": "agree",
+    "values": {
+     "lateral_right": 179.1,
+     "posterior": 176.6
+    },
+    "tolerance": 5.336,
+    "difference": 2.5,
+    "reported": 178,
+    "source": "agreed",
+    "confidence": "high",
+    "note": "separate recordings: small drift between clips is expected"
+   },
+   {
+    "quantity": "step time, left",
+    "unit": "s",
+    "status": "agree",
+    "values": {
+     "lateral_right": 0.333,
+     "posterior": 0.345
+    },
+    "tolerance": 0.033,
+    "difference": 0.012,
+    "reported": 0.338,
+    "source": "agreed",
+    "confidence": "high"
+   },
+   {
+    "quantity": "step time, right",
+    "unit": "s",
+    "status": "agree",
+    "values": {
+     "lateral_right": 0.336,
+     "posterior": 0.333
+    },
+    "tolerance": 0.033,
+    "difference": 0.003,
+    "reported": 0.335,
+    "source": "agreed",
+    "confidence": "high"
+   },
+   {
+    "quantity": "step-time asymmetry (+ = left longer)",
+    "unit": "%",
+    "status": "agree",
+    "values": {
+     "lateral_right": -0.7,
+     "posterior": 3.4
+    },
+    "tolerance": 5,
+    "difference": 4.1,
+    "reported": 1.2,
+    "source": "agreed",
+    "confidence": "high"
+   },
+   {
+    "quantity": "vertical oscillation (pelvis)",
+    "unit": "cm",
+    "status": "single view",
+    "values": {
+     "lateral_right": 6.3
+    },
+    "reported": 6.3,
+    "source": "lateral_right",
+    "confidence": "high",
+    "note": "side view; rear value shown for information only (perspective inflates it)",
+    "rearInformational": {
+     "posterior": 9
+    }
+   },
+   {
+    "quantity": "contact time",
+    "unit": "ms",
+    "status": "single view",
+    "values": {
+     "lateral_right": 367
+    },
+    "reported": 367,
+    "source": "lateral_right",
+    "confidence": "high",
+    "note": "side view only: from behind, foot contact is not observable reliably (see gait-events.js)"
+   }
+  ]
+ },
+ "derived": {
+  "speedMs": 2.68,
+  "stepLengthM": 0.9,
+  "strideLengthM": 1.81,
+  "contactMs": 367,
+  "dutyFactor": 0.54,
+  "flightMs": 0,
+  "notes": [],
+  "inclinePct": 1
+ },
+ "metrics": {
+  "ic_foot_strike": {
+   "label": "Foot strike pattern",
+   "unit": "deg",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "category",
+   "provisional": false,
+   "scored": false,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 5.61,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      3.39,
+      7.19
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       5.2,
+       5.61,
+       5.59
+      ]
+     },
+     "status": "record",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)",
+      "validation error 12.8° (> 10)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ic_foot_inclination": {
+   "label": "Foot inclination",
+   "unit": "deg",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 5.61,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      3.39,
+      7.19
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       5.2,
+       5.61,
+       5.59
+      ]
+     },
+     "status": "green",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)",
+      "validation error 12.8° (> 10)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ic_tibial_inclination": {
+   "label": "Tibial inclination",
+   "unit": "deg",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 9.12,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      8.53,
+      9.78
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       8.85,
+       9.12,
+       9.07
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 7.9° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ic_foot_to_com": {
+   "label": "Foot-to-COM distance",
+   "unit": "cm",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 22.25,
+     "display": "22.2 cm (≈1.09 shoe lengths)",
+     "unit": "cm",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      21.75,
+      22.76
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       21.76,
+       22.25,
+       22.23
+      ]
+     },
+     "status": "red",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 9.1 cm (> 5)",
+      "awaiting clinician validation (footToComValidated)",
+      "foot-to-COM above range: pending validation (reads ≈ 9 cm high vs manual measurement)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ic_knee_flexion": {
+   "label": "Knee flexion",
+   "unit": "deg",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 19.3,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      18.32,
+      20.46
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       19.72,
+       19.3,
+       19.32
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 9.1° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ic_spine_lean": {
+   "label": "Forward trunk lean",
+   "unit": "deg",
+   "phase": "initial_contact",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": 4.51,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      4.13,
+      5.16
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       4.33,
+       4.51,
+       4.53
+      ]
+     },
+     "status": "yellow",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "validation error 7.1° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_max_knee_flexion": {
+   "label": "Max knee flexion",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 51.1,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      47.98,
+      54.64
+     ],
+     "sweep": null,
+     "status": "red",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 6.7° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_knee_flexion_excursion": {
+   "label": "Knee flexion excursion",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "record",
+   "provisional": false,
+   "scored": false,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 26.02,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      23.57,
+      28.87
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       25.39,
+       26.02,
+       25.98
+      ]
+     },
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "validation error 6.6° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_ankle": {
+   "label": "Ankle at midstance",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 20.42,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      17.35,
+      22.51
+     ],
+     "sweep": null,
+     "status": "record",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)",
+      "validation error 20.8° (> 10)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_knee_ankle_sync": {
+   "label": "Knee/ankle sync",
+   "unit": null,
+   "phase": "midstance",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": false,
+     "display": "no (40% of strides in sync)",
+     "unit": null,
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      0,
+      1
+     ],
+     "sweep": null,
+     "status": "record",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_spine_lean": {
+   "label": "Forward trunk lean",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": 5.53,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      4.91,
+      5.93
+     ],
+     "sweep": null,
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "validation error 7.1° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_pelvic_drop": {
+   "label": "Contralateral pelvic drop",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": true,
+   "scored": false,
+   "cells": {
+    "left": {
+     "value": -3.75,
+     "display": null,
+     "unit": "deg",
+     "n": 42,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": [
+      -4.31,
+      -3.34
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       -3.51,
+       -3.75,
+       -4.07
+      ]
+     },
+     "status": "green",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    },
+    "right": {
+     "value": -2.59,
+     "display": null,
+     "unit": "deg",
+     "n": 43,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": [
+      -3.19,
+      -1.9
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       -2.55,
+       -2.59,
+       -2.4
+      ]
+     },
+     "status": "green",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_hip_adduction": {
+   "label": "Hip adduction",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": 0.4,
+     "display": null,
+     "unit": "deg",
+     "n": 42,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": [
+      -0.12,
+      1.24
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       1.18,
+       0.4,
+       0.07
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    },
+    "right": {
+     "value": 4.98,
+     "display": null,
+     "unit": "deg",
+     "n": 43,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": [
+      4.49,
+      5.53
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       5.4,
+       4.98,
+       4.93
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_knee_varus_valgus": {
+   "label": "Knee frontal-plane projection angle",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": true,
+   "scored": false,
+   "cells": {
+    "left": {
+     "value": -3.73,
+     "display": null,
+     "unit": "deg",
+     "n": 42,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": [
+      -4.28,
+      -2.8
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       -3.02,
+       -3.73,
+       -3.66
+      ]
+     },
+     "status": "green",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    },
+    "right": {
+     "value": 0.16,
+     "display": null,
+     "unit": "deg",
+     "n": 43,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": [
+      -0.26,
+      0.63
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       0.55,
+       0.16,
+       0.09
+      ]
+     },
+     "status": "green",
+     "confidence": "low",
+     "confidenceReasons": [
+      "metric capped at low (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_out_toe": {
+   "label": "Out-toe / foot progression angle",
+   "unit": "toes",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {},
+   "notAssessed": "not built: poor 2D reliability"
+  },
+  "ms_crossover": {
+   "label": "Crossover pattern",
+   "unit": null,
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "boolean",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": false,
+     "display": "no (0% of steps on or past the midline)",
+     "unit": null,
+     "n": 42,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": [
+      0.35,
+      0.43
+     ],
+     "sweep": null,
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    },
+    "right": {
+     "value": false,
+     "display": "no (0% of steps on or past the midline)",
+     "unit": null,
+     "n": 43,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": [
+      0.15,
+      0.21
+     ],
+     "sweep": null,
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_spine_shift": {
+   "label": "Spine shift (PSIS rule)",
+   "unit": null,
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "boolean",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": true,
+     "display": "between PSIS (median |shift| 1.1 cm; beyond = more than 5 cm)",
+     "unit": null,
+     "n": 85,
+     "total": 85,
+     "countUnit": "steps",
+     "iqr": null,
+     "sweep": null,
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_achilles_angle": {
+   "label": "Achilles angle",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {},
+   "notAssessed": "not built: poor 2D reliability"
+  },
+  "ms_rearfoot_eversion": {
+   "label": "Rearfoot eversion",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {},
+   "notAssessed": "not built: poor 2D reliability"
+  },
+  "ms_foot_midline": {
+   "label": "Foot position vs midline",
+   "unit": "hipw",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": 0.39,
+     "display": null,
+     "unit": "hipw",
+     "n": 42,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": [
+      0.35,
+      0.43
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       0.38,
+       0.39,
+       0.42
+      ]
+     },
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    },
+    "right": {
+     "value": 0.18,
+     "display": null,
+     "unit": "hipw",
+     "n": 43,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": [
+      0.15,
+      0.21
+     ],
+     "sweep": {
+      "kind": "timing",
+      "at": [
+       "MS−33 ms",
+       "MS",
+       "MS+33 ms"
+      ],
+      "values": [
+       0.17,
+       0.18,
+       0.17
+      ]
+     },
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_step_width": {
+   "label": "Step width",
+   "unit": "cm",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "record",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": 11.79,
+     "display": "11.8 cm (0.57 hip widths)",
+     "unit": "cm",
+     "n": 42,
+     "total": 42,
+     "countUnit": "steps",
+     "iqr": null,
+     "sweep": null,
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "arm_crossover": {
+   "label": "Arm crossing midline",
+   "unit": "shw",
+   "phase": "swing",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "record",
+   "provisional": true,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "display": null,
+     "unit": "shw",
+     "n": 0,
+     "total": 43,
+     "countUnit": "strides",
+     "iqr": null,
+     "sweep": null,
+     "status": null,
+     "confidence": "none",
+     "confidenceReasons": [
+      "only 0 of 43 strides measurable"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null,
+     "notAssessed": "only 0 of 43 strides measurable"
+    },
+    "right": {
+     "value": null,
+     "display": null,
+     "unit": "shw",
+     "n": 0,
+     "total": 42,
+     "countUnit": "strides",
+     "iqr": null,
+     "sweep": null,
+     "status": null,
+     "confidence": "none",
+     "confidenceReasons": [
+      "only 0 of 42 strides measurable"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null,
+     "notAssessed": "only 0 of 42 strides measurable"
+    }
+   }
+  },
+  "ms_trunk_lateral_lean": {
+   "label": "Trunk lateral lean",
+   "unit": "deg",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": -1.08,
+     "display": null,
+     "unit": "deg",
+     "n": 85,
+     "total": 85,
+     "countUnit": "steps",
+     "iqr": null,
+     "sweep": null,
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "ms_lateral_shift": {
+   "label": "Trunk lateral shift",
+   "unit": "cm",
+   "phase": "midstance",
+   "plane": "frontal",
+   "authoritativeView": "posterior",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": -1.07,
+     "display": "-1.1 cm (-0.05 hip widths)",
+     "unit": "cm",
+     "n": 85,
+     "total": 85,
+     "countUnit": "steps",
+     "iqr": null,
+     "sweep": null,
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "posterior",
+      "view": "posterior"
+     },
+     "note": null
+    }
+   }
+  },
+  "to_hip_extension": {
+   "label": "Hip extension",
+   "unit": "deg",
+   "phase": "toe_off",
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": false,
+   "scored": false,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 5.1,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      4.19,
+      6.15
+     ],
+     "sweep": {
+      "kind": "window",
+      "at": [
+       "late stance",
+       "TO+0 ms",
+       "TO+50 ms",
+       "TO+100 ms",
+       "TO+150 ms"
+      ],
+      "values": [
+       5.1,
+       5.1,
+       5.1,
+       5.1,
+       5.1
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 8.3° (> 5)",
+      "awaiting clinician validation (hipExtensionValidated)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "trunk_change_peak_hip_ext": {
+   "label": "Trunk angle change at peak hip extension (trunk-angle proxy)",
+   "unit": "deg",
+   "phase": null,
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "range",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "mid": {
+     "value": 0.39,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      -0.19,
+      0.99
+     ],
+     "sweep": {
+      "kind": "ic",
+      "at": [
+       0.2,
+       0.3,
+       0.4
+      ],
+      "values": [
+       0.54,
+       0.39,
+       0.32
+      ]
+     },
+     "status": "green",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)",
+      "validation error 7.1° (> 5)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "arm_elbow_angle": {
+   "label": "Elbow angle",
+   "unit": "deg",
+   "phase": null,
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 67.84,
+     "display": null,
+     "unit": "deg",
+     "n": null,
+     "total": null,
+     "countUnit": "strides",
+     "iqr": null,
+     "sweep": null,
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  },
+  "arm_shoulder_rom": {
+   "label": "Shoulder swing ROM",
+   "unit": "deg",
+   "phase": null,
+   "plane": "sagittal",
+   "authoritativeView": "lateral",
+   "type": "record",
+   "provisional": false,
+   "scored": true,
+   "cells": {
+    "left": {
+     "value": null,
+     "confidence": "none",
+     "notAssessed": "needs a lateral clip filmed from the left"
+    },
+    "right": {
+     "value": 60.34,
+     "display": null,
+     "unit": "deg",
+     "n": 50,
+     "total": 50,
+     "countUnit": "strides",
+     "iqr": [
+      58.75,
+      61.25
+     ],
+     "sweep": null,
+     "status": "record",
+     "confidence": "medium",
+     "confidenceReasons": [
+      "metric capped at medium (2D reliability)"
+     ],
+     "source": {
+      "slot": "lateral_right",
+      "view": "lateral"
+     },
+     "note": null
+    }
+   }
+  }
+ },
+ "notAssessed": [
+  {
+   "id": "ms_out_toe",
+   "reason": "not built: poor 2D reliability"
+  },
+  {
+   "id": "ms_achilles_angle",
+   "reason": "not built: poor 2D reliability"
+  },
+  {
+   "id": "ms_rearfoot_eversion",
+   "reason": "not built: poor 2D reliability"
+  }
+ ],
+ "limits": [
+  "Single-camera 2D estimates: rotation (transverse plane) is not measured; frontal-plane angles are projections and depend on camera alignment.",
+  "Side-view values come from the leg facing the camera only; the far leg is occluded and not reported.",
+  "Rear-view foot contact and toe-off are approximate (step timing only); contact time comes from the side view.",
+  "Movement analysis to support clinical judgment, not a diagnosis."
+ ]
+}

@@ -209,3 +209,9 @@ the output.
   correction (pelvic drop measured from almost midstance); a per-clip foot-speed detector (abandoned
   earlier: perspective). Recalibrate when more marked clips exist. Y
 - **Side-view events accepted as is (IC within one frame, TO within 1–2 frames at 30 fps).** Y
+- **Whole-leg anchor OFF for all clips (2026-10-10).** Alt: keep the C0 fit (worse on T1–T3), pool
+  all clients (offsets disagree in direction; reference knees unreliable). Why: leave-one-client-out
+  shows no transfer. Future: per-setup calibration from clinician clicks. Y
+- **T1–T3 hand-marked knees rejected as a reference (implausible 1–21° midstance flexion); side-view
+  knee validation uses C0 (owner spot-checked).** Y
+- **Validation errors feed confidence automatically (`VALIDATION_ERROR` in reconcile.js).** Y

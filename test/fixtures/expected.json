@@ -1,0 +1,442 @@
+{
+ "C0": {
+  "timing.crossChecks.cadence.reported": {
+   "value": 165.9,
+   "tol": 2
+  },
+  "timing.crossChecks.step time, left.reported": {
+   "value": 0.37,
+   "tol": 0.02
+  },
+  "timing.crossChecks.step time, right.reported": {
+   "value": 0.351,
+   "tol": 0.02
+  },
+  "timing.crossChecks.contact time.reported": {
+   "value": 192,
+   "tol": 40
+  },
+  "derived.stepLengthM": {
+   "value": 1.05,
+   "tol": 0.05
+  },
+  "metrics.ic_knee_flexion.cells.left.value": {
+   "value": 30.99,
+   "tol": 3
+  },
+  "metrics.ic_knee_flexion.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.left.value": {
+   "value": 55.63,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.left.value": {
+   "value": 0.35,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.left.value": {
+   "value": 7.94,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.left.value": {
+   "value": 13.91,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.left.value": {
+   "value": 69.62,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.right.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_spine_lean.cells.mid.value": {
+   "value": 0.65,
+   "tol": 2
+  },
+  "metrics.ms_spine_lean.cells.mid.value": {
+   "value": 2.81,
+   "tol": 2
+  },
+  "metrics.ms_trunk_lateral_lean.cells.mid.value": {
+   "value": -1.16,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.left.value": {
+   "value": 0.96,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.right.value": {
+   "value": 8.32,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.left.value": {
+   "value": -2.32,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.right.value": {
+   "value": 4.3,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.left.value": {
+   "value": -2.06,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.right.value": {
+   "value": -4.51,
+   "tol": 2
+  },
+  "metrics.ms_step_width.cells.mid.value": {
+   "value": 7.26,
+   "tol": 2
+  }
+ },
+ "T1": {
+  "timing.crossChecks.cadence.reported": {
+   "value": 183.2,
+   "tol": 2
+  },
+  "timing.crossChecks.step time, left.reported": {
+   "value": 0.327,
+   "tol": 0.02
+  },
+  "timing.crossChecks.step time, right.reported": {
+   "value": 0.324,
+   "tol": 0.02
+  },
+  "timing.crossChecks.contact time.reported": {
+   "value": 333,
+   "tol": 40
+  },
+  "derived.stepLengthM": {
+   "value": 1.17,
+   "tol": 0.05
+  },
+  "metrics.ic_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_knee_flexion.cells.right.value": {
+   "value": 20.15,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.right.value": {
+   "value": 47.7,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.right.value": {
+   "value": 10.04,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.right.value": {
+   "value": 17.67,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.right.value": {
+   "value": 6.02,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.right.value": {
+   "value": 69.18,
+   "tol": 3
+  },
+  "metrics.ic_spine_lean.cells.mid.value": {
+   "value": 4.65,
+   "tol": 2
+  },
+  "metrics.ms_spine_lean.cells.mid.value": {
+   "value": 6.18,
+   "tol": 2
+  },
+  "metrics.ms_trunk_lateral_lean.cells.mid.value": {
+   "value": -0.74,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.left.value": {
+   "value": -0.02,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.right.value": {
+   "value": 5.09,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.left.value": {
+   "value": -4.29,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.right.value": {
+   "value": -1.02,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.left.value": {
+   "value": -4.49,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.right.value": {
+   "value": -2.56,
+   "tol": 2
+  },
+  "metrics.ms_step_width.cells.mid.value": {
+   "value": 10.71,
+   "tol": 2
+  }
+ },
+ "T2": {
+  "timing.crossChecks.cadence.reported": {
+   "value": 179.8,
+   "tol": 2
+  },
+  "timing.crossChecks.step time, left.reported": {
+   "value": 0.339,
+   "tol": 0.02
+  },
+  "timing.crossChecks.step time, right.reported": {
+   "value": 0.329,
+   "tol": 0.02
+  },
+  "timing.crossChecks.contact time.reported": {
+   "value": 400,
+   "tol": 40
+  },
+  "derived.stepLengthM": {
+   "value": 1.04,
+   "tol": 0.05
+  },
+  "metrics.ic_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_knee_flexion.cells.right.value": {
+   "value": 19.79,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.right.value": {
+   "value": 58.82,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.right.value": {
+   "value": 6.82,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.right.value": {
+   "value": 19.9,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.right.value": {
+   "value": 3.54,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.right.value": {
+   "value": 67.02,
+   "tol": 3
+  },
+  "metrics.ic_spine_lean.cells.mid.value": {
+   "value": 4.58,
+   "tol": 2
+  },
+  "metrics.ms_spine_lean.cells.mid.value": {
+   "value": 5.45,
+   "tol": 2
+  },
+  "metrics.ms_trunk_lateral_lean.cells.mid.value": {
+   "value": -0.39,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.left.value": {
+   "value": 0.49,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.right.value": {
+   "value": 5.37,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.left.value": {
+   "value": -3.99,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.right.value": {
+   "value": 0.11,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.left.value": {
+   "value": -3.84,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.right.value": {
+   "value": -2.57,
+   "tol": 2
+  },
+  "metrics.ms_step_width.cells.mid.value": {
+   "value": 11.33,
+   "tol": 2
+  }
+ },
+ "T3": {
+  "timing.crossChecks.cadence.reported": {
+   "value": 178,
+   "tol": 2
+  },
+  "timing.crossChecks.step time, left.reported": {
+   "value": 0.338,
+   "tol": 0.02
+  },
+  "timing.crossChecks.step time, right.reported": {
+   "value": 0.335,
+   "tol": 0.02
+  },
+  "timing.crossChecks.contact time.reported": {
+   "value": 367,
+   "tol": 40
+  },
+  "derived.stepLengthM": {
+   "value": 0.9,
+   "tol": 0.05
+  },
+  "metrics.ic_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_knee_flexion.cells.right.value": {
+   "value": 19.3,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_max_knee_flexion.cells.right.value": {
+   "value": 51.1,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ic_tibial_inclination.cells.right.value": {
+   "value": 9.12,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.ms_ankle.cells.right.value": {
+   "value": 20.42,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.to_hip_extension.cells.right.value": {
+   "value": 5.1,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.left.value": {
+   "value": null,
+   "tol": 3
+  },
+  "metrics.arm_elbow_angle.cells.right.value": {
+   "value": 67.84,
+   "tol": 3
+  },
+  "metrics.ic_spine_lean.cells.mid.value": {
+   "value": 4.51,
+   "tol": 2
+  },
+  "metrics.ms_spine_lean.cells.mid.value": {
+   "value": 5.53,
+   "tol": 2
+  },
+  "metrics.ms_trunk_lateral_lean.cells.mid.value": {
+   "value": -1.08,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.left.value": {
+   "value": 0.4,
+   "tol": 2
+  },
+  "metrics.ms_hip_adduction.cells.right.value": {
+   "value": 4.98,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.left.value": {
+   "value": -3.73,
+   "tol": 2
+  },
+  "metrics.ms_knee_varus_valgus.cells.right.value": {
+   "value": 0.16,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.left.value": {
+   "value": -3.75,
+   "tol": 2
+  },
+  "metrics.ms_pelvic_drop.cells.right.value": {
+   "value": -2.59,
+   "tol": 2
+  },
+  "metrics.ms_step_width.cells.mid.value": {
+   "value": 11.79,
+   "tol": 2
+  }
+ }
+}
