@@ -1,8 +1,9 @@
 // Posterior-clip adapter: per-leg frontal-plane metrics at the lowest-pelvis midstance, through the
 // view emitter (only posterior-allowed metrics pass). Per-stride medians; each timing-dependent value
-// carries its medians at midstance −2 / 0 / +2 analysed frames for the timing-sensitivity rule.
+// carries its medians at midstance −33 / 0 / +33 ms for the timing-sensitivity rule.
 // Left/right differences are allowed only when the clip passed the left/right swap check.
 
+import { clipInfo, landmarkQuality, posteriorEventTable, safely, verticalOscillation } from './gait-events.js';
 import { createEmitter } from './emit.js';
 import { MIN_STRIDES, cell } from './measurements.js';
 import { median } from './stats.js';
@@ -44,6 +45,33 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
       Object.assign(c, { value: share >= 0.5, share, display: `${share >= 0.5 ? 'yes' : 'no'} (${Math.round(share * 100)}% of steps on or past the midline)` });
     }
     out.put('ms_crossover', leg, c);
+    // Arm crossing midline (record only).
+    const arm = pm[side].armCross;
+    if (arm) {
+      const a = cell(arm);
+      if (a.value != null) {
+        const share = arm.values.filter((v) => v > 0).length / arm.values.length;
+        Object.assign(a, { value: share >= 0.5, share, magnitude: arm.median, display: `${share >= 0.5 ? 'yes' : 'no'} (${Math.round(share * 100)}% of swings past the midline; median ${arm.median.toFixed(2)} shoulder widths)` });
+      }
+      out.put('arm_crossover', leg, a);
+    }
+  }
+  // Step width: left heel (left midstance) to right heel (right midstance), across the midline.
+  {
+    const l = pm.L.summary.heelFromMidline;
+    const r = pm.R.summary.heelFromMidline;
+    const lp = pm.L.summary.heelFromMidlinePx;
+    const rp = pm.R.summary.heelFromMidlinePx;
+    const n = Math.min(l.n, r.n);
+    const sw = { median: l.median != null && r.median != null ? l.median + r.median : null, n, total: Math.min(l.total, r.total), quality: Math.min(l.quality, r.quality), iqr: null, values: [] };
+    const c = { ...cell(sw), countUnit: 'steps' };
+    if (c.value != null) {
+      if (pxPerCm && lp.median != null && rp.median != null) {
+        const cm = (lp.median + rp.median) / pxPerCm;
+        Object.assign(c, { value: cm, unitOverride: 'cm', hipWidths: sw.median, display: `${cm.toFixed(1)} cm (${sw.median.toFixed(2)} hip widths)` });
+      } else Object.assign(c, { unitOverride: 'hipw', hipWidths: sw.median, display: `${sw.median.toFixed(2)} hip widths (enter height for cm)` });
+    }
+    out.put('ms_step_width', 'mid', c);
   }
 
   // Midline (trunk) measures pooled over both legs' stance phases (signed toward the stance side).
@@ -83,5 +111,18 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
     captureChecks: { posterior: { ...capture, swapCheckPassed, stanceHalfCycles: { left: valid('L'), right: valid('R') } } },
     cadenceVideo: cadence ? { spm: cadence.spm, strides: cadence.strides } : null,
     cyclesDetected: cadence?.strides ?? 0,
+    // For the reconciliation layer (js/pipeline/reconcile.js).
+    view: 'posterior',
+    ...(() => {
+      const errors = [];
+      return {
+        clip: safely(() => clipInfo(result.meta, { leftOnImage: 'left', swapFrames: capture.swapFrames }), errors, 'clip'),
+        eventTable: safely(() => posteriorEventTable(result, result.rows, result.meta), errors, 'eventTable'),
+        landmarkQuality: safely(() => landmarkQuality(result.rows, [23, 24, 25, 26, 27, 28, 29, 30, 11, 12]), errors, 'landmarkQuality'),
+        oscillation: safely(() => verticalOscillation(result.rows, result.bad, result.seg.cycles.filter((c) => c.valid).map((c) => [c.start, c.end]), pm.bodyHeightPx, result.meta.fs), errors, 'oscillation'),
+        reconErrors: errors,
+      };
+    })(),
+    bodyHeightPx: pm.bodyHeightPx,
   };
 }

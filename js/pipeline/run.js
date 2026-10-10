@@ -136,12 +136,13 @@ export function postProcess(rows, meta, opts = {}) {
     ...(end === 'late-stance' ? hipExtensionPeaks(mrows, bad, meta.fs, seg) : hipExtensionPeaks(mrows, bad, meta.fs, seg, events, { afterToeOffSec: end }))[seg.near.side],
   }));
   const metrics = computeMetrics({ rows: mrows, bad, seg, events, hipExt });
+  const eventsSweep = { [EVENTS.contactTolerance]: events };
   // IC-timing sensitivity: the same metrics with events detected at each swept contact tolerance.
   const sweep = Object.fromEntries(
-    IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows: mrows, bad, seg, hipExt, events: detectEvents(rows, bad, seg, { contactTolerance: t }) })]),
+    IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows: mrows, bad, seg, hipExt, events: (eventsSweep[t] = detectEvents(rows, bad, seg, { contactTolerance: t })) })]),
   );
   const cadence = cadenceFromStrides(rows, seg);
-  return { bad, seg, hipExt, hipWindows, events, metrics, sweep, cadence, hipAnchor: anchor, legAnchor: leg, summary: referenceSummary(rows, bad) };
+  return { bad, seg, hipExt, hipWindows, events, eventsSweep, metrics, sweep, cadence, hipAnchor: anchor, legAnchor: leg, summary: referenceSummary(rows, bad) };
 }
 
 // Same keys and semantics as summarize() in reference/reference_gait_pipeline.py (minus the

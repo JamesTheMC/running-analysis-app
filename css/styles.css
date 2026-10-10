@@ -625,6 +625,12 @@ abbr.p {
   border-radius: 4px;
   white-space: nowrap;
 }
+/* Long status labels ("Out of range: pending validation") wrap on phones instead of overflowing. */
+.status {
+  white-space: normal;
+  display: inline-block;
+  max-width: 100%;
+}
 .status-green {
   color: var(--green);
 }
@@ -778,4 +784,117 @@ abbr.p {
   border-radius: 4px;
   padding: 0 4px;
   margin-left: 4px;
+}
+
+/* Debug tab */
+:root {
+  --dbg-left: #2563eb;
+  --dbg-right: #d97706;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dbg-left: #60a5fa;
+    --dbg-right: #fbbf24;
+  }
+}
+.dbg h2 {
+  font-size: 17px;
+  margin: 20px 0 8px;
+}
+.dbg h3 {
+  font-size: 15px;
+  margin: 16px 0 6px;
+}
+.dbg-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.dbg-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dbg-table th,
+.dbg-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dbg-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+.dbg-na td {
+  color: var(--muted);
+}
+.dbg-why {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+.dbg-conf {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.dbg-g {
+  color: var(--green);
+  background: var(--green-bg);
+}
+.dbg-y {
+  color: var(--yellow);
+  background: var(--yellow-bg);
+}
+.dbg-r {
+  color: var(--red);
+  background: var(--red-bg);
+}
+.dbg-na {
+  color: var(--muted);
+  background: var(--na-bg);
+}
+.dbg-clip {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px;
+  margin: 12px 0;
+}
+.dbg-stage {
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.dbg-canvas {
+  max-width: 100%;
+  max-height: 60vh;
+  height: auto;
+  display: block;
+}
+.dbg-timeline {
+  width: 100%;
+  height: 40px;
+  display: block;
+  margin-top: 8px;
+  color: var(--text);
+}
+.dbg-slider {
+  width: 100%;
+  margin: 6px 0;
+}
+.dbg-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }

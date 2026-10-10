@@ -170,3 +170,33 @@ the output.
   peaks). Events stay on raw landmarks. The second smoothing pass on the knee and arm series was
   removed (no double smoothing). Y
 - **Far leg on lateral clips: low confidence, never reported (see far-leg validation, 26% swaps).** Y
+- **Reconciliation layer (js/pipeline/reconcile.js) produces one result per client (schema
+  `gait-session/1`), alongside the existing summary path (mergeSession + engine, unchanged).** Alt:
+  rewrite the engine around it (rejected: the summary presentation is out of scope this phase). Y
+- **Left/right convention: anatomical everywhere. Lateral near leg from MediaPipe depth when the
+  hip/knee/ankle depth gap is ≥ 0.2 (all clips: 0.5–0.6); a clip put in the wrong side slot is moved
+  to the matching slot with a warning (or refused if that slot is taken).** Alt: trust the slot
+  (would silently measure the occluded leg). Posterior: runner's left = image left after un-mirroring;
+  swap frames counted. Y
+- **Views are aligned on the gait cycle, never on clock time (separate recordings).** Shared
+  quantities cross-checked: cadence (±3%), step time per side (± one analysed frame of the coarser
+  clip, ≥ 20 ms), step-time asymmetry (±5 points), vertical oscillation (side only, see below),
+  contact time (side only). Agree → stride-weighted value; disagree → the view with higher event
+  confidence, ties broken by mean landmark visibility; discrepancy recorded. Y
+- **Step timing from running-mean crossings of the alternation signals with hysteresis (side:
+  inter-ankle separation; rear: left-minus-right foot height); a view whose crossings are > 20% off
+  two-per-stride is marked unreliable.** Raw peaks/zero crossings biased asymmetry 15–27%. C0-side is
+  marked unreliable (far-ankle swaps), after three attempts. Y
+- **Rear-view IC/TO = foot-height crossings, LOW confidence, used for step timing only; contact time
+  is side-view only.** Y
+- **Vertical oscillation: side view authoritative; rear values (40–75% higher on all clients:
+  fore-aft drift toward the camera) shown for information only.** Y
+- **Metric confidence = lowest of: measured-stride share vs the metric's 2D cap, gait-event
+  confidence of that leg/view, timing/IC/window sensitivity, validation error (> 5 → medium,
+  > 10 → low; unvalidated → at most medium), pending clinician validation; every downgrade keeps a
+  reason.** Y
+- **New posterior metrics, data only (no summary line yet): step width (heel-to-heel at midstance,
+  cm) and arm crossing midline (wrist past the shoulder midpoint).** Arm crossing is not assessed on
+  T1–T3 (wrists hidden from behind, visibility 0.1–0.2). Y
+- **Debug tab: skeleton overlay on the clip's frames, event timeline with confidence, per-metric
+  confidence and reasons, cross-view checks, copy-JSON.** Y

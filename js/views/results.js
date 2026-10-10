@@ -2,6 +2,7 @@ import { esc } from '../util.js';
 import { VIEWS, SCORING, NOT_MEASURABLE, CLIP_SLOTS } from '../config.js';
 import { cellValue, formatDiff, formatValue, statusLabel, sideLabel } from '../engine/format.js';
 import { buildHeader, buildSections, captureWarnings } from '../engine/summary.js';
+import { renderDebug } from './debug.js';
 
 function scoreChip(label, value) {
   const band = value == null ? 'none' : value >= SCORING.bands.green ? 'green' : value >= SCORING.bands.yellow ? 'yellow' : 'red';
@@ -236,8 +237,9 @@ export function renderResults(state, results) {
       <nav class="tabs" role="tablist">
         <button role="tab" aria-selected="${state.tab === 'summary'}" data-action="tab" data-tab="summary">Summary</button>
         <button role="tab" aria-selected="${state.tab === 'report'}" data-action="tab" data-tab="report">Scored report</button>
+        <button role="tab" aria-selected="${state.tab === 'debug'}" data-action="tab" data-tab="debug">Debug</button>
       </nav>
-      ${state.tab === 'summary' ? summaryTab(state, results) : reportTab(state, results)}
+      ${state.tab === 'summary' ? summaryTab(state, results) : state.tab === 'debug' ? renderDebug(state) : reportTab(state, results)}
       <div class="actions">
         ${missing.length ? `<button class="btn btn-secondary" data-action="add-clip">Add clip (${esc(missing.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' / '))})</button>` : ''}
         <button class="btn btn-link" data-action="new-session">New session</button>

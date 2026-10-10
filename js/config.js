@@ -516,6 +516,38 @@ export const METRICS = [
     baselineConfidence: 'medium',
   },
   {
+    // Not in the clinic template: data foundation for the presentation phase (no summary line yet).
+    id: 'ms_step_width',
+    label: 'Step width',
+    phase: 'midstance',
+    allowedViews: ['posterior'],
+    // Lateral distance between the left heel (at left midstance) and the right heel (at right
+    // midstance): sum of the two heel-to-midline medians. cm from height, else hip widths.
+    type: 'record',
+    sided: 'mid',
+    unit: 'cm',
+    greenText: 'record value',
+    redText: 'none defined',
+    baselineConfidence: 'medium',
+    provisional: true,
+  },
+  {
+    // Not in the clinic template: data foundation for the presentation phase (no summary line yet).
+    id: 'arm_crossover',
+    label: 'Arm crossing midline',
+    phase: 'swing',
+    allowedViews: ['posterior'],
+    // Per stance of the opposite leg, the wrist's largest excursion past the shoulder midpoint toward
+    // the other side, in shoulder widths (+ = crosses the midline). "Yes" when ≥ 50% of swings cross.
+    type: 'record',
+    sided: 'lr',
+    unit: 'shw',
+    greenText: 'record value',
+    redText: 'none defined',
+    baselineConfidence: 'low', // wrists blur and are often occluded from behind
+    provisional: true,
+  },
+  {
     id: 'ms_trunk_lateral_lean',
     label: 'Trunk lateral lean',
     phase: 'midstance',
@@ -738,7 +770,7 @@ export const STATUS_LABELS = {
   'ic-sensitive': { report: 'Borderline, IC-sensitive', summary: 'borderline, IC-sensitive' },
   // Status changes across analysis-window choices (hip extension window end): range shown, not scored.
   'window-sensitive': { report: 'Borderline, window-sensitive', summary: 'borderline, window-sensitive' },
-  // Status changes when posterior midstance shifts by ±2 analysed frames: range shown, not scored.
+  // Status changes when posterior midstance shifts by ±33 ms: range shown, not scored.
   'timing-sensitive': { report: 'Borderline, timing-sensitive', summary: 'borderline, timing-sensitive' },
 };
 
@@ -746,6 +778,7 @@ export const UNITS = {
   deg: { suffix: '°', decimals: 1 },
   cm: { suffix: ' cm', decimals: 1 },
   hipw: { suffix: ' hip widths', short: ' HW', decimals: 2 },
+  shw: { suffix: ' shoulder widths', short: ' ShW', decimals: 2 },
   shoe: { suffix: ' shoe lengths', short: ' SL', decimals: 2 },
   toes: { suffix: ' toes', singular: ' toe', decimals: 0 },
 };

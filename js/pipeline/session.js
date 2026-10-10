@@ -71,7 +71,7 @@ export function mergeSession(clips) {
     }
   }
 
-  const warnings = [];
+  const warnings = slots.map((s) => clips[s].slotNote).filter(Boolean);
   const L = clips.lateral_left;
   const R = clips.lateral_right;
   if (L && R) {

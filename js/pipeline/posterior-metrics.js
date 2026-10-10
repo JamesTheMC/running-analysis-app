@@ -130,13 +130,14 @@ export function posteriorMetrics(rows, bad, ms, fs) {
     const halves = ms[side];
     const total = halves.length;
     const at = (shift) => {
-      const per = { hipAdduction: [], kneeValgus: [], trunkShift: [], trunkShiftPx: [], trunkLateralLean: [], heelFromMidline: [], pelvicDrop: [] };
+      const per = { hipAdduction: [], kneeValgus: [], trunkShift: [], trunkShiftPx: [], trunkLateralLean: [], heelFromMidline: [], heelFromMidlinePx: [], pelvicDrop: [] };
       for (const h of halves) {
         if (!h.valid) continue;
         const i = h.ms + shift;
         if (!usable(i)) continue;
         for (const [k, fn] of Object.entries(POSTERIOR)) per[k].push(fn(rows[i], side));
         per.trunkShiftPx.push(POSTERIOR.trunkShift(rows[i], side) * frame(rows[i], side).hipW);
+        per.heelFromMidlinePx.push(POSTERIOR.heelFromMidline(rows[i], side) * frame(rows[i], side).hipW);
         const lr = Math.max(0, Math.ceil(h.start)); // loading response: segmentation-derived stance start
         if (usable(lr) && lr < i) per.pelvicDrop.push(pelvisDropAngle(rows[i], side) - pelvisDropAngle(rows[lr], side));
       }
@@ -144,6 +145,29 @@ export function posteriorMetrics(rows, bad, ms, fs) {
     };
     out[side] = { total, shifts, sweep: Object.fromEntries(shifts.map((d) => [d, at(d)])) };
     out[side].summary = out[side].sweep[0];
+  }
+  // Arm crossing: an arm swings forward while the OPPOSITE leg is in stance. For each stance
+  // half-cycle, the opposite arm's largest medial wrist excursion relative to the shoulder midpoint,
+  // in shoulder widths (+ = wrist past the body midline toward the other side = crossing).
+  for (const stance of ['L', 'R']) {
+    const arm = stance === 'L' ? 'R' : 'L';
+    const wr = LANDMARKS[arm].wri;
+    const v = [];
+    for (const h of ms[stance]) {
+      if (!h.valid) continue;
+      let best = -Infinity;
+      for (let i = Math.ceil(h.start); i <= Math.floor(h.end); i++) {
+        if (!usable(i) || rows[i].lm[wr * 4 + 3] < 0.5) continue;
+        const sl = P(rows[i], LANDMARKS.L.sho);
+        const sr = P(rows[i], LANDMARKS.R.sho);
+        const u = unit(sub(sr, sl)); // left shoulder -> right shoulder
+        const medial = arm === 'L' ? u : [-u[0], -u[1]];
+        const w = Math.hypot(...sub(sr, sl)) || 1;
+        best = Math.max(best, dot(sub(P(rows[i], wr), mid(sl, sr)), medial) / w);
+      }
+      if (Number.isFinite(best)) v.push(best);
+    }
+    out[arm].armCross = summarise(v, ms[stance].length);
   }
   return out;
 }

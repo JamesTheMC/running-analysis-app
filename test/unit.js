@@ -55,6 +55,7 @@ const LATERAL = [
 const POSTERIOR = [
   'ms_hip_adduction', 'ms_pelvic_drop', 'ms_knee_varus_valgus', 'ms_trunk_lateral_lean', 'ms_lateral_shift',
   'ms_spine_shift', 'ms_foot_midline', 'ms_crossover', 'ms_out_toe', 'ms_achilles_angle', 'ms_rearfoot_eversion',
+  'ms_step_width', 'arm_crossover',
 ];
 // "Never compute from a posterior clip": sagittal metrics.
 const NEVER_POSTERIOR = [
@@ -63,7 +64,7 @@ const NEVER_POSTERIOR = [
   'trunk_change_peak_hip_ext',
 ];
 // "Never compute from a lateral clip": frontal-plane metrics.
-const NEVER_LATERAL = ['ms_hip_adduction', 'ms_pelvic_drop', 'ms_knee_varus_valgus', 'ms_lateral_shift', 'ms_trunk_lateral_lean', 'ms_crossover', 'ms_foot_midline', 'ms_spine_shift'];
+const NEVER_LATERAL = ['ms_hip_adduction', 'ms_pelvic_drop', 'ms_knee_varus_valgus', 'ms_lateral_shift', 'ms_trunk_lateral_lean', 'ms_crossover', 'ms_foot_midline', 'ms_spine_shift', 'ms_step_width', 'arm_crossover'];
 const NOT_BUILT = ['ms_rearfoot_eversion', 'ms_achilles_angle', 'ms_out_toe'];
 const CAPS = {
   ic_knee_flexion: 'medium', ic_tibial_inclination: 'medium', ms_hip_adduction: 'medium', ms_pelvic_drop: 'low',

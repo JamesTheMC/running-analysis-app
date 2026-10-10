@@ -5,6 +5,9 @@
 // Values are per-stride medians for the NEAR leg and NEAR arm only. Far-leg values are never used:
 // the other leg needs a lateral clip filmed from its own side.
 
+import { LANDMARKS } from './kinematics.js';
+import { clipInfo, landmarkQuality, lateralEventTable, safely, verticalOscillation } from './gait-events.js';
+import { detectNearSide } from './strides.js';
 import { SCORING } from '../config.js';
 import { median } from './stats.js';
 import { IC_SWEEP } from './events.js';
@@ -136,5 +139,24 @@ export function toAnalysis(result, { heightCm } = {}) {
     nearSide: leg,
     nearSideSource: seg.near.source,
     meta,
+    // For the reconciliation layer (js/pipeline/reconcile.js).
+    view: 'lateral',
+    ...reconInputs(),
+    bodyHeightPx: metrics.bodyHeightPx,
   };
+
+  function reconInputs() {
+    const errors = [];
+    const r = {
+      clip: safely(() => clipInfo(meta, { facing: seg.ref.facing > 0 ? 'image-right' : 'image-left' }), errors, 'clip'),
+      nearSideAuto: safely(() => {
+        const d = detectNearSide(rows);
+        return { leg: ANAT[d.side], zGap: Math.abs(d.zL - d.zR) };
+      }, errors, 'nearSideAuto'),
+      eventTable: safely(() => lateralEventTable(result, rows, meta), errors, 'eventTable'),
+      landmarkQuality: safely(() => landmarkQuality(rows, Object.values(LANDMARKS[near]).concat([LANDMARKS.L.sho, LANDMARKS.R.sho])), errors, 'landmarkQuality'),
+      oscillation: safely(() => verticalOscillation(rows, bad, seg.cycles.filter((c) => c.windows).map((c) => [c.start, c.end]), metrics.bodyHeightPx, meta.fs), errors, 'oscillation'),
+    };
+    return { ...r, reconErrors: errors };
+  }
 }

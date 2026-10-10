@@ -5,11 +5,14 @@ import { renderUpload } from './views/upload.js';
 import { renderIntake } from './views/intake.js';
 import { renderResults } from './views/results.js';
 import { renderAnalyzing } from './views/analyzing.js';
-import { analyzeVideo } from './pipeline/run.js';
+import { mountDebug } from './views/debug.js';
+import { analyzeVideo, postProcess } from './pipeline/run.js';
+import { reconcileSession } from './pipeline/reconcile.js';
 import { toAnalysis } from './pipeline/measurements.js';
 import { toPosteriorAnalysis } from './pipeline/posterior.js';
 import { mergeSession } from './pipeline/session.js';
 import { CLIP_SLOTS } from './config.js';
+import { RECONCILE } from './pipeline/reconcile.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -65,13 +68,18 @@ function render() {
   else root.innerHTML = renderUpload(state);
   if (state.screen === 'intake') wireIntake();
   if (state.screen === 'results') autosize(root.querySelector('.interpretation'));
+  if (state.screen === 'results' && state.tab === 'debug' && state.session?.reconciled) mountDebug(root, state);
 }
 
 function recompute({ resetInterpretation = false } = {}) {
   const s = state.session;
   s.views = [...new Set(Object.keys(s.clips).map((slot) => CLIP_SLOTS[slot].view))];
   // Real sessions: merge every clip's analysis (each lateral clip supplies its own leg and arm).
-  if (!s.placeholder) s.analysis = mergeSession(s.clips);
+  if (!s.placeholder) {
+    s.analysis = mergeSession(s.clips);
+    // One reconciled per-client result (data foundation; shown in the debug view).
+    s.reconciled = reconcileSession(s);
+  }
   results = analyze(s);
   if (resetInterpretation || !state.interpretationEdited) {
     state.interpretation = buildInterpretation(results, s.intake);
@@ -166,9 +174,9 @@ function addClip(clip, data, analysis) {
   if (state.session) {
     state.session.clips[clip.slot] = clip;
   } else {
-    const { slot, ...intake } = { ...EMPTY_INTAKE, ...data };
+    const { slot: _slot, ...intake } = { ...EMPTY_INTAKE, ...data };
     intake.clientCode = intake.clientCode.toUpperCase();
-    state.session = { intake, clips: { [slot]: clip }, placeholder: false };
+    state.session = { intake, clips: { [clip.slot]: clip }, placeholder: false };
   }
   state.tab = 'summary';
   recompute();
@@ -183,9 +191,9 @@ async function analyzeClip(clip, data) {
   go('analyzing');
   let lastPaint = 0;
   try {
-    const result = await analyzeVideo(clip.file, {
+    let result = await analyzeVideo(clip.file, {
       view,
-      nearSide: leg === 'left' ? 'L' : leg === 'right' ? 'R' : undefined,
+      // Lateral: the near leg is detected from depth and checked against the slot below.
       signal: controller.signal,
       onProgress: (p) => {
         Object.assign(state.progress, p);
@@ -197,6 +205,23 @@ async function analyzeClip(clip, data) {
       },
     });
     state.progress = null;
+    if (view === 'lateral') {
+      // Left/right convention: depth decides when it is clear; otherwise the slot (the user's word).
+      const auto = result.seg.near.side === 'L' ? 'left' : 'right';
+      const zGap = Math.abs((result.seg.near.zL ?? 0) - (result.seg.near.zR ?? 0));
+      if (auto !== leg && zGap >= RECONCILE.nearSideMinZGap) {
+        const target = auto === 'left' ? 'lateral_left' : 'lateral_right';
+        if (state.session?.clips[target]) {
+          throw new Error(`This clip looks filmed from the runner's ${auto} (the ${auto} leg faces the camera), but the ${CLIP_SLOTS[target].label.toLowerCase()} slot is already used. Remove that clip or check the video.`);
+        }
+        clip.slot = target;
+        clip.slotNote = `Moved to "${CLIP_SLOTS[target].label}": the ${auto} leg faces the camera (depth check), not the ${leg}.`;
+      } else if (auto !== leg) {
+        result = { ...result, ...postProcess(result.rows, result.meta, { nearSide: leg === 'left' ? 'L' : 'R' }) };
+      }
+    }
+    // Kept in memory for the debug view (skeleton overlay, events); never stored or sent anywhere.
+    clip.debug = { rows: result.rows, meta: result.meta, bad: result.bad };
     const intake = state.session ? state.session.intake : data;
     addClip(clip, data, view === 'posterior' ? toPosteriorAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }) : toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
   } catch (e) {
@@ -277,6 +302,9 @@ root.addEventListener('click', (e) => {
     go('intake');
   }
   else if (action === 'copy') copySummary(el);
+  else if (action === 'copy-json') {
+    copyText(JSON.stringify(state.session.reconciled, null, 1)).then((ok) => (el.textContent = ok ? 'Copied ✓' : 'Copy failed'));
+  }
   else if (action === 'tab') {
     state.tab = el.dataset.tab;
     render();

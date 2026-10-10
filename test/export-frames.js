@@ -32,7 +32,7 @@ for (const job of req.jobs) {
   const wanted = new Map(job.frames.map((f) => [f.frame, f]));
   log(`${job.clip}: ${wanted.size} frames`);
   await decodeSampledFrames(file, track, {
-    sampleEvery: 2,
+    sampleEvery: 1, // every frame: 30 fps clips have odd frame numbers
     scale: 1,
     onFrame: async (canvas, { index: i }) => {
       const f = wanted.get(i);
