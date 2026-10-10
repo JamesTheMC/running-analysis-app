@@ -36,6 +36,11 @@ function drawUpright(ctx, frame, track) {
   const w = swap ? H : W;
   const h = swap ? W : H;
   ctx.save();
+  if (track.mirrored) {
+    // Undo a mirrored recording so the pose model sees the real scene (left stays left).
+    ctx.translate(W, 0);
+    ctx.scale(-1, 1);
+  }
   if (track.rotation === 90) {
     ctx.translate(W, 0);
     ctx.rotate(Math.PI / 2);

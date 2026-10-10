@@ -8,7 +8,7 @@ function cellText(def, cell) {
   const strides = cell.strides ? `median of ${cell.strides} ${cell.countUnit || 'strides'}` : '';
   if (cell.status === 'ic-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across initial-contact timing, not scored)`;
   if (cell.status === 'pending-validation') return `${value} (${cell.pendingText}; not scored)`;
-  if (cell.status === 'timing-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across midstance timing ±2 frames, not scored)`;
+  if (cell.status === 'timing-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across midstance timing ±33 ms, not scored)`;
   if (cell.status === 'window-sensitive') return `${value} (${statusLabel(cell.status, 'summary')}: range across analysis-window choices, not scored${excludedText(cell)})`;
   const conf = cell.confidence !== 'high' ? `${cell.confidence} confidence` : '';
   const status = def.type === 'record' || def.type === 'category' ? '' : statusLabel(cell.status, 'summary');

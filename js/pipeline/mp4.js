@@ -82,10 +82,14 @@ function codecString(entryType, desc) {
   throw new Error(`Unsupported video codec "${entryType}". Use the native camera file (H.264 or HEVC).`);
 }
 
-function rotationFromMatrix(a, b) {
-  // tkhd matrix [a b u; c d v; x y w] in 16.16; rotation = atan2(b, a).
-  const deg = Math.round((Math.atan2(b, a) * 180) / Math.PI);
-  return ((deg % 360) + 360) % 360;
+// Display orientation from the tkhd matrix [a b u; c d v; x y w] (16.16 fixed point).
+// A negative determinant means the picture is mirrored (e.g. a front-camera clip saved mirrored);
+// the rotation is then read from the matrix with the horizontal flip removed.
+export function orientationFromMatrix(a, b, c, d) {
+  const mirrored = a * d - b * c < 0;
+  const [ra, rb] = mirrored ? [-a, -b] : [a, b];
+  const deg = Math.round((Math.atan2(rb, ra) * 180) / Math.PI);
+  return { rotation: ((deg % 360) + 360) % 360, mirrored };
 }
 
 export async function demux(file) {
@@ -102,7 +106,7 @@ export async function demux(file) {
     const tkhd = child(dv, trak, 'tkhd');
     const tv = dv.getUint8(tkhd.start);
     const m = tkhd.start + (tv === 1 ? 52 : 40);
-    const rotation = rotationFromMatrix(dv.getInt32(m), dv.getInt32(m + 4));
+    const { rotation, mirrored } = orientationFromMatrix(dv.getInt32(m), dv.getInt32(m + 4), dv.getInt32(m + 12), dv.getInt32(m + 16));
 
     const mdhd = path(dv, trak, 'mdia', 'mdhd');
     const timescale = dv.getUint32(mdhd.start + (dv.getUint8(mdhd.start) === 1 ? 20 : 12));
@@ -234,6 +238,7 @@ export async function demux(file) {
       codedWidth,
       codedHeight,
       rotation,
+      mirrored, // frames are un-mirrored at decode (decode.js), so left/right stay anatomical
       displayWidth: swap ? codedHeight : codedWidth,
       displayHeight: swap ? codedWidth : codedHeight,
       samples, // decode order

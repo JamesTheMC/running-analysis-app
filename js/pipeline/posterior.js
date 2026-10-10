@@ -5,7 +5,6 @@
 
 import { createEmitter } from './emit.js';
 import { MIN_STRIDES, cell } from './measurements.js';
-import { MS_SWEEP } from './posterior-metrics.js';
 import { median } from './stats.js';
 
 // "Beyond PSIS" (provisional): median |shoulder-midpoint shift| above a quarter of the hip-joint
@@ -22,11 +21,12 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
   const pxPerCm = heightCm > 0 && pm.bodyHeightPx > 0 ? pm.bodyHeightPx / heightCm : null;
   const withSweep = (c, side, key) => {
     if (c.value == null) return c;
-    const values = MS_SWEEP.map((d) => {
+    const shifts = pm[side].shifts;
+    const values = shifts.map((d) => {
       const s = pm[side].sweep[d][key];
       return s.n >= MIN_STRIDES ? s.median : null;
     });
-    return { ...c, sweep: { kind: 'timing', values, tolerances: MS_SWEEP.map((d) => (d ? `MS${d > 0 ? '+' : '−'}${Math.abs(d)}` : 'MS')) } };
+    return { ...c, sweep: { kind: 'timing', values, tolerances: shifts.map((d) => (d ? `MS${d > 0 ? '+' : '−'}${Math.round((Math.abs(d) / (pm.fs || 60)) * 1000)} ms` : 'MS')) } };
   };
 
   for (const side of ['L', 'R']) {

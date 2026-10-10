@@ -156,3 +156,10 @@ the output.
   autocorrelation lag).** At 30 fps durations are whole frames (19 or 20), so medians move in ~9 spm
   steps; the mean over 40+ strides resolves ~0.5 spm. Y
 - **Time-based parameters: stance gap bridging is 0.035 s (2 frames at 60 Hz, 1 at 30 Hz).** Y
+- **Mirrored video: detected from the tkhd matrix determinant and undone at decode (frames are
+  flipped back before pose estimation).** Alt: swap L/R labels afterwards (rejected: the model's own
+  left/right inference would already be on a mirrored body). No current clip is mirrored; covered by
+  a unit test on synthetic matrices. Y
+- **Frame timing recorded per clip (`meta.frameTiming`); all event/metric times use timestamps or
+  seconds-based parameters.** All clips are constant-rate (±1.7 ms jitter). Y
+- **Posterior midstance timing sweep is ±33 ms (was ±2 frames, which doubled to ±67 ms at 30 fps).** Y

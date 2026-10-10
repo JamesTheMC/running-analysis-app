@@ -8,6 +8,7 @@ import { buildInterpretation, buildSections } from '../js/engine/summary.js';
 import { toAnalysis } from '../js/pipeline/measurements.js';
 import { postProcess, postProcessRear } from '../js/pipeline/run.js';
 import { estimatePeriod } from '../js/pipeline/strides.js';
+import { orientationFromMatrix } from '../js/pipeline/mp4.js';
 import { cadenceFromDurations } from '../js/pipeline/metrics.js';
 import { applyHipAnchor, applyLegAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
 import { LEG_ANCHOR } from '../js/config.js';
@@ -434,6 +435,20 @@ await testAsync('leg anchor on cached IMG_0639_2: gait events unchanged', async 
 });
 
 section = 'Timing at 30 fps';
+test('orientation: rotation and mirroring from the track matrix', () => {
+  const F = 65536;
+  const cases = [
+    [[0, F, -F, 0], 90, false], // iPhone portrait
+    [[F, 0, 0, F], 0, false],
+    [[-F, 0, 0, F], 0, true], // horizontal mirror
+    [[0, -F, -F, 0], 90, true], // portrait + mirror
+    [[-F, 0, 0, -F], 180, false],
+  ];
+  for (const [[a, b, c, d], rot, mir] of cases) {
+    const o = orientationFromMatrix(a, b, c, d);
+    assert(o.rotation === rot && o.mirrored === mir, `${[a, b, c, d]} -> ${JSON.stringify(o)}`);
+  }
+});
 test('period: the shortest strong autocorrelation peak wins over a period multiple', () => {
   // Stride 20 frames at 30 Hz; alternate strides differ, so lag 40 correlates slightly better.
   const x = Array.from({ length: 600 }, (_, i) => Math.sin((2 * Math.PI * i) / 20) * (Math.floor(i / 20) % 2 ? 1 : 0.8));

@@ -111,13 +111,19 @@ function summarise(values, total) {
   };
 }
 
-export const MS_SWEEP = [-2, 0, 2]; // analysed frames; timing-sensitivity rule
+// Timing-sensitivity rule: midstance shifted by ±33 ms (2 analysed frames at 60 Hz, 1 at 30 Hz).
+export const MS_SWEEP_SEC = 0.033;
+export const msSweepShifts = (fs) => {
+  const k = Math.max(1, Math.round(MS_SWEEP_SEC * (fs || 60)));
+  return [-k, 0, k];
+};
 
 /**
- * Per-leg posterior metrics at midstance (+ the same at MS shifted by MS_SWEEP frames).
+ * Per-leg posterior metrics at midstance (+ the same at MS shifted by ±MS_SWEEP_SEC).
  * `ms` = pelvisLowMidstance(...) output: { L: [{ start, end, ms, valid }], R: [...] }.
  */
-export function posteriorMetrics(rows, bad, ms) {
+export function posteriorMetrics(rows, bad, ms, fs) {
+  const shifts = msSweepShifts(fs);
   const usable = (i) => rows[i]?.lm && !bad[i];
   const out = {};
   for (const side of ['L', 'R']) {
@@ -136,7 +142,7 @@ export function posteriorMetrics(rows, bad, ms) {
       }
       return Object.fromEntries(Object.entries(per).map(([k, v]) => [k, summarise(v, total)]));
     };
-    out[side] = { total, sweep: Object.fromEntries(MS_SWEEP.map((d) => [d, at(d)])) };
+    out[side] = { total, shifts, sweep: Object.fromEntries(shifts.map((d) => [d, at(d)])) };
     out[side].summary = out[side].sweep[0];
   }
   return out;

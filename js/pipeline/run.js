@@ -19,6 +19,15 @@ export const PIPELINE = {
   targetHz: 60, // app default: sample every round(fps / 60)-th frame; the reference uses every 2nd
 };
 
+// Frame-interval check: variable frame rate would break frame-count timing. Timestamps (not frame
+// indices) are used for all time-based values; this records how regular the clip is.
+export function frameTiming(times) {
+  const d = times.slice(1).map((t, i) => t - times[i]).sort((a, b) => a - b);
+  if (!d.length) return null;
+  const med = d[d.length >> 1];
+  return { medianMs: med * 1000, minMs: d[0] * 1000, maxMs: d[d.length - 1] * 1000, variable: d[d.length - 1] > 1.5 * med || d[0] < 0.5 * med };
+}
+
 export function sampleEveryFor(fps, targetHz = PIPELINE.targetHz) {
   return Math.max(1, Math.round(fps / targetHz));
 }
@@ -68,6 +77,8 @@ export async function analyzeVideo(file, opts = {}) {
     fs: track.fps / sampleEvery,
     frameCount: track.frameCount,
     rotation: track.rotation,
+    mirrored: !!track.mirrored,
+    frameTiming: frameTiming(track.frameTimes),
     sampleEvery,
     analysedSize: size && [size.width, size.height],
     delegate,
@@ -91,8 +102,8 @@ export function postProcessRear(rows, meta) {
   // Candidate: lowest smoothed pelvis within each stance half-cycle (deepest landing position).
   const midstancePelvis = pelvisLowMidstance(rows, bad, seg, midstance);
   const capture = posteriorCaptureChecks(rows, bad, meta.analysedSize[0]);
-  // Posterior metrics at the lowest-pelvis midstance (and at ±2 frames for the timing rule).
-  const metrics = { ...posteriorMetrics(rows, bad, midstancePelvis), bodyHeightPx: frontalBodyHeightPx(rows, bad) };
+  // Posterior metrics at the lowest-pelvis midstance (and at ±33 ms for the timing rule).
+  const metrics = { ...posteriorMetrics(rows, bad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(rows, bad), fs: meta.fs };
   const cadence = cadenceFromDurations(seg.peaks.slice(1).map((p, i) => (p - seg.peaks[i]) / meta.fs));
   return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
