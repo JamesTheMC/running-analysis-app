@@ -70,6 +70,7 @@ function legSummary(strides) {
   const ok = strides.filter((s) => s.valid);
   const conf = (c) => ok.filter((s) => s.confidence === c).length;
   const contact = ok.map((s) => s.contactMs).filter(Number.isFinite);
+  const highShare = ok.length ? conf('high') / ok.length : 0;
   const share = ok.length ? (conf('high') + conf('medium')) / ok.length : 0;
   return {
     detected: strides.length,
@@ -78,7 +79,8 @@ function legSummary(strides) {
     medium: conf('medium'),
     low: conf('low'),
     contactMs: contact.length ? median(contact) : null,
-    confidence: !ok.length ? 'none' : share >= 0.7 && ok.length >= 8 ? 'high' : share >= 0.4 && ok.length >= 5 ? 'medium' : 'low',
+    // Leg confidence: 'high' only when most strides are high; 'medium' when most are at least medium.
+    confidence: !ok.length ? 'none' : highShare >= 0.7 && ok.length >= 8 ? 'high' : share >= 0.5 && ok.length >= 5 ? 'medium' : 'low',
   };
 }
 

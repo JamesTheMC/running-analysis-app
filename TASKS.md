@@ -87,15 +87,20 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
       phone/tablet layout checked
 - [x] Committed landmark fixtures for all 8 clips (test/fixtures/clips, 4.1 MB, no video)
 
-### Doing
-- [ ] Event validation vs blind frame marking (28 strips) — agent running
-- [ ] Joint-angle validation T1–T3 (30 frames) — agent running; decide leg anchor (C0 fit does not
-      transfer: leave-one-client-out test)
+- [x] Event validation vs blind frame marking (28 strips): side IC 1 frame, TO 1–2 frames; rear lag
+      calibrated (−100 / −120 ms)
+- [x] Joint-angle validation T1–T3 (30 frames): rear angles ≤ 3.1° mean error; side knee reference on
+      T1–T3 rejected (implausible); leg anchor turned off (leave-one-client-out: no transfer)
+- [x] Expected-range fixture regression for all 4 clients; one-view and blank-intake tests
+- [x] Correlated-metric candidates (within-client, per stride) → HANDOFF.md §5
+- [x] HANDOFF.md
 
-### Todo
-- [ ] Expected-range regression test on fixtures (after the anchor decision)
-- [ ] Correlated-metric candidates (per-stride, within client)
-- [ ] HANDOFF.md, final report
+### Next (presentation phase and open items)
+- [ ] Results presentation from the reconciled result (HANDOFF.md); hide/hedge per HANDOFF §4
+- [ ] Per-setup calibration (clinician clicks) if a landmark correction is wanted
+- [ ] A better side-view knee reference (clinician-marked frames on T1–T3)
+- [ ] Pelvic drop: needs a frontal-plane reference before it can be shown
+- [ ] Record client heights with future clips (fixtures assume 170 cm)
 
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)

@@ -173,7 +173,7 @@
       "medium": 42,
       "low": 0,
       "contactMs": null,
-      "confidence": "high"
+      "confidence": "medium"
      },
      "right": {
       "role": "rear",
@@ -183,10 +183,10 @@
       "medium": 43,
       "low": 0,
       "contactMs": null,
-      "confidence": "high"
+      "confidence": "medium"
      }
     },
-    "confidence": "high",
+    "confidence": "medium",
     "landmarkVisibility": 0.944,
     "method": "step times from the feet's height alternation (running-mean crossings)"
    }
