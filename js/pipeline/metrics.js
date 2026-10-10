@@ -20,7 +20,6 @@
 import { LANDMARKS } from './kinematics.js';
 import { VIS_MIN } from './pose.js';
 import { median, percentile } from './stats.js';
-import { smoothSeries } from './strides.js';
 import { hipMidX } from './events.js';
 
 const DEG = 180 / Math.PI;
@@ -114,7 +113,8 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
   const near = side === seg.near.side;
   const facing = seg.ref.facing;
   const ev = events[side];
-  const knee = smoothSeries(rows.map((r, i) => (bad[i] || r[`knee_flex_${side}`] == null ? NaN : r[`knee_flex_${side}`])), seg.fs);
+  // Rows are already stabilised (stabilize.js); no second smoothing pass.
+  const knee = rows.map((r, i) => (bad[i] || r[`knee_flex_${side}`] == null ? NaN : r[`knee_flex_${side}`]));
   const total = ev.strides.length;
   const per = { kneeIC: [], maxStanceKnee: [], kneeExcursion: [], kneeAnkleSync: [], tibialIC: [], footInclIC: [], ankleDFms: [], footToComPx: [], footToComShoe: [], trunkIC: [], trunkMS: [], trunkChange: [] };
   const trunkIds = [LANDMARKS.L.sho, LANDMARKS.R.sho, LANDMARKS.L.hip, LANDMARKS.R.hip];
@@ -172,7 +172,7 @@ export function legMetrics(rows, bad, seg, events, hipExt, side) {
 export function shoulderSwing(rows, bad, seg) {
   const ids = LANDMARKS[seg.near.side];
   const facing = seg.ref.facing;
-  const ang = smoothSeries(rows.map((r, i) => (bad[i] || !visible(r, ids.sho, ids.elb, ids.hip) ? NaN : armAngle(r, ids, facing))), seg.fs);
+  const ang = rows.map((r, i) => (bad[i] || !visible(r, ids.sho, ids.elb, ids.hip) ? NaN : armAngle(r, ids, facing)));
   const usable = seg.cycles.filter((c) => c.windows);
   const roms = [];
   for (const c of usable) {

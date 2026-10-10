@@ -50,6 +50,12 @@ export function buildRow(landmarks, { index, ptsSec, width, height }) {
   const lm = new Float32Array(33 * 4);
   landmarks.forEach((p, i) => lm.set([p.x * width, p.y * height, p.z, p.visibility ?? 0], i * 4));
   row.lm = lm;
+  return deriveAngles(row);
+}
+
+// Per-frame derived fields from row.lm (also re-run after landmark corrections or stabilisation).
+export function deriveAngles(row) {
+  const lm = row.lm;
   const P = (k) => [lm[k * 4], lm[k * 4 + 1]];
   const V = (k) => lm[k * 4 + 3];
 

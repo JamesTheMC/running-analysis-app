@@ -75,10 +75,10 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [x] Contact share validity 20–65% (no-flight-phase runners, confirmed on a T2 strip)
 - [x] Period: shortest strong autocorrelation peak (T1 halving); cadence = mean of stride durations
       (30 fps quantisation); side vs rear cadence now within 1–4 spm on every client
+- [x] Input: mirrored video undone at decode, frame-timing check, time-based sweeps
+- [x] Pose stabilisation: visibility threshold, gap fill ≤ 0.1 s, SG 0.1 s; no double smoothing
 
 ### Todo
-- [ ] Input: mirrored video (tkhd matrix), timebase in seconds for all frame-count parameters
-- [ ] Pose stabilisation: confidence thresholds, gap filling, peak-preserving smoothing, far leg low-confidence
 - [ ] Events per leg per view with confidence; manual frame-marking validation per clip
 - [ ] Reconciliation layer: L/R convention, time alignment, authoritative view, cross-checks, confidence
 - [ ] Intake: real-unit stride length, vertical oscillation; graceful blanks

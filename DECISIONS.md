@@ -163,3 +163,10 @@ the output.
 - **Frame timing recorded per clip (`meta.frameTiming`); all event/metric times use timestamps or
   seconds-based parameters.** All clips are constant-rate (±1.7 ms jitter). Y
 - **Posterior midstance timing sweep is ±33 ms (was ±2 frames, which doubled to ±67 ms at 30 fps).** Y
+- **Landmark stabilisation before metrics (js/pipeline/stabilize.js): points below visibility 0.5
+  dropped, gaps ≤ 0.1 s linearly filled (marked in `row.filled`), Savitzky–Golay order 2 with a
+  0.1 s window (5 samples at 30 Hz, 7 at 60 Hz ≈ 8–10 Hz low-pass).** Alt: no smoothing (C0 knee
+  jitter 9°); 0.15–0.2 s windows (stance knee peaks lowered 5–10°); moving average (flattens
+  peaks). Events stay on raw landmarks. The second smoothing pass on the knee and arm series was
+  removed (no double smoothing). Y
+- **Far leg on lateral clips: low confidence, never reported (see far-leg validation, 26% swaps).** Y

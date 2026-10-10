@@ -1,7 +1,7 @@
 {
  "clip": "IMG_0639_2.mov",
  "near": "L",
- "capturedFrom": "events with belt-speed landing gate + contact share 20–65% (2026-10-10)",
+ "capturedFrom": "raw landmarks, landing gate, contact share 20–65%, no double smoothing (2026-10-10)",
  "contactTolerance": 0.3,
  "metrics": {
   "kneeIC": {
@@ -14,10 +14,10 @@
    "total": 83
   },
   "maxStanceKnee": {
-   "median": 55.696702982163906,
+   "median": 58.30068123554662,
    "iqr": [
-    52.59779390150807,
-    58.92115756764673
+    55.61051652123222,
+    61.29088251403386
    ],
    "n": 71,
    "total": 83
@@ -119,10 +119,10 @@
   }
  },
  "shoulderSwing": {
-  "median": 69.71832475928392,
+  "median": 71.09458917859185,
   "iqr": [
-   68.46068768777258,
-   71.52159779950091
+   69.20584905356034,
+   72.54438778062963
   ],
   "n": 83,
   "total": 83

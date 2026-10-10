@@ -9,6 +9,7 @@ import { STRIDE, hipExtensionPeaks, segmentStrides } from './strides.js';
 import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
 import { cadenceFromDurations, cadenceFromStrides, computeMetrics } from './metrics.js';
 import { applyHipAnchor, applyLegAnchor, medianThighPx } from './hip-anchor.js';
+import { STABILIZE, stabilizeRows } from './stabilize.js';
 import { HIP_ANCHOR, LEG_ANCHOR } from '../config.js';
 import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
 import { frontalBodyHeightPx, posteriorMetrics } from './posterior-metrics.js';
@@ -89,7 +90,7 @@ export async function analyzeVideo(file, opts = {}) {
 }
 
 // Posterior view (Milestone 4): events only so far. Metrics are added after the event contact sheet is reviewed.
-export function postProcessRear(rows, meta) {
+export function postProcessRear(rows, meta, opts = {}) {
   const bad = tibiaGate(rows);
   const seg = segmentRear(rows, bad, meta.fs);
   seg.fs = meta.fs;
@@ -103,7 +104,9 @@ export function postProcessRear(rows, meta) {
   const midstancePelvis = pelvisLowMidstance(rows, bad, seg, midstance);
   const capture = posteriorCaptureChecks(rows, bad, meta.analysedSize[0]);
   // Posterior metrics at the lowest-pelvis midstance (and at ±33 ms for the timing rule).
-  const metrics = { ...posteriorMetrics(rows, bad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(rows, bad), fs: meta.fs };
+  // Metrics on stabilised landmarks; segmentation and midstance on the raw ones.
+  const srows = opts.stabilize === false ? rows : stabilizeRows(rows, meta.fs);
+  const metrics = { ...posteriorMetrics(srows, bad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(srows, bad), fs: meta.fs };
   const cadence = cadenceFromDurations(seg.peaks.slice(1).map((p, i) => (p - seg.peaks[i]) / meta.fs));
   return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
@@ -118,12 +121,14 @@ export function postProcess(rows, meta, opts = {}) {
   const anchor = opts.hipAnchor ?? HIP_ANCHOR;
   const leg = opts.legAnchor ?? LEG_ANCHOR;
   // Hip-only anchor (kept for the tool and its fixture) takes precedence; otherwise the whole-leg anchor.
+  // Metrics use stabilised landmarks (stabilize.js) with the anchor applied; events use raw landmarks.
+  const srows = opts.stabilize === false ? rows : stabilizeRows(rows, meta.fs);
   const mrows =
     anchor.mode === 'corrected'
-      ? applyHipAnchor(rows, seg.near.side, seg.ref.facing, anchor.offset)
+      ? applyHipAnchor(srows, seg.near.side, seg.ref.facing, anchor.offset)
       : leg.mode === 'corrected'
-        ? applyLegAnchor(rows, seg.near.side, seg.ref.facing, leg.offsets, medianThighPx(rows, seg.near.side))
-        : rows;
+        ? applyLegAnchor(srows, seg.near.side, seg.ref.facing, leg.offsets, medianThighPx(rows, seg.near.side))
+        : srows;
   const hipExt = hipExtensionPeaks(mrows, bad, meta.fs, seg, events);
   // Near-leg hip extension under each window end (window-sensitivity rule).
   const hipWindows = STRIDE.windowSweep.map((end) => ({

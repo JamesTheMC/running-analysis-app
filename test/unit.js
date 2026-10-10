@@ -407,7 +407,7 @@ await testAsync('corrected mode matches its fixture (IMG_0639_2)', async () => {
   const fx = await (await fetch('fixtures/IMG_0639_2.corrected.json')).json();
   const { meta, rows } = await res.json();
   for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
-  const r = postProcess(rows, meta, { nearSide: fx.near, hipAnchor: fx.hipAnchor });
+  const r = postProcess(rows, meta, { nearSide: fx.near, hipAnchor: fx.hipAnchor, stabilize: false });
   for (const [k, v] of Object.entries(fx.metrics)) assert(Math.abs(r.metrics[fx.near].summary[k].median - v.median) < 1e-9, `${k} changed`);
   for (const h of fx.hipExtension) assert(Math.abs(r.hipWindows.find((w) => w.end === h.end).median - h.median) < 1e-9, `hip ext ${h.end} changed`);
   return `offset ${JSON.stringify(fx.hipAnchor.offset)} (${fx.offsetSource})`;
@@ -448,6 +448,19 @@ test('orientation: rotation and mirroring from the track matrix', () => {
     const o = orientationFromMatrix(a, b, c, d);
     assert(o.rotation === rot && o.mirrored === mir, `${[a, b, c, d]} -> ${JSON.stringify(o)}`);
   }
+});
+await testAsync('stabilise: low-confidence points are dropped and short gaps filled, long gaps left missing', async () => {
+  const { stabilizeRows } = await import('../js/pipeline/stabilize.js');
+  const rows = Array.from({ length: 30 }, (_, i) => {
+    const lm = new Float32Array(132);
+    for (let k = 0; k < 33; k++) lm.set([100 + i, 200, 0, 0.9], k * 4);
+    return { t: i / 30, lm };
+  });
+  rows[10].lm[25 * 4 + 3] = 0.1; // one low-confidence knee point (1 frame gap)
+  for (let i = 18; i < 26; i++) rows[i].lm[27 * 4 + 3] = 0.1; // 8-frame ankle dropout (0.27 s)
+  const s = stabilizeRows(rows, 30);
+  assert(Math.abs(s[10].lm[25 * 4] - 110) < 1e-6 && s[10].filled.includes(25), `knee not filled: ${s[10].lm[25 * 4]}`);
+  assert(!(s[22].lm[27 * 4 + 3] > 0.5), 'long ankle gap was filled');
 });
 test('period: the shortest strong autocorrelation peak wins over a period multiple', () => {
   // Stride 20 frames at 30 Hz; alternate strides differ, so lag 40 correlates slightly better.
@@ -542,7 +555,7 @@ await testAsync('near-leg metrics match the pre-refactor values', async () => {
   const base = await (await fetch('fixtures/IMG_0639_2.baseline.json')).json();
   const { meta, rows } = await res.json();
   for (const r of rows) if (r.lm) r.lm = Float32Array.from(r.lm);
-  const r = postProcess(rows, meta, { nearSide: base.near, hipAnchor: { mode: 'landmark' }, legAnchor: { mode: 'landmark' } }); // baseline uses uncorrected landmarks
+  const r = postProcess(rows, meta, { nearSide: base.near, hipAnchor: { mode: 'landmark' }, legAnchor: { mode: 'landmark' }, stabilize: false }); // baseline: raw landmarks
   const now = r.metrics[base.near].summary;
   const tol = 1e-9;
   let fails = 0;
