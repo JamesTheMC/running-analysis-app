@@ -7,7 +7,7 @@ import { buildRow, createPoseLandmarker } from './pose.js';
 import { series, tibiaGate } from './gate.js';
 import { STRIDE, hipExtensionPeaks, segmentStrides } from './strides.js';
 import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
-import { cadenceFromStrides, computeMetrics } from './metrics.js';
+import { cadenceFromDurations, cadenceFromStrides, computeMetrics } from './metrics.js';
 import { applyHipAnchor, applyLegAnchor, medianThighPx } from './hip-anchor.js';
 import { HIP_ANCHOR, LEG_ANCHOR } from '../config.js';
 import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
@@ -93,7 +93,7 @@ export function postProcessRear(rows, meta) {
   const capture = posteriorCaptureChecks(rows, bad, meta.analysedSize[0]);
   // Posterior metrics at the lowest-pelvis midstance (and at ±2 frames for the timing rule).
   const metrics = { ...posteriorMetrics(rows, bad, midstancePelvis), bodyHeightPx: frontalBodyHeightPx(rows, bad) };
-  const cadence = seg.periodSec ? { spm: 120 / seg.periodSec, strideSec: seg.periodSec, strides: seg.peaks.length } : null;
+  const cadence = cadenceFromDurations(seg.peaks.slice(1).map((p, i) => (p - seg.peaks[i]) / meta.fs));
   return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
 

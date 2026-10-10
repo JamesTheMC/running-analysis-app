@@ -186,11 +186,20 @@ export function shoulderSwing(rows, bad, seg) {
 // Cadence from the stride period: 2 steps per stride cycle, from frame timestamps (handles variable
 // frame rate). Unvalidated: SPEC 7.8 found video cadence unreliable on re-encoded clips; display only,
 // never used for scoring or patterns (those use the intake cadence).
+// Cadence from stride durations: the MEAN of durations within ±25% of the median. Each duration is a
+// whole number of analysed frames, so a median (or the autocorrelation lag) moves in ~9 spm steps at
+// 30 fps; averaging many strides removes that quantisation (2026-10-10).
+export function cadenceFromDurations(secs) {
+  const v = secs.filter((x) => Number.isFinite(x) && x > 0);
+  if (v.length < 3) return null;
+  const m = median(v);
+  const kept = v.filter((x) => Math.abs(x / m - 1) <= 0.25);
+  const stride = kept.reduce((a, b) => a + b, 0) / kept.length;
+  return { spm: 120 / stride, strideSec: stride, strides: kept.length, iqrSpm: [120 / percentile(kept, 75), 120 / percentile(kept, 25)] };
+}
+
 export function cadenceFromStrides(rows, seg) {
-  const secs = seg.cycles.filter((c) => c.windows).map((c) => rows[c.end].t - rows[c.start].t);
-  if (secs.length < 3) return null;
-  const stride = median(secs);
-  return { spm: 120 / stride, strideSec: stride, strides: secs.length, iqrSpm: [120 / percentile(secs, 75), 120 / percentile(secs, 25)] };
+  return cadenceFromDurations(seg.cycles.filter((c) => c.windows).map((c) => rows[c.end].t - rows[c.start].t));
 }
 
 export function computeMetrics(result) {

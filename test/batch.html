@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'" />
+    <title>Batch Run</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg: #0f1419; --fg: #e6e9ec; } }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 16px; }
+      pre { white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Batch run (dev only)</h1>
+    <p>Runs pose estimation on every clip in test/clips.js, on-device, and caches landmarks to
+      test-data/debug/&lt;id&gt;.rows.json. Add <code>?only=T1-side,T1-rear</code> to limit, <code>?force</code> to re-run cached clips.</p>
+    <pre id="log">Starting…</pre>
+    <script type="module" src="batch.js"></script>
+  </body>
+</html>

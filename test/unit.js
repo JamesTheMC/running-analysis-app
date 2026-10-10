@@ -7,6 +7,8 @@ import { analyze } from '../js/engine/analysis.js';
 import { buildInterpretation, buildSections } from '../js/engine/summary.js';
 import { toAnalysis } from '../js/pipeline/measurements.js';
 import { postProcess, postProcessRear } from '../js/pipeline/run.js';
+import { estimatePeriod } from '../js/pipeline/strides.js';
+import { cadenceFromDurations } from '../js/pipeline/metrics.js';
 import { applyHipAnchor, applyLegAnchor, offsetOf } from '../js/pipeline/hip-anchor.js';
 import { LEG_ANCHOR } from '../js/config.js';
 import { CANDIDATES } from './rear-midstance.js';
@@ -429,6 +431,20 @@ await testAsync('leg anchor on cached IMG_0639_2: gait events unchanged', async 
   const ev = (r) => JSON.stringify(r.events.L.strides.map((s) => [s.ic, s.ms, s.to]));
   assert(ev(a) === ev(b), 'events changed');
   return `${b.events.L.strides.length} strides, same IC/MS/TO`;
+});
+
+section = 'Timing at 30 fps';
+test('period: the shortest strong autocorrelation peak wins over a period multiple', () => {
+  // Stride 20 frames at 30 Hz; alternate strides differ, so lag 40 correlates slightly better.
+  const x = Array.from({ length: 600 }, (_, i) => Math.sin((2 * Math.PI * i) / 20) * (Math.floor(i / 20) % 2 ? 1 : 0.8));
+  const lag = estimatePeriod(x, 30);
+  assert(lag === 20, `lag ${lag}`);
+});
+test('cadence: mean of whole-frame stride durations removes 30 fps quantisation', () => {
+  // True stride 0.65 s sampled at 30 fps -> durations of 19 or 20 frames.
+  const secs = Array.from({ length: 40 }, (_, i) => (i % 2 ? 20 : 19) / 30);
+  const c = cadenceFromDurations(secs);
+  assert(Math.abs(c.spm - 184.6) < 0.5, `spm ${c.spm}`);
 });
 
 // ---------------------------------------------------------------------------

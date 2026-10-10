@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' blob: data:; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'" />
+    <title>Frame Strips</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg: #0f1419; --fg: #e6e9ec; } }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>Frame strips (dev only)</h1>
+    <p>Decodes consecutive frames on-device and saves labelled, overlay-free tiles for event marking.
+      Driven from the console: <code>await makeStrips(jobs)</code>.</p>
+    <pre id="log"></pre>
+    <script type="module" src="strip.js"></script>
+  </body>
+</html>

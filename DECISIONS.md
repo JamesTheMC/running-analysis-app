@@ -138,3 +138,21 @@ the output.
   points swapped onto the near leg, 2 of 6 far midstances with whole-foot swaps (knee errors up to
   61°), 1 of 6 far ICs wrong; not detectable from visibility or foot spacing. A whole-leg offset
   cannot fix this. Bilateral side values = one clip per side. Y
+
+## Reconciliation phase (2026-10-10)
+- **Side-view landing gate: a frame counts toward stance (growing back toward IC) only if the slower
+  of heel and toe is not moving forward faster than 25% of belt speed.** Alt: height only (T2/T3: the
+  low, forward-swinging foot merged into stance, 0 valid strides); "must move backward" (cut C0
+  toe-off early); gate on both sides (same). Why: on a treadmill the loaded foot is carried backward;
+  swing travels forward. Toe-off stays on height (frame strips: C0 f3884–3901 showed the gate ending
+  stance while the toe was loaded). C0 events unchanged except 7 outlier ICs that had 430 ms
+  contacts. This supersedes the earlier "do not change side-view event detection" rule, because the
+  owner's new brief asks for view-specific event detection. Y
+- **Contact share validity 20–65% of the stride (was 20–50%).** T2/T3 runners have ~50–55% contact
+  with no flight phase (T2 strip f234–253). Y
+- **Stride period = shortest autocorrelation peak ≥ 80% of the best (was: best peak).** T1 picked
+  2 strides (1.3 s), halving cadence in both views. Y
+- **Cadence = 120 / mean of stride durations within ±25% of the median (was: median duration or
+  autocorrelation lag).** At 30 fps durations are whole frames (19 or 20), so medians move in ~9 spm
+  steps; the mean over 40+ strides resolves ~0.5 spm. Y
+- **Time-based parameters: stance gap bridging is 0.035 s (2 frames at 60 Hz, 1 at 30 Hz).** Y

@@ -31,6 +31,7 @@ export const STRIDE = {
   // Window ends compared for the window-sensitivity rule: 'late-stance' = the original signal-based end.
   windowSweep: ['late-stance', 0, 0.05, 0.1, 0.15],
   gapFillSec: 0.1,
+  periodPeakShare: 0.8, // shortest autocorrelation peak within 80% of the best = the stride period
 };
 
 const oddAtLeast = (n, lo) => Math.max(lo, n % 2 ? n : n + 1);
@@ -79,18 +80,23 @@ export function estimatePeriod(x, fs) {
   if (fin.length < fs) return 0;
   const mean = fin.reduce((s, y) => s + y, 0) / fin.length;
   const d = Array.from(x, (y) => (Number.isFinite(y) ? y - mean : 0));
-  let best = 0;
-  let bestLag = 0;
-  for (let lag = Math.round(STRIDE.minPeriodSec * fs); lag <= Math.round(STRIDE.maxPeriodSec * fs); lag++) {
+  const lo = Math.round(STRIDE.minPeriodSec * fs);
+  const hi = Math.round(STRIDE.maxPeriodSec * fs);
+  const c = [];
+  for (let lag = lo; lag <= hi; lag++) {
     let s = 0;
     for (let i = 0; i + lag < d.length; i++) s += d[i] * d[i + lag];
-    const c = s / (d.length - lag);
-    if (c > best) {
-      best = c;
-      bestLag = lag;
-    }
+    c[lag] = s / (d.length - lag);
   }
-  return bestLag;
+  const best = Math.max(...c.slice(lo).filter(Number.isFinite));
+  if (!(best > 0)) return 0;
+  // The shortest lag whose autocorrelation peak is close to the best one: a multiple of the period
+  // can score slightly higher when alternate strides differ (T1 clips: 1.30 s chosen over 0.65 s,
+  // halving cadence; 2026-10-10).
+  for (let lag = lo + 1; lag < hi; lag++) {
+    if (c[lag] >= c[lag - 1] && c[lag] >= c[lag + 1] && c[lag] >= STRIDE.periodPeakShare * best) return lag;
+  }
+  return c.indexOf(best);
 }
 
 function argExtreme(x, from, to, greater) {

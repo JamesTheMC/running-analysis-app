@@ -49,6 +49,43 @@ summary (ankle, knee, hip, lumbar, arms, then interpretation). Run tests: `pytho
 - Posterior: stride segmentation, midstance candidates, swap/symmetry checks, capture off-centre check
 - One-command tests: `python3 tools/test.py` (headless Chrome)
 
+## Reconciliation phase (started 2026-10-10)
+Goal: side + rear clips → one coherent per-client result; clean data foundation for the presentation
+phase. Clips: C0 (original pair, 120 fps), T1 (8 mph), T2 (7 mph), T3 (6 mph); all sets complete
+(side + rear). Inventory in test/clips.js; videos stay in test-data/ (gitignored).
+
+### Baseline (pipeline as of 0d920c7, before fixes)
+| Clip | Format | Result |
+|---|---|---|
+| C0-side | HEVC 10-bit DV, 1080×1920 (rot 90), 119.95 fps, 61.0 s | works: 67/83 strides valid, cadence 164 spm |
+| C0-rear | same, 60.9 s | works: 84/84 midstances, 0 swap frames |
+| T1-side | HEVC DV, 1080×1920 (rot 90), 30 fps, 29.4 s | **cadence halved (92 spm)**, 11/21 strides valid, contact 333 ms |
+| T1-rear | same, 40.8 s | **cadence halved**, 1–2 valid midstances, 39 L/R swap frames, 8% frames without a pose |
+| T2-side | same, 31.1 s | **0/44 strides valid** (contact 70–85% of stride) |
+| T2-rear | same, 37.6 s | works: 56/56 midstances |
+| T3-side | same, 34.3 s | **0/50 strides valid** (contact 62–84%) |
+| T3-rear | same, 29.6 s | works: 42–43 midstances |
+No crashes; all clips upright (rotation metadata applied); no mirrored clips; frame timing constant
+(±1.7 ms). New side clips are filmed from the runner's RIGHT (near leg R).
+
+### Done
+- [x] Inventory + batch pose run (test/batch.html), baseline report (test/baseline.js)
+- [x] Landing (IC) gate: foot must not travel forward faster than 25% of belt speed (T2/T3 swing
+      counted as stance); toe-off unchanged (frame-strip check on C0)
+- [x] Contact share validity 20–65% (no-flight-phase runners, confirmed on a T2 strip)
+- [x] Period: shortest strong autocorrelation peak (T1 halving); cadence = mean of stride durations
+      (30 fps quantisation); side vs rear cadence now within 1–4 spm on every client
+
+### Todo
+- [ ] Input: mirrored video (tkhd matrix), timebase in seconds for all frame-count parameters
+- [ ] Pose stabilisation: confidence thresholds, gap filling, peak-preserving smoothing, far leg low-confidence
+- [ ] Events per leg per view with confidence; manual frame-marking validation per clip
+- [ ] Reconciliation layer: L/R convention, time alignment, authoritative view, cross-checks, confidence
+- [ ] Intake: real-unit stride length, vertical oscillation; graceful blanks
+- [ ] Joint-angle validation per clip and view; fix > 5° or explain
+- [ ] Prototype: full flow, regression fixtures (derived JSON), debug view, mobile layout
+- [ ] HANDOFF.md
+
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)
 - [x] Owner spot-check of hand marks (3 frames; knee marks inconsistent)

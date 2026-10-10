@@ -1,79 +1,72 @@
 {
-  "clip": "IMG_0639_2.mov",
-  "near": "L",
-  "hipAnchor": {
-    "mode": "corrected",
-    "offset": {
-      "along": 0,
-      "perp": 0
-    }
+ "clip": "IMG_0639_2.mov",
+ "near": "L",
+ "hipAnchor": {
+  "mode": "corrected",
+  "offset": {
+   "along": 0,
+   "perp": 0
+  }
+ },
+ "offsetSource": "placeholder: no frames clicked yet (offset 0, corrected = landmark)",
+ "metrics": {
+  "kneeIC": {
+   "median": 31.58472398762663
   },
-  "offsetSource": "placeholder: no frames clicked yet (offset 0, corrected = landmark)",
-  "metrics": {
-    "kneeIC": {
-      "median": 32.434359189535286,
-      "n": 67
-    },
-    "maxStanceKnee": {
-      "median": 55.50383654939098,
-      "n": 67
-    },
-    "kneeExcursion": {
-      "median": 21.912966528977506,
-      "n": 67
-    },
-    "footToComShoe": {
-      "median": 0.6910463488011612,
-      "n": 67
-    },
-    "trunkIC": {
-      "median": 0.8194888786472678,
-      "n": 67
-    },
-    "trunkMS": {
-      "median": 3.054317788837035,
-      "n": 67
-    },
-    "trunkChange": {
-      "median": 2.0739765704592035,
-      "n": 55
-    }
+  "maxStanceKnee": {
+   "median": 55.69670842702296
   },
-  "kneeICSweep": {
-    "0.2": 33.02723919450747,
-    "0.3": 32.434359189535286,
-    "0.4": 27.732553094015074
+  "kneeExcursion": {
+   "median": 22.385750095825955
   },
-  "hipExtension": [
-    {
-      "end": "late-stance",
-      "median": 18.15770187888285,
-      "n": 81,
-      "rising": 2
-    },
-    {
-      "end": 0,
-      "median": 9.689317479473605,
-      "n": 13,
-      "rising": 53
-    },
-    {
-      "end": 0.05,
-      "median": 14.24998965785535,
-      "n": 55,
-      "rising": 12
-    },
-    {
-      "end": 0.1,
-      "median": 15.70522239182536,
-      "n": 64,
-      "rising": 3
-    },
-    {
-      "end": 0.15,
-      "median": 18.800251471328153,
-      "n": 55,
-      "rising": 12
-    }
-  ]
+  "footToComShoe": {
+   "median": 0.7083419478163934
+  },
+  "trunkIC": {
+   "median": 0.8556776577899894
+  },
+  "trunkMS": {
+   "median": 2.8384444046319963
+  },
+  "trunkChange": {
+   "median": 2.0739765704592035
+  }
+ },
+ "kneeICSweep": {
+  "0.2": 33.02723919450747,
+  "0.3": 31.58472398762663,
+  "0.4": 21.785845515818522
+ },
+ "hipExtension": [
+  {
+   "end": "late-stance",
+   "median": 18.15770187888285,
+   "n": 81,
+   "rising": 2
+  },
+  {
+   "end": 0,
+   "median": 9.996494115889696,
+   "n": 14,
+   "rising": 56
+  },
+  {
+   "end": 0.05,
+   "median": 15.041598556899078,
+   "n": 59,
+   "rising": 12
+  },
+  {
+   "end": 0.1,
+   "median": 15.70522239182536,
+   "n": 68,
+   "rising": 3
+  },
+  {
+   "end": 0.15,
+   "median": 18.896400876155024,
+   "n": 58,
+   "rising": 13
+  }
+ ]
 }
