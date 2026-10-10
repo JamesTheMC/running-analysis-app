@@ -583,6 +583,44 @@ await testAsync('near-leg metrics match the pre-refactor values', async () => {
 });
 
 // ---------------------------------------------------------------------------
+section = 'Fixture regression (committed landmark fixtures, all clients; no video needed)';
+{
+  const { sessionFor, read } = await import('./fixture-regression.js');
+  const expRes = await fetch('fixtures/expected.json');
+  const expected = expRes.ok ? await expRes.json() : null;
+  for (const client of ['C0', 'T1', 'T2', 'T3']) {
+    await testAsync(`${client}: pipeline + reconciliation runs and matches expected values`, async () => {
+      const { result } = await sessionFor(client);
+      assert(result.schema === 'gait-session/1', 'schema');
+      assert(result.views.includes('lateral') && result.views.includes('posterior'), `views ${result.views}`);
+      if (!expected) return 'skip';
+      const bad = [];
+      for (const [path, { value, tol }] of Object.entries(expected[client])) {
+        const now = read(result, path);
+        if (value == null ? now != null : now == null || typeof now !== 'number' || Math.abs(now - value) > tol) bad.push(`${path}: expected ${value} ±${tol}, got ${now}`);
+      }
+      assert(!bad.length, bad.slice(0, 4).join('; '));
+      return `${Object.keys(expected[client]).length} values within tolerance`;
+    });
+  }
+  await testAsync('one view only: missing view reported as not assessed', async () => {
+    const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+    const { clips, intake } = await sessionFor('T3');
+    const only = reconcileSession({ intake, clips: { lateral_right: clips.lateral_right } });
+    assert(only.views.length === 1 && only.metrics.ms_hip_adduction.notAssessed?.includes('posterior'), JSON.stringify(only.metrics.ms_hip_adduction));
+    assert(only.metrics.ic_knee_flexion.cells.right.value != null, 'lateral metric missing');
+    const cad = only.timing.crossChecks.find((c) => c.quantity === 'cadence');
+    assert(cad.status === 'single view', cad.status);
+  });
+  await testAsync('blank intake degrades gracefully (no height, no speed)', async () => {
+    const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+    const { clips } = await sessionFor('T2');
+    const r = reconcileSession({ intake: { clientCode: 'X' }, clips: Object.fromEntries(Object.entries(clips).map(([k, c]) => [k, { ...c, speed: '' }])) });
+    assert(r.derived.stepLengthM == null && r.derived.notes.some((n) => /speed/.test(n)) && r.derived.notes.some((n) => /height/.test(n)), JSON.stringify(r.derived));
+  });
+}
+
+// ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);
 const skips = results.filter((r) => r.skip);
