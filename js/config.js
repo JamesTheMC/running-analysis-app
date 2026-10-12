@@ -108,8 +108,9 @@ export const ASYMMETRY = {
 
 // Intake-based thresholds used by pattern rules.
 export const CADENCE = {
-  low: 160, // spm, lower end of commonly cited 160-190 range (Section 8)
-  high: 190, // spm, upper end. [CONFIRM] what counts as "high cadence" for limited hip extension
+  // Clinician decision 2026-10-12: kept. No injury-based cutoff exists; cadence rises with speed.
+  low: 160, // spm: below = one overstride sign
+  high: 190, // spm: above = a limited-hip-extension sign
 };
 
 // ---------------------------------------------------------------------------
@@ -173,6 +174,7 @@ export const METRICS = [
     sided: 'lr',
     unit: 'deg',
     // Sign: foot (heel -> foot index) angle at IC relative to the same foot flat at midstance; + = toes up.
+    // Under investigation (owner 2026-10-12): re-check range and accuracy with higher-frame-rate clips.
     note: "Descriptive only. Measured relative to each foot's own flat-foot angle at midstance, because the heel landmark sits higher on the shoe than the toe landmark.",
     green: { max: 10 },
     red: { above: 10 },
@@ -193,12 +195,12 @@ export const METRICS = [
     unit: 'deg',
     // Sign: shank (knee -> ankle) vs vertical at IC; + = ankle AHEAD of the knee (overstride direction),
     // - = ankle behind the knee.
-    green: { min: -10, max: 10 },
-    red: { below: -10, above: 10 },
-    greenText: '-10° to +10°',
-    redText: 'beyond ±10°',
+    green: { min: 0, max: 8 },
+    red: { above: 10 },
+    greenText: '0–8°',
+    redText: '>10°',
     provisional: true,
-    note: 'Descriptive only. ±10° has no published threshold (provisional).',
+    note: 'Descriptive only. Clinician range (2026-10-12): 0–8° green (healthy reports ≈ 0–8°), >10° red; no published cutoff.',
     priority: false,
     baselineConfidence: 'medium', // ≈8° mean abs error vs manual annotation (reference/VALIDATION.md)
     summary: 'ANKLE',
@@ -239,14 +241,14 @@ export const METRICS = [
     type: 'range',
     sided: 'lr',
     unit: 'deg',
-    green: { min: 15, max: 25 },
-    red: { below: 12, above: 30 },
-    greenText: '15–25°',
-    redText: '<12° or >30°',
+    green: { min: 14, max: 30 },
+    red: { below: 10 },
+    greenText: '14–30°',
+    redText: '<10°',
     priority: true,
     baselineConfidence: 'medium', // ≈10° mean abs error vs manual annotation (reference/VALIDATION.md)
     provisional: true,
-    note: 'Clinic template range; healthy adults 17.8 ± 4.0° (Heiderscheit 2011, 3D). Thresholds provisional.',
+    note: 'Clinician range (2026-10-12): green 14–30°, red <10° (straight-knee landing); healthy adults 17.8 ± 4.0° (Heiderscheit 2011, 3D); the app reads ≈ 7° high.',
     summary: 'KNEE',
   },
   {
@@ -259,13 +261,13 @@ export const METRICS = [
     sided: 'mid',
     unit: 'deg',
     // Sign: shoulder-midpoint to hip-midpoint line vs vertical; + = forward lean. Trunk-angle proxy, not lumbar.
-    green: { min: 5, max: 10 },
-    red: { below: 0, above: 15 },
-    greenText: '5–10°',
-    redText: '<0° or >15°',
+    green: { min: 0, max: 15 },
+    red: { above: 20 },
+    greenText: '0–15°',
+    redText: '>20°',
     priority: false,
     provisional: true,
-    note: 'Green 5–10° matches healthy self-selected lean (≈7°); red thresholds are provisional.',
+    note: 'Clinician range (2026-10-12): wide (0–15°, red >20°) because the 2D trunk line has a 6–7° direction-dependent bias; healthy self-selected lean ≈ 7°.',
     baselineConfidence: 'high',
     summary: 'LUMBAR',
   },
@@ -349,10 +351,10 @@ export const METRICS = [
     type: 'range',
     sided: 'mid',
     unit: 'deg',
-    green: { min: 0, max: 10 },
-    red: { above: 12 },
-    greenText: '0–10°',
-    redText: '>12°',
+    green: { min: 0, max: 15 },
+    red: { above: 20 },
+    greenText: '0–15°',
+    redText: '>20°',
     priority: false,
     provisional: true,
     baselineConfidence: 'high',
@@ -690,7 +692,7 @@ export const PATTERNS = [
     all: [],
     any: [
       { metric: 'ic_foot_to_com', status: ['yellow', 'red'], text: 'foot-to-COM distance high' },
-      { metric: 'ic_knee_flexion', below: 15, text: 'knee flexion at IC low' },
+      { metric: 'ic_knee_flexion', below: 14, text: 'knee flexion at IC low' },
       { metric: 'ic_tibial_inclination', above: 0, text: 'tibial inclination positive' },
       { intake: 'cadence', below: CADENCE.low, text: `cadence below ${CADENCE.low} spm` },
     ],
@@ -705,7 +707,7 @@ export const PATTERNS = [
     id: 'poor_shock_absorption',
     label: 'Poor shock absorption',
     all: [
-      { metric: 'ic_knee_flexion', below: 15, text: 'knee flexion at IC low' },
+      { metric: 'ic_knee_flexion', below: 14, text: 'knee flexion at IC low' },
       { metric: 'ms_max_knee_flexion', below: 35, text: 'max stance knee flexion well below ~45°' },
     ],
     any: [],

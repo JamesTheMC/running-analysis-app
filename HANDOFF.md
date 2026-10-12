@@ -352,21 +352,21 @@ metric tables are on the pipeline results (`metrics[side].strideTable`, posterio
 
 | Metric | Green / red in code | Source |
 |---|---|---|
-| Knee flexion at IC | 15–25° / < 12° or > 30° | clinic template; healthy 17.8 ± 4.0° (Heiderscheit 2011, 3D); **provisional** |
+| Knee flexion at IC | 14–30° / < 10° | clinician (2026-10-12); healthy 17.8 ± 4.0° (Heiderscheit 2011, 3D); app reads ≈ 7° high |
 | Max stance knee flexion | 35–45° / > 45° | clinic template (clinician decision 2026-10-09); literature healthy ≈ 45° (many healthy runners above 45°) |
-| Tibial inclination at IC | −10–+10° / beyond ±10° | **no published threshold; provisional** |
-| Foot inclination at IC | < 10° DF / > 10° | clinic template; **no source** |
+| Tibial inclination at IC | 0–8° / > 10° | clinician (2026-10-12); healthy reports ≈ 0–8°; no published cutoff |
+| Foot inclination at IC | < 10° DF / > 10° | clinic template kept (2026-10-12); **under investigation** with higher-frame-rate clips |
 | Foot strike | rearfoot > 8° | Altman & Davis 2012 (relative to standing foot); cutoff **to be verified** |
 | Foot-to-COM at IC | ≤ 13 cm / > 17 cm | healthy 9.2 ± 4.0 cm (Heiderscheit 2011) → **provisional** (clinician kept) |
-| Forward trunk lean IC / MS | 5–10° (IC), 0–10° (MS) / < 0 or > 15°, > 12° | healthy ≈ 7°; red **provisional** |
-| Trunk change at peak hip ext | < 5° of extension | **provisional, no source** |
+| Forward trunk lean IC / MS | 0–15° / > 20° (both) | clinician (2026-10-12): wide because of the 6–7° direction-dependent bias; healthy ≈ 7° |
+| Trunk change at peak hip ext | < 5° of extension, caution only | clinician kept (2026-10-12); no published source |
 | Hip extension | 5–15° / < 5° | clinic template; unscored until clinician validation |
 | Hip adduction | 0–13° / > 13° | ≈ healthy 3D mean + 1 SD (source **unverified**); **provisional** |
 | Knee FPPA | −5–+5° | **no published basis; unscored** |
 | Pelvic drop | 0–6° / > 6° | template; red equals the healthy 2D mean; **provisional, unscored** |
 | Spine shift (PSIS) | > 5 cm = beyond | clinician rule (2026-10-09); without height 0.25 hip widths (**provisional**) |
 | Crossover | ≥ 50% of steps | **provisional** (clinician kept) |
-| Cadence-based triggers | < 160 / > 190 spm | commonly cited range; **unverified** |
+| Cadence-based triggers | < 160 / > 190 spm | clinician kept (2026-10-12); no injury-based cutoff exists |
 | Step-rate suggestion | +5–10% | Heiderscheit 2011 |
 | Ankle DF, knee excursion, knee/ankle sync, elbow, shoulder ROM, foot vs midline, step width, arm crossing, trunk lateral lean/shift | record only | **no ranges** |
 

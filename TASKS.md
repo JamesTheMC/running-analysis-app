@@ -96,6 +96,7 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [x] HANDOFF.md
 
 ### Next (presentation phase and open items)
+- [ ] Investigate foot inclination at IC (range and ~13° error) with the owner's higher-frame-rate clips
 - [ ] Results presentation from the reconciled result (HANDOFF.md); hide/hedge per HANDOFF §4
 - [ ] Per-setup calibration (clinician clicks) if a landmark correction is wanted
 - [x] Clinician-marked side frames T1–T3 (hip/knee/ankle): knee ±7°, hip ext 3.2°, tibial 1.7°

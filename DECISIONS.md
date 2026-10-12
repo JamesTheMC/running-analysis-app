@@ -218,3 +218,8 @@ the output.
 - **2026-10-12: Foot-to-COM stays behind its validation gate.** Clinician marks on T1–T3 gave
   2.4 cm mean error (accurate), but C0 read 9 cm high; one setup is not enough to lift the gate. Lift
   it (`VALIDATION.footToComValidated = true`) after a second clinician-checked setup agrees. Y
+- **2026-10-12: Clinician range decisions.** Tibial inclination at IC: green 0–8°, red > 10°. Knee
+  flexion at IC: green 14–30°, red < 10° (overstride trigger now < 14°). Forward trunk lean at IC and
+  MS: green 0–15°, red > 20° (wide because of the 6–7° direction-dependent bias). Trunk change at peak
+  hip extension: < 5° kept, caution only. Foot inclination at IC: template kept, under investigation
+  with higher-frame-rate clips. Cadence triggers 160 / 190 spm kept. Y
