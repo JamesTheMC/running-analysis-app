@@ -100,7 +100,7 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [ ] Per-setup calibration (clinician clicks) if a landmark correction is wanted
 - [ ] A better side-view knee reference (clinician-marked frames on T1–T3)
 - [ ] Pelvic drop: needs a frontal-plane reference before it can be shown
-- [ ] Record client heights with future clips (fixtures assume 170 cm)
+- [x] T1–T3 height 182.8 cm recorded (C0 still unknown, 170 cm assumed)
 
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)

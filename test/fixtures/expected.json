@@ -215,7 +215,7 @@
    "tol": 2
   },
   "metrics.ms_step_width.cells.mid.value": {
-   "value": 10.71,
+   "value": 11.51,
    "tol": 2
   }
  },
@@ -325,7 +325,7 @@
    "tol": 2
   },
   "metrics.ms_step_width.cells.mid.value": {
-   "value": 11.33,
+   "value": 12.18,
    "tol": 2
   }
  },
@@ -435,7 +435,7 @@
    "tol": 2
   },
   "metrics.ms_step_width.cells.mid.value": {
-   "value": 11.79,
+   "value": 12.67,
    "tol": 2
   }
  }

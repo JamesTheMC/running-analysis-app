@@ -9,11 +9,13 @@ import { toAnalysis } from '../js/pipeline/measurements.js';
 import { toPosteriorAnalysis } from '../js/pipeline/posterior.js';
 import { reconcileSession } from '../js/pipeline/reconcile.js';
 
-export const HEIGHT_CM = 170; // fixed for the fixtures (clients' heights are not recorded)
+export const DEFAULT_HEIGHT_CM = 170; // when a client's height is not recorded (C0)
 
 export async function sessionFor(client, base = '') {
   const clips = {};
-  for (const c of CLIPS.filter((x) => x.client === client)) {
+  const own = CLIPS.filter((x) => x.client === client);
+  const HEIGHT_CM = own[0]?.heightCm ?? DEFAULT_HEIGHT_CM;
+  for (const c of own) {
     const fx = await (await fetch(`${base}fixtures/clips/${c.id}.lm.json`)).json();
     const { meta, rows } = unpackRows(fx);
     if (c.view === 'lateral') {

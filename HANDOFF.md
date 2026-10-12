@@ -395,7 +395,7 @@ does not equal 3D valgus), trunk lateral lean/shift, heel vs midline, crossover,
 **General 2D limits:** no transverse-plane rotation; frontal angles are projections that depend on
 camera alignment; one camera per view, separate recordings (never synchronised); 30 fps clips resolve
 events to ±33 ms; validation used AI blind hand marks (C0 knees owner spot-checked), 4 clients, so
-errors are indicative, not definitive. Heights of T1–T3 were not recorded (170 cm assumed in fixtures).
+errors are indicative, not definitive. T1–T3 height 182.8 cm (owner, 2026-10-12); C0 height not recorded (170 cm assumed).
 
 ---
 
