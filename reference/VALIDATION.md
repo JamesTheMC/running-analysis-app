@@ -415,3 +415,24 @@ Offsets fitted on the other clients' hand marks and applied to the held-out clie
   ankle-dorsiflexion error from 3–4° to 10–12° and trunk-lean error from 7 to 10°.
 **Decision: anchor off for all clips.** A fixed landmark correction does not transfer between camera
 setups/runners; it would need per-setup calibration (clinician clicks on each new setup).
+
+## Side view vs clinician marks, T1–T3 (2026-10-12)
+The owner marked hip, knee and ankle on the 18 side frames (test/mark-joints.html); shoulders from
+the blind marks. Clinician knee flexion at midstance 34–44° (plausible). Error = app − clinician.
+
+| Metric | Bias / mean abs | Max |
+|---|---|---|
+| Knee flexion at IC | +6.8 / 6.8° | 16.9° |
+| Knee flexion at midstance | +6.5 / 6.7° | 14.2° |
+| Knee flexion just after toe-off (early swing) | −10.0 / 10.0° | 20.2° |
+| Tibial inclination at IC | −1.6 / 1.7° | 5.3° |
+| Hip extension | +1.9 / 3.2° | 6.4° |
+| Point error hip / knee / ankle (full-res px) | 15 / 34 / 24 | |
+
+- Hip extension and tibial inclination are within ~5° on this setup (8° on C0).
+- Knee flexion reads ~7° high in stance and 10° low in early swing (fast motion blurs at 30 fps);
+  the bias changes sign with phase, so a fixed offset cannot correct it. Medium confidence stands.
+- `VALIDATION_ERROR` keeps the worst client per metric (C0 for knee, tibial and hip extension), so
+  confidence caps are unchanged.
+- Pelvic drop: PSIS cannot be marked on these clips (shirt covers the lower back); see
+  reference/CAPTURE_PLAN.md for the filming change that makes it checkable.

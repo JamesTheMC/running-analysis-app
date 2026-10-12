@@ -27,16 +27,16 @@ not validated → at most medium), and pending clinician validation. Every downg
 ### Side view (lateral) — sagittal plane, near leg only (left clip → left leg, right clip → right leg)
 | id | Metric | Unit | Phase | Validation error | Behaviour |
 |---|---|---|---|---|---|
-| ic_knee_flexion | Knee flexion at IC | ° | IC | 9.1 (C0) | medium at best; IC-sensitive range when status changes |
-| ms_max_knee_flexion | Max stance knee flexion | ° | stance | 6.7 (C0, at midstance) | medium |
+| ic_knee_flexion | Knee flexion at IC | ° | IC | 9.1 (C0) / 6.8 (T, clinician marks) | medium at best; IC-sensitive range when status changes |
+| ms_max_knee_flexion | Max stance knee flexion | ° | stance | 6.7 (C0) / 6.7 (T, clinician), at midstance | medium |
 | ms_knee_flexion_excursion | Knee excursion IC→MS | ° | IC→MS | 6.6 (C0) | record only |
-| ic_tibial_inclination | Tibial inclination at IC | ° | IC | 7.9 (C0) / 5.5 (T) | medium; descriptive only |
+| ic_tibial_inclination | Tibial inclination at IC | ° | IC | 7.9 (C0) / 1.7 (T, clinician) | medium; descriptive only |
 | ic_foot_inclination | Foot inclination at IC (vs own midstance) | ° | IC | 12.8 (C0) | low |
 | ic_foot_strike | Rearfoot / non-rearfoot (8°) | category | IC | 12.8 (C0) | low; unscored |
 | ic_foot_to_com | Heel ahead of pelvis at IC | cm | IC | 9.1 cm (C0) / 5.4 cm (T) | low–medium; above-range = "pending validation" |
 | ms_ankle | Ankle dorsiflexion at midstance | ° | MS | 20.8 (C0) / 3.8 (T) | low; trend only |
 | ms_knee_ankle_sync | Knee/ankle peak sync | yes/no + % | stance | — | low; record only |
-| to_hip_extension | Peak hip extension vs trunk axis | ° | late stance | 8.3 (C0) | medium/low; unscored until clinician validation |
+| to_hip_extension | Peak hip extension vs trunk axis | ° | late stance | 8.3 (C0) / 3.2 (T, clinician) | medium/low; unscored until clinician validation |
 | ic_spine_lean / ms_spine_lean | Forward trunk lean | ° | IC / MS | 5.9 (C0) / 6.9 (T) | medium (image-space bias, sign flips with direction) |
 | trunk_change_peak_hip_ext | Trunk angle change IC → peak hip ext | ° | stance | (as trunk lean) | medium |
 | arm_elbow_angle / arm_shoulder_rom | Elbow angle / shoulder swing | ° | cycle | not validated | medium |
@@ -383,8 +383,7 @@ metric tables are on the pipeline results (`metrics[side].strideTable`, posterio
 - **Arm crossing** on clips where wrists are hidden from behind (T1–T3): not assessed.
 - **Rear-view contact time and rear vertical oscillation**: not reported (perspective).
 
-**Hedge (medium confidence, errors 5–10°):** knee flexion at IC and max stance (validated on one
-client only; T1–T3 knee reference unusable), tibial inclination, hip extension (also awaiting
+**Hedge (medium confidence, errors 5–10°):** knee flexion at IC and max stance (≈ 7° high in stance on both setups; 10° low in early swing), tibial inclination, hip extension (also awaiting
 clinician validation), forward trunk lean (≈ 6–7° image-space bias), foot-to-COM (5–9 cm high;
 above-range values shown as "pending validation").
 

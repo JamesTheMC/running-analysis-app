@@ -78,3 +78,13 @@ this plan.)
 1. Measure `getCapabilities()` on the clinic's iPhones to see whether in-page recording reaches 60 or
    120 fps.
 2. Decide whether a live pose overlay during set-up is worth the battery and heat cost.
+
+## Additions (2026-10-12)
+- **Rear view, for pelvic drop:** two small coloured tape dots on the PSIS (the dimples at the base of
+  the back), with a fitted top or the shirt tucked up so the dots stay visible. Without them pelvic
+  drop cannot be validated and stays hidden.
+- **Rear view, for arm crossing:** camera at about shoulder height and far enough back that the
+  wrists stay in frame when the arms swing forward.
+- **Side view:** keep the treadmill's side upright from crossing the near leg; 60 fps or higher if the
+  phone allows (30 fps blurs the knee in early swing).
+- Record the runner's height with every session.

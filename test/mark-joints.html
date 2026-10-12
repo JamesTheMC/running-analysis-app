@@ -29,7 +29,7 @@
   </head>
   <body>
     <h1>Mark the runner's joints</h1>
-    <p class="muted">Side view. The runner faces right; mark the leg <strong>nearest the camera</strong> (the runner's right leg: it is drawn in front where the legs cross). Click the three points in order; the next point is selected automatically. Your marks save as you go (this computer only).</p>
+    <p class="muted">Side view. The runner faces right; mark the leg <strong>nearest the camera</strong> (the runner's right leg: it is drawn in front where the legs cross). Click the four points in order (frames you already marked only need the heel); the next point is selected automatically. Your marks save as you go (this computer only).</p>
     <div class="progress"><strong id="pos"></strong> <span class="muted" id="status"></span></div>
     <div class="wrap">
       <div class="stage" id="stage"><img id="img" alt="Video frame to mark" /></div>
@@ -37,6 +37,7 @@
         <div class="step" data-p="hip"><span class="dot" style="background:#3b82f6"></span><div><strong>1. Hip</strong><div class="muted">Centre of the hip joint: about level with the bony bump on the side of the hip (greater trochanter), slightly in front of and above it.</div></div></div>
         <div class="step" data-p="knee"><span class="dot" style="background:#ef4444"></span><div><strong>2. Knee</strong><div class="muted">Centre of the knee joint: halfway between the front and back of the knee, at the joint line (not the kneecap).</div></div></div>
         <div class="step" data-p="ankle"><span class="dot" style="background:#22c55e"></span><div><strong>3. Ankle</strong><div class="muted">Outer ankle bone (lateral malleolus), or your best estimate above the shoe collar.</div></div></div>
+        <div class="step" data-p="heel"><span class="dot" style="background:#f59e0b"></span><div><strong>4. Heel</strong><div class="muted">Back of the heel: the rearmost point of the shoe's heel, at the bottom (where it meets the sole).</div></div></div>
         <label class="muted"><input type="checkbox" id="unsure" /> Unsure which leg is the near one in this frame</label>
         <div class="row">
           <button id="prev">‹ Previous</button>

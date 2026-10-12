@@ -98,8 +98,9 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 ### Next (presentation phase and open items)
 - [ ] Results presentation from the reconciled result (HANDOFF.md); hide/hedge per HANDOFF §4
 - [ ] Per-setup calibration (clinician clicks) if a landmark correction is wanted
-- [ ] A better side-view knee reference (clinician-marked frames on T1–T3)
-- [ ] Pelvic drop: needs a frontal-plane reference before it can be shown
+- [x] Clinician-marked side frames T1–T3 (hip/knee/ankle): knee ±7°, hip ext 3.2°, tibial 1.7°
+- [ ] Heel marks on the same 18 frames (foot-to-COM check) — owner marking
+- [ ] Pelvic drop: needs PSIS tape dots on the next rear clips (shirt covers PSIS on T1–T3)
 - [x] T1–T3 height 182.8 cm recorded (C0 still unknown, 170 cm assumed)
 
 ## Next (Phase 5 follow-up)

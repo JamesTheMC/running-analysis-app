@@ -1,8 +1,8 @@
 // Clinician joint marking on the T1–T3 side-view validation frames (crops exported earlier).
 // Marks are saved to test-data/debug/clinician_marks.json (dev server, this machine only).
 const FRAMES = Array.from({ length: 30 }, (_, i) => `vcrop_${String(i + 1).padStart(2, '0')}`);
-const POINTS = ['hip', 'knee', 'ankle'];
-const COLORS = { hip: '#3b82f6', knee: '#ef4444', ankle: '#22c55e' };
+const POINTS = ['hip', 'knee', 'ankle', 'heel'];
+const COLORS = { hip: '#3b82f6', knee: '#ef4444', ankle: '#22c55e', heel: '#f59e0b' };
 const FILE = 'clinician_marks.json';
 const $ = (id) => document.getElementById(id);
 
