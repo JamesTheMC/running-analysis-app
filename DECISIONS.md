@@ -215,3 +215,6 @@ the output.
 - **T1–T3 hand-marked knees rejected as a reference (implausible 1–21° midstance flexion); side-view
   knee validation uses C0 (owner spot-checked).** Y
 - **Validation errors feed confidence automatically (`VALIDATION_ERROR` in reconcile.js).** Y
+- **2026-10-12: Foot-to-COM stays behind its validation gate.** Clinician marks on T1–T3 gave
+  2.4 cm mean error (accurate), but C0 read 9 cm high; one setup is not enough to lift the gate. Lift
+  it (`VALIDATION.footToComValidated = true`) after a second clinician-checked setup agrees. Y

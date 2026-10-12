@@ -436,3 +436,9 @@ the blind marks. Clinician knee flexion at midstance 34–44° (plausible). Erro
   confidence caps are unchanged.
 - Pelvic drop: PSIS cannot be marked on these clips (shirt covers the lower back); see
   reference/CAPTURE_PLAN.md for the filming change that makes it checkable.
+
+### Foot-to-COM vs clinician hip + heel marks (T1–T3, 2026-10-12)
+Contact frames, scale from height 182.8 cm: clinician 17.1–27.9 cm, app 21.5–29.4 cm.
+Error +2.4 cm bias / 2.4 cm mean abs (max 5.0 cm, n 6). Heel point error 14–63 px (largest in
+early swing, blurred shoe). On C0 the error was +9.1 cm (blind marks), so the metric stays
+"pending validation" until a second setup is clinician-checked.
