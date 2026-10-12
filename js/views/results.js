@@ -1,245 +1,151 @@
+// Results screen, rendered from the presentation model (js/presentation/model.js). The copy-paste
+// text (Summary text tab) comes from the same model, so screen and text always agree.
 import { esc } from '../util.js';
-import { VIEWS, SCORING, NOT_MEASURABLE, CLIP_SLOTS } from '../config.js';
-import { cellValue, formatDiff, formatValue, statusLabel, sideLabel } from '../engine/format.js';
-import { buildHeader, buildSections, captureWarnings } from '../engine/summary.js';
+import { CLIP_SLOTS, SCORING } from '../config.js';
+import { STATUS_WORD } from '../presentation/model.js';
+import { buildSummaryText, missingLegs } from '../presentation/text.js';
 import { renderDebug } from './debug.js';
+
+const SIDE = { left: 'Left', right: 'Right', mid: '' };
+const MISSING_LEG = /^needs a lateral clip filmed from the (left|right)$/;
 
 function scoreChip(label, value) {
   const band = value == null ? 'none' : value >= SCORING.bands.green ? 'green' : value >= SCORING.bands.yellow ? 'yellow' : 'red';
-  return `<div class="score score-${band}">
-    <span class="score-label">${esc(label)}</span>
-    <span class="score-value">${value == null ? '—' : value}</span>
-  </div>`;
+  return `<div class="score score-${band}"><span class="score-label">${esc(label)}</span><span class="score-value">${value == null ? '—' : value}</span></div>`;
 }
 
-function scoreRow(score) {
-  return `<div class="scores">
-    ${scoreChip('Overall', score.overall)}
-    ${scoreChip('Left', score.left)}
-    ${scoreChip('Right', score.right)}
-  </div>`;
+function valueHtml(c) {
+  if (!c.assessed) return `<span class="r-na">Not assessed</span>`;
+  const chip = c.status ? `<span class="chip chip-${c.status}">${STATUS_WORD[c.status]}</span>` : '';
+  const hedge = c.hedge ? `<span class="hedge">${esc(c.hedge)}</span>` : !c.status && c.confidence !== 'high' ? `<span class="hedge">${esc(c.confidence)} confidence</span>` : '';
+  return `<span class="r-val">${esc(c.text)}</span>${chip}${hedge}`;
 }
 
-// Provenance of a value, e.g. "lateral clip (filmed from the left)".
-export function sourceText(src) {
-  if (src.view === 'lateral' && src.filmedFrom === 'both') return 'both lateral clips (stride-weighted)';
-  if (src.view === 'lateral') return `lateral clip${src.filmedFrom ? ` (filmed from the ${src.filmedFrom})` : ''}`;
-  if (src.view === 'posterior') return 'posterior clip';
-  return `${src.view} clip`;
-}
-
-function sweepText(def, cell) {
-  const f = (v) => (v == null ? '–' : formatValue(def, v, { short: true }));
-  const label = { window: 'Window end', timing: 'Midstance timing' }[cell.sweep.kind] || 'IC tolerance';
-  return `${label} ${cell.sweep.tolerances.join(' / ')}: ${cell.sweep.values.map(f).join(' / ')}`;
-}
-
-function cellHtml(def, cell, colspan = 1) {
-  const span = colspan > 1 ? ` colspan="${colspan}"` : '';
-  if (!cell.assessed) {
-    return `<td${span} class="cell cell-na"><span class="na">Not assessed</span><span class="why">${esc(cell.reason)}</span></td>`;
+function detailHtml(r) {
+  const parts = [];
+  if (r.range?.green) parts.push(`<p><span class="dot dot-green"></span>Normal: ${esc(r.range.green)}${r.range.red ? ` · <span class="dot dot-red"></span>Flag: ${esc(r.range.red)}` : ''}${r.range.provisional ? ' <span class="prov">provisional</span>' : ''}</p>`);
+  if (r.diff) parts.push(`<p>Left–right difference: ${esc(r.diff)}${r.diffNote ? ` (${esc(r.diffNote)})` : ''}</p>`);
+  for (const c of Object.values(r.cells)) {
+    if (!c.assessed) {
+      if (!MISSING_LEG.test(c.why)) parts.push(`<p>${SIDE[c.key] ? `${SIDE[c.key]}: ` : ''}not assessed: ${esc(c.why)}</p>`);
+      continue;
+    }
+    const bits = [`${esc(c.confidence)} confidence`, c.n ? `median of ${c.n} ${esc(c.countUnit)}` : null, c.source ? `from ${esc(c.source)}` : null].filter(Boolean).join(' · ');
+    parts.push(`<p>${SIDE[c.key] ? `<strong>${SIDE[c.key]}:</strong> ` : ''}${bits}${c.why?.length ? `<br><span class="muted">${esc(c.why.join('; '))}</span>` : ''}${c.note ? `<br><span class="muted">${esc(c.note)}</span>` : ''}${c.prompt ? `<br>${esc(c.prompt)}` : ''}</p>`);
   }
-  const status = cell.status;
-  const statusText = statusLabel(status);
-  const iqr = cell.iqr && def.unit === 'deg' ? `, IQR ${cell.iqr[0].toFixed(1)}–${cell.iqr[1].toFixed(1)}°` : '';
-  return `<td${span} class="cell cell-${status}">
-    <span class="val">${esc(cellValue(def, cell, { short: true }))}</span>
-    <span class="tags">
-      <span class="status status-${status}">${esc(statusText)}</span>
-      <span class="conf conf-${cell.confidence}" title="Confidence">${esc(cell.confidence)}</span>
-    </span>
-    ${cell.strides ? `<span class="detail">Median of ${cell.strides} strides${esc(iqr)}</span>` : ''}
-    ${cell.status === 'review' ? '<span class="detail">Reference under review; not scored</span>' : ''}
-    ${cell.status === 'pending-validation' ? `<span class="detail">${esc(cell.pendingText)}; no flag, not scored, no pattern trigger</span>` : ''}
-    ${def.scored === false && cell.status !== 'review' && !['ic-sensitive', 'window-sensitive'].includes(cell.status) && def.type !== 'record' ? '<span class="detail">Not scored</span>' : ''}
-    ${cell.source ? `<span class="detail">From ${esc(sourceText(cell.source))}</span>` : ''}
-    ${cell.note ? `<span class="detail">${esc(cell.note)}</span>` : ''}
-    ${cell.sweep ? `<span class="detail">${esc(sweepText(def, cell))}</span>` : ''}
-    ${cell.status === 'ic-sensitive' ? '<span class="detail">Status changes with IC timing; no flag, not scored or used for patterns until validated</span>' : ''}
-    ${cell.status === 'timing-sensitive' ? '<span class="detail">Status changes with posterior midstance timing; not scored or used for patterns</span>' : ''}
-    ${cell.status === 'window-sensitive' ? '<span class="detail">Status changes with the analysis window; not scored or used for patterns until validated</span>' : ''}
-    ${cell.excluded?.rising ? `<span class="detail">${cell.excluded.rising} strides excluded: angle still rising at the window end</span>` : ''}
-    ${cell.prompt ? `<span class="prompt">${esc(cell.prompt)}</span>` : ''}
-  </td>`;
+  if (r.note) parts.push(`<p class="muted">${esc(r.note)}</p>`);
+  return parts.join('');
 }
 
-function metricRow(row) {
-  const { def, cells } = row;
-  const diff = formatDiff(def, row.asymmetry);
-  const head = `<th scope="row">
-    <span class="metric-name">${esc(def.label)}${def.priority ? ' <abbr class="p" title="Priority metric (double weight)">P</abbr>' : ''}${def.provisional ? ' <span class="prov" title="Threshold provisional: not a published cutoff; see DECISIONS.md">provisional</span>' : ''}</span>
-    <span class="range"><span class="dot dot-green"></span>${esc(def.greenText)}${
-      def.redText && def.redText !== '—' ? ` <span class="dot dot-red"></span>${esc(def.redText)}` : ''
-    }</span>
-    ${diff ? `<span class="diff">L/R diff ${esc(diff)} <span class="muted">(trend${row.asymmetry?.separateClips ? '; measured on separate clips' : ''})</span></span>` : ''}
-    ${def.note ? `<span class="note">${esc(def.note)}</span>` : ''}
-  </th>`;
-  const body = def.sided === 'lr' ? cellHtml(def, cells.left) + cellHtml(def, cells.right) : cellHtml(def, cells.mid, 2);
-  return `<tr>${head}${body}</tr>`;
+function rowHtml(r) {
+  const cells = Object.values(r.cells).filter((c) => c.assessed || !MISSING_LEG.test(c.why));
+  if (!cells.length) return '';
+  const flagged = cells.some((c) => c.status === 'red') ? ' r-red' : cells.some((c) => c.status === 'yellow') ? ' r-yellow' : '';
+  return `<details class="r-row${flagged}">
+    <summary>
+      <span class="r-name">${esc(r.label)}${r.priority ? ' <abbr class="p" title="Priority metric">P</abbr>' : ''}</span>
+      <span class="r-cells">${cells.map((c) => `<span class="r-cell">${SIDE[c.key] ? `<span class="r-side">${SIDE[c.key][0]}</span>` : ''}${valueHtml(c)}</span>`).join('')}</span>
+    </summary>
+    <div class="r-detail small">${detailHtml(r)}</div>
+  </details>`;
 }
 
-function phaseSection(phase, views) {
-  const groups = Object.keys(VIEWS)
-    .map((view) => ({ view, rows: phase.rows.filter((r) => r.def.allowedViews?.[0] === view) }))
-    .filter((g) => g.rows.length);
-  return `<section class="phase card">
-    <header class="phase-head">
-      <h3>${esc(phase.label)}</h3>
-      ${scoreRow(phase.score)}
-    </header>
-    ${groups
-      .map(
-        (g) => `<table class="metrics">
-          <caption>${esc(VIEWS[g.view].label)} view${views.includes(g.view) ? '' : ' · no clip'}</caption>
-          <thead><tr><th scope="col">Metric</th><th scope="col">Left</th><th scope="col">Right</th></tr></thead>
-          <tbody>${g.rows.map(metricRow).join('')}</tbody>
-        </table>`,
-      )
-      .join('')}
+function sectionHtml(s) {
+  const rows = s.rows.map((r) => ({ r, html: rowHtml(r) })).filter((x) => x.html);
+  let phase = null;
+  const body = rows
+    .map(({ r, html }) => {
+      const head = r.phaseLabel !== phase ? `<h4 class="r-phase">${esc((phase = r.phaseLabel))}</h4>` : '';
+      return head + html;
+    })
+    .join('');
+  return `<section class="card r-section"><h3>${esc(s.title)}</h3>${body || `<p class="muted small">${esc(s.empty || 'Nothing assessed.')}</p>`}${s.footer ? `<p class="muted small">${esc(s.footer)}</p>` : ''}</section>`;
+}
+
+function timingHtml(t) {
+  if (!t?.rows.length) return '';
+  return `<section class="card"><h3>Timing and mechanics</h3>
+    <div class="t-grid">${t.rows
+      .map((r) => `<div class="t-item"><span class="t-label">${esc(r.label)}</span><span class="t-val">${esc(r.text)}</span><span class="t-sub">${r.agreement === 'agree' ? 'side and rear agree' : r.flag ? esc(r.flag) : r.note ? esc(r.note) : ''}</span></div>`)
+      .join('')}</div>
+    ${(t.notes || []).map((n) => `<p class="muted small">${esc(n)}</p>`).join('')}
   </section>`;
 }
 
-function patternCard(p, results, filmedFrom) {
-  const scopeLabel = { left: 'Left', right: 'Right', both: 'Both sides', midline: 'Midline' }[p.scope];
-  const sides = Object.keys(p.triggers);
-  const showSides = p.scope === 'both' ? sides : [sides[0]];
-  return `<article class="pattern">
-    <header><h4>${esc(p.def.label)}</h4><span class="badge">${esc(scopeLabel)}</span></header>
-    ${showSides
-      .map(
-        (s) => `<p class="small"><strong>Triggered by${p.scope === 'both' ? ` (${esc(sideLabel(s, filmedFrom))})` : ''}:</strong>
-          ${p.triggers[s]
-            .map((t) => {
-              if (t.cell) return `${esc(t.text)} <span class="muted">(${esc(cellValue(results.rowsById[t.metric].def, t.cell, { short: true }))})</span>`;
-              if (t.intake) return `${esc(t.text)} <span class="muted">(${esc(t.value)}${t.intake === 'cadence' ? ' spm' : ''})</span>`;
-              return esc(t.text);
-            })
-            .join(' · ')}</p>`,
-      )
-      .join('')}
-    <ul class="tight small">${p.def.considerations.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
-  </article>`;
+function findingsHtml(m) {
+  if (!m.findings.length) return '';
+  return `<section class="card"><h3>Correlated findings</h3>${m.findings
+    .map(
+      (f) => `<article class="finding"><h4>${esc(f.label)} <span class="badge">${esc({ left: 'Left', right: 'Right', both: 'Both sides', midline: 'Midline' }[f.scope] || f.scope)}</span>${f.confidence === 'low' ? ' <span class="hedge">low confidence</span>' : ''}</h4>
+      <p class="small">${f.triggers.map((t) => `${esc(t.text)}${t.value ? ` <span class="muted">(${esc(t.value)})</span>` : ''}`).join(' · ')}</p></article>`,
+    )
+    .join('')}<p class="muted small">Findings that occur together; considerations for clinical review, not diagnoses.</p></section>`;
 }
 
-function reportTab(state, results) {
-  const { session } = state;
-  const fp = session.intake.filmedFrom;
-  const na = results.notAssessed.filter((n) => n.def.phase);
-  return `
-    <section class="card">
-      <h2>Overall score</h2>
-      ${scoreRow(results.overall)}
-      <p class="hint">Green = full credit, yellow = ${SCORING.credit.yellow * 100}%, red = 0. Priority (P) ×${SCORING.priorityMultiplier}.
-      Confidence weight: high ${SCORING.confidenceWeight.high}, medium ${SCORING.confidenceWeight.medium}, low ${SCORING.confidenceWeight.low}.
-      Not-assessed metrics are excluded. First-draft formula.</p>
-    </section>
-
-    <section class="card">
-      <h2>Pattern flags</h2>
-      ${
-        results.patterns.length
-          ? results.patterns.map((p) => patternCard(p, results, fp)).join('')
-          : '<p class="muted">No pattern combinations triggered.</p>'
-      }
-      <p class="hint">Considerations for clinician review, not diagnoses.</p>
-    </section>
-
-    ${results.phases.map((ph) => phaseSection(ph, session.views)).join('')}
-
-    <section class="card">
-      <h2>Not assessed</h2>
-      ${
-        na.length
-          ? `<ul class="tight small">${na
-              .map(
-                (n) =>
-                  `<li><strong>${esc(n.def.label)}</strong>${n.side === 'mid' ? '' : ` (${esc(sideLabel(n.side, fp))})`}: ${esc(n.reason)}</li>`,
-              )
-              .join('')}</ul>`
-          : '<p class="muted">All metrics assessed.</p>'
-      }
-    </section>
-
-    <section class="card">
-      <h2>Not measurable in 2D</h2>
-      <p class="small">${NOT_MEASURABLE.map(esc).join(' · ')}. Check clinically; the app never reports these.</p>
-    </section>
-
-    <section class="card">
-      <h2>Session details</h2>
-      <dl class="details small">
-        ${[
-          ['Running history', session.intake.runningHistory],
-          ['Shoe history', session.intake.shoeHistory],
-          ['Insoles / orthotics', session.intake.orthotics],
-          ['Goals', session.intake.goals],
-        ]
-          .map(([k, v]) => `<dt>${k}</dt><dd>${v ? esc(v) : '<span class="muted">—</span>'}</dd>`)
-          .join('')}
-      </dl>
-    </section>`;
+function correctionsHtml(m) {
+  if (!m.corrections?.length) return '';
+  return `<section class="card"><h3>What to work on</h3><p class="muted small">Research-linked suggestions for the findings above; clinician to confirm.</p>${m.corrections
+    .map(
+      (c) => `<details class="r-row"><summary><span class="r-name">${c.priority === 'consider' ? '<span class="hedge">Consider:</span> ' : ''}${esc(c.cue)}</span><span class="r-cells"><span class="chip chip-ev">${esc(c.strength)} evidence</span><span class="hedge">for ${esc(c.forText)}</span></span></summary>
+      <div class="r-detail small"><p>For: ${esc(c.forText)}</p>${c.why ? `<p>${esc(c.why)}</p>` : ''}${(c.evidence || []).map((e) => `<p>${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.short)}</a>` : esc(e.short)}: ${esc(e.result)}${e.verified === false ? ' <span class="hedge">unverified</span>' : ''}</p>`).join('')}${c.caveats ? `<p class="muted">${esc(c.caveats)}</p>` : ''}</div></details>`,
+    )
+    .join('')}</section>`;
 }
 
-function summaryTab(state, results) {
-  const { session } = state;
-  const header = buildHeader(session.intake, { placeholder: session.placeholder, analysis: session.analysis }).join('\n');
-  const sections = buildSections(results, session.intake);
+function limitsHtml(m) {
+  const items = [
+    ...m.notReliable.map((n) => `<li><strong>${esc(n.label)}</strong>: not reported, ${esc(n.why)}</li>`),
+    ...m.notBuilt.map((n) => `<li><strong>${esc(n.label)}</strong>: ${esc(n.why)}</li>`),
+    `<li><strong>Not measurable in 2D</strong>: ${esc(m.notMeasurable.join(', '))}</li>`,
+  ];
+  return `<section class="card"><h3>Not reported and limits</h3><ul class="tight small">${items.join('')}</ul><p class="muted small">${esc(m.limits.join(' '))}</p></section>`;
+}
+
+function resultsTab(state, m) {
+  const sc = m.scores;
   return `
-    <section class="card summary">
-      <pre class="summary-text">${esc(header)}
-
-${sections.map((s) => `<strong>${esc(s.title)}</strong>\n${esc(s.lines.join('\n'))}`).join('\n\n')}
-
-<strong>INTERPRETATION</strong></pre>
+    <section class="card">
+      <h3>Interpretation</h3>
       <textarea class="interpretation" data-action="edit-interpretation" aria-label="Interpretation (editable)">${esc(state.interpretation)}</textarea>
-      <div class="interp-meta small">
-        <span class="muted">${state.interpretationEdited ? 'Edited' : 'Auto-generated'}. Edit before copying.</span>
-        ${state.interpretationEdited ? '<button class="btn btn-link" data-action="reset-interpretation">Reset</button>' : ''}
-      </div>
+      <div class="interp-meta small"><span class="muted">${state.interpretationEdited ? 'Edited' : 'Auto-generated'}. Edit before copying.</span>${state.interpretationEdited ? '<button class="btn btn-link" data-action="reset-interpretation">Reset</button>' : ''}</div>
+      <div class="scores">${scoreChip('Overall', sc.overall.overall)}${scoreChip('Left', sc.overall.left)}${scoreChip('Right', sc.overall.right)}</div>
+      <p class="muted small">Score: normal = full credit, caution = half, flag = none, weighted by confidence; unscored and timing-sensitive values are left out. First-draft formula.</p>
     </section>
-    <div class="actions sticky">
-      <button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button>
-    </div>`;
+    ${timingHtml(m.timing)}
+    ${m.sections.map(sectionHtml).join('')}
+    ${findingsHtml(m)}
+    ${correctionsHtml(m)}
+    ${limitsHtml(m)}
+    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button></div>`;
 }
 
-export function renderResults(state, results) {
+function textTab(state, m) {
+  return `<section class="card summary"><pre class="summary-text">${esc(buildSummaryText(m, state.interpretation))}</pre></section>
+    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button></div>`;
+}
+
+export function renderResults(state, results, model) {
   const { session } = state;
+  const m = model;
   const missing = Object.keys(CLIP_SLOTS).filter((s) => !session.clips[s]);
+  const legs = missingLegs(m);
+  const facts = [m.header.height ? `${Math.round(m.header.height)} cm` : null, m.header.speed, m.header.incline ? `incline ${m.header.incline}` : null].filter(Boolean);
+  const tab = ['results', 'text', 'debug'].includes(state.tab) ? state.tab : 'results';
   return `
     <section class="screen">
       <header class="screen-head">
-        <h1>${esc(session.intake.clientCode)} <span class="muted">· ${esc(session.intake.sessionDate)}</span></h1>
-        <p class="muted small">Clips: ${Object.keys(session.clips).map((s) => esc(CLIP_SLOTS[s].label)).join(' · ')}</p>
-        ${(session.analysis?.sessionWarnings || []).map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`).join('')}
-        ${(() => {
-          const p = session.analysis?.captureChecks?.posterior;
-          if (!p) return '';
-          const side = p.offCentreHipWidths > 0 ? 'right' : 'left';
-          const line = `Posterior capture check: pelvis midline about ${Math.abs(p.offCentreHipWidths).toFixed(2)} hip widths ${side} of the frame centre (approximate; the runner drifts on the belt).`;
-          return `<p class="small ${p.offCentreWarning ? 'warn' : 'muted'}">${p.offCentreWarning ? '⚠ ' : ''}${esc(line)}</p>${captureWarnings(session.analysis)
-            .filter((w) => w.includes('out of order'))
-            .map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`)
-            .join('')}`;
-        })()}
-        ${
-          session.analysis?.cadenceVideo
-            ? `<p class="muted small">${(session.analysis.cadenceByClip || [session.analysis.cadenceVideo])
-                .map((c) => `${c.slot ? `${esc(CLIP_SLOTS[c.slot].label)}: ` : ''}${c.strides ?? session.analysis.cyclesDetected} strides · ${Math.round(c.spm)} spm`)
-                .join(' · ')} <em>(cadence from stride period: unvalidated, not used for scoring)</em></p>`
-            : ''
-        }
+        <h1>${esc(m.header.client)} <span class="muted">· ${esc(m.header.date)}</span></h1>
+        <p class="muted small">${m.header.clips.map(esc).join(' · ')}${facts.length ? ` · ${facts.map(esc).join(' · ')}` : ''}</p>
+        ${legs.length ? `<p class="muted small">Side-view values for the ${esc(legs.join(' and '))} leg need a clip filmed from that side.</p>` : ''}
+        ${m.header.warnings.map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`).join('')}
       </header>
-      ${
-        session.placeholder
-          ? '<div class="banner" role="note"><strong>Demo data.</strong> Numbers are invented to show the layout and are not from any video. Upload a clip for a real analysis.</div>'
-          : ''
-      }
+      ${m.header.demo ? '<div class="banner" role="note"><strong>Demo data.</strong> Numbers are invented to show the layout and are not from any video. Upload a clip for a real analysis.</div>' : ''}
       <nav class="tabs" role="tablist">
-        <button role="tab" aria-selected="${state.tab === 'summary'}" data-action="tab" data-tab="summary">Summary</button>
-        <button role="tab" aria-selected="${state.tab === 'report'}" data-action="tab" data-tab="report">Scored report</button>
-        <button role="tab" aria-selected="${state.tab === 'debug'}" data-action="tab" data-tab="debug">Debug</button>
+        <button role="tab" aria-selected="${tab === 'results'}" data-action="tab" data-tab="results">Results</button>
+        <button role="tab" aria-selected="${tab === 'text'}" data-action="tab" data-tab="text">Summary text</button>
+        <button role="tab" aria-selected="${tab === 'debug'}" data-action="tab" data-tab="debug">Debug</button>
       </nav>
-      ${state.tab === 'summary' ? summaryTab(state, results) : state.tab === 'debug' ? renderDebug(state) : reportTab(state, results)}
+      ${tab === 'results' ? resultsTab(state, m) : tab === 'text' ? textTab(state, m) : renderDebug(state)}
       <div class="actions">
         ${missing.length ? `<button class="btn btn-secondary" data-action="add-clip">Add clip (${esc(missing.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' / '))})</button>` : ''}
         <button class="btn btn-link" data-action="new-session">New session</button>

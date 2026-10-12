@@ -242,7 +242,12 @@ export function pelvisLowMidstance(rows, bad, seg, centres) {
 // (range 67–167 ms). The crossings are shifted back by these lags (calibration from 4 clients).
 export const REAR_EVENT_LAG_SEC = { ic: 0.1, to: 0.12 };
 
-export const CAPTURE_CHECK = { offCentreWarnHipWidths: 0.5 };
+export const CAPTURE_CHECK = { offCentreWarnHipWidths: 0.5, maxSwapShare: 0.05 };
+
+// Frames whose left/right landmark order is reversed are excluded from posterior metrics; the clip
+// passes the swap check (left-right differences reported) when at most 5% of frames are affected
+// (T1-rear: 39 of 1225 frames, 3%). Was: any swap frame failed the whole clip.
+export const swapCheckPassed = (swapFrames, frames) => swapFrames != null && frames > 0 && swapFrames <= CAPTURE_CHECK.maxSwapShare * frames;
 
 export function posteriorCaptureChecks(rows, bad, width) {
   const offs = [];

@@ -11,7 +11,7 @@ import { cadenceFromDurations, cadenceFromStrides, computeMetrics } from './metr
 import { applyHipAnchor, applyLegAnchor, medianThighPx } from './hip-anchor.js';
 import { STABILIZE, stabilizeRows } from './stabilize.js';
 import { HIP_ANCHOR, LEG_ANCHOR } from '../config.js';
-import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance } from './rear-events.js';
+import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance, orderViolations } from './rear-events.js';
 import { frontalBodyHeightPx, posteriorMetrics } from './posterior-metrics.js';
 import { max, median, min } from './stats.js';
 
@@ -106,7 +106,10 @@ export function postProcessRear(rows, meta, opts = {}) {
   // Posterior metrics at the lowest-pelvis midstance (and at ±33 ms for the timing rule).
   // Metrics on stabilised landmarks; segmentation and midstance on the raw ones.
   const srows = opts.stabilize === false ? rows : stabilizeRows(rows, meta.fs);
-  const metrics = { ...posteriorMetrics(srows, bad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(srows, bad), fs: meta.fs };
+  // Frames with reversed left/right order are left out of the metrics.
+  const swapped = orderViolations(rows).map(Boolean);
+  const mbad = bad.map((b, i) => b || swapped[i]);
+  const metrics = { ...posteriorMetrics(srows, mbad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(srows, mbad), fs: meta.fs };
   const cadence = cadenceFromDurations(seg.peaks.slice(1).map((p, i) => (p - seg.peaks[i]) / meta.fs));
   return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
 }

@@ -1,6 +1,8 @@
 import { PLACEHOLDER_ANALYSIS, DEMO_INTAKE } from './placeholder.js';
 import { analyze, intakeNumbers } from './engine/analysis.js';
-import { buildInterpretation, buildSummaryText } from './engine/summary.js';
+import { buildModel } from './presentation/model.js';
+import { buildInterpretation, buildSummaryText } from './presentation/text.js';
+import { correctionsFor } from './presentation/corrections.js';
 import { renderUpload } from './views/upload.js';
 import { renderIntake } from './views/intake.js';
 import { renderResults } from './views/results.js';
@@ -41,7 +43,7 @@ const state = {
   draftIntake: { ...EMPTY_INTAKE },
   interpretation: '',
   interpretationEdited: false,
-  tab: 'summary',
+  tab: 'results',
   progress: null, // { phase, done, total, error? } while a clip is analysed
 };
 
@@ -63,7 +65,7 @@ function go(screen) {
 
 function render() {
   if (state.screen === 'intake') root.innerHTML = renderIntake(state);
-  else if (state.screen === 'results') root.innerHTML = renderResults(state, results);
+  else if (state.screen === 'results') root.innerHTML = renderResults(state, results, state.model);
   else if (state.screen === 'analyzing') root.innerHTML = renderAnalyzing(state);
   else root.innerHTML = renderUpload(state);
   if (state.screen === 'intake') wireIntake();
@@ -81,8 +83,10 @@ function recompute({ resetInterpretation = false } = {}) {
     s.reconciled = reconcileSession(s);
   }
   results = analyze(s);
+  // One presentation model feeds the results screen and the copy-paste text.
+  state.model = buildModel(s, results, { corrections: correctionsFor });
   if (resetInterpretation || !state.interpretationEdited) {
-    state.interpretation = buildInterpretation(results, s.intake);
+    state.interpretation = buildInterpretation(state.model);
     state.interpretationEdited = false;
   }
 }
@@ -178,7 +182,7 @@ function addClip(clip, data, analysis) {
     intake.clientCode = intake.clientCode.toUpperCase();
     state.session = { intake, clips: { [clip.slot]: clip }, placeholder: false };
   }
-  state.tab = 'summary';
+  state.tab = 'results';
   recompute();
   go('results');
 }
@@ -247,7 +251,7 @@ function startDemo() {
     placeholder: true,
     analysis: PLACEHOLDER_ANALYSIS,
   };
-  state.tab = 'summary';
+  state.tab = 'results';
   recompute({ resetInterpretation: true });
   go('results');
 }
@@ -265,13 +269,7 @@ function newSession() {
 }
 
 async function copySummary(button) {
-  const text = buildSummaryText({
-    intake: state.session.intake,
-    results,
-    interpretation: state.interpretation,
-    placeholder: state.session.placeholder,
-    analysis: state.session.analysis,
-  });
+  const text = buildSummaryText(state.model, state.interpretation);
   const ok = await copyText(text);
   button.textContent = ok ? 'Copied ✓' : 'Copy failed. Select the text manually.';
   button.classList.toggle('is-done', ok);

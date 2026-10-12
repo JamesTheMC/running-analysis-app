@@ -620,6 +620,79 @@ section = 'Fixture regression (committed landmark fixtures, all clients; no vide
   });
 }
 
+section = 'Presentation model and text (fixtures)';
+{
+  const { sessionFor } = await import('./fixture-regression.js');
+  const { buildModel, NOT_RELIABLE } = await import('../js/presentation/model.js');
+  const { buildSummaryText, buildInterpretation } = await import('../js/presentation/text.js');
+  const { CLIP_SLOTS: SLOTS } = await import('../js/config.js');
+  const modelFor = async (client, keep) => {
+    const { intake, clips, result } = await sessionFor(client);
+    const use = keep ? Object.fromEntries(Object.entries(clips).filter(([k]) => keep.includes(k))) : clips;
+    const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+    const session = { intake: { ...intake, speedValue: '6', speedUnit: 'mph' }, clips: use, reconciled: keep ? reconcileSession({ intake, clips: use }) : result };
+    session.views = [...new Set(Object.keys(use).map((k) => SLOTS[k].view))];
+    session.analysis = mergeSession(use);
+    return buildModel(session, analyze(session));
+  };
+  const cellsOf = (m) => m.sections.flatMap((s) => s.rows.flatMap((r) => Object.values(r.cells).map((c) => ({ r, c }))));
+  await testAsync('not-reliable metrics are listed, never shown as values', async () => {
+    const m = await modelFor('T3');
+    for (const id of Object.keys(NOT_RELIABLE)) {
+      assert(!m.sections.some((s) => s.rows.some((r) => r.id === id)), `${id} shown`);
+      assert(m.notReliable.some((n) => n.id === id), `${id} not listed`);
+    }
+  });
+  await testAsync('a coloured status only on trustworthy values (medium+ confidence, no hedge)', async () => {
+    for (const client of ['C0', 'T1', 'T2', 'T3']) {
+      const m = await modelFor(client);
+      for (const { r, c } of cellsOf(m)) {
+        if (!c.assessed || !c.status) continue;
+        assert(c.confidence === 'high' || c.confidence === 'medium', `${client} ${r.id}: status on ${c.confidence}`);
+        assert(!c.hedge, `${client} ${r.id}: status with hedge "${c.hedge}"`);
+      }
+      for (const { r, c } of cellsOf(m)) if (c.assessed && c.confidence === 'low') assert(!c.status && c.hedge, `${client} ${r.id}: low confidence without hedge`);
+    }
+  });
+  await testAsync('value within measurement error of a threshold is borderline, not flagged', async () => {
+    const m = await modelFor('T3');
+    const knee = m.sections.flatMap((s) => s.rows).find((r) => r.id === 'ms_max_knee_flexion').cells.right; // 51.1° vs red > 45°, error ±6.7°
+    assert(!knee.status && /within measurement error/.test(knee.hedge || ''), JSON.stringify(knee));
+  });
+  await testAsync('text follows the template order and states the missing leg once', async () => {
+    const m = await modelFor('T3');
+    const t = buildSummaryText(m, buildInterpretation(m));
+    const order = ['ANKLE AND FOOT', 'KNEE', 'HIP AND PELVIS', 'TRUNK (LUMBAR PROXY)', 'ARMS', 'TIMING AND MECHANICS', 'INTERPRETATION', 'Limits:'];
+    let at = -1;
+    for (const h of order) {
+      const i = t.indexOf(`\n${h}`);
+      assert(i > at, `${h} out of order`);
+      at = i;
+    }
+    assert((t.match(/need a clip filmed from that side/g) || []).length === 1, 'missing-leg note');
+    assert(!/needs a lateral clip filmed from the left/.test(t), 'per-line missing-leg noise');
+    assert(/not a diagnosis/.test(t), 'limits statement');
+  });
+  await testAsync('corrections: verified evidence only, personalised step-rate targets, no primary on borderline findings', async () => {
+    const { correctionsFor } = await import('../js/presentation/corrections.js');
+    for (const client of ['C0', 'T1', 'T2', 'T3']) {
+      const m = await modelFor(client);
+      const cs = correctionsFor(m);
+      for (const c of cs) {
+        assert(c.evidence.length && c.evidence.every((e) => e.verified && e.url), `${client} ${c.key}: unverified or unlinked evidence`);
+        if (/borderline|awaiting|low-confidence/.test(c.forText) && !/\b(above range|large|crossover foot placement)\b/.test(c.forText)) assert(c.priority === 'consider', `${client} ${c.key}: primary on borderline values`);
+        if (/step rate/i.test(c.cue) && m.timing?.rows.some((r) => r.label === 'Cadence')) assert(/steps\/min\)/.test(c.cue), `${client}: no cadence target in "${c.cue}"`);
+      }
+    }
+  });
+  await testAsync('one view only: rear-only session renders, side sections say not assessed', async () => {
+    const m = await modelFor('T2', ['posterior']);
+    const t = buildSummaryText(m, buildInterpretation(m));
+    assert(/HIP AND PELVIS/.test(t) && /Hip adduction: L/.test(t), 'rear metrics missing');
+    assert(m.timing.rows.some((r) => r.label === 'Cadence'), 'cadence missing');
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);

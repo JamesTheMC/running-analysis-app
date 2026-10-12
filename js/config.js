@@ -228,7 +228,7 @@ export const METRICS = [
     priority: true,
     baselineConfidence: 'medium', // depends on the height-based scale and foot landmarks
     // Until VALIDATION.footToComValidated, an above-range value is informational only (no flag/trigger).
-    pendingValidation: { flag: 'footToComValidated', when: ['yellow', 'red'], text: 'foot-to-COM above range: pending validation (reads ≈ 9 cm high vs manual measurement)' },
+    pendingValidation: { flag: 'footToComValidated', when: ['yellow', 'red'], text: 'foot-to-COM above range: pending validation on a second camera setup (2.4 cm error on one setup, 9 cm on another)' },
     requires: ['height'],
     summary: 'ANKLE',
   },

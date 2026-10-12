@@ -16,7 +16,7 @@
 
 import { cadenceFromDurations } from './metrics.js';
 import { IC_SWEEP, EVENTS } from './events.js';
-import { REAR_EVENT_LAG_SEC } from './rear-events.js';
+import { REAR_EVENT_LAG_SEC, swapCheckPassed } from './rear-events.js';
 import { fillGaps, median, savgol } from './stats.js';
 
 // IC timing spread across contact tolerances (0.2–0.4 foot lengths): above `medium` ms the stride's
@@ -179,8 +179,8 @@ export function lateralEventTable(result, rows, meta) {
 export function posteriorEventTable(result, rows, meta) {
   const { midstancePelvis, capture } = result;
   const fs = meta.fs;
-  // Same rule as the posterior adapter (posterior.js): no left/right order violations.
-  const swapsOk = capture ? capture.swapFrames === 0 : false;
+  // Same rule as the posterior adapter (posterior.js): at most 5% of frames with reversed order.
+  const swapsOk = capture ? swapCheckPassed(capture.swapFrames, rows.length) : false;
   const legs = {};
   for (const side of ['L', 'R']) {
     const strides = midstancePelvis[side].map((h, k) => {

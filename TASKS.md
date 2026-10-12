@@ -104,6 +104,22 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [ ] Pelvic drop: needs PSIS tape dots on the next rear clips (shirt covers PSIS on T1–T3)
 - [x] T1–T3 height 182.8 cm recorded (C0 still unknown, 170 cm assumed)
 
+## Presentation phase (started 2026-10-12)
+Goal: the on-screen results and the copy-paste summary built from ONE presentation model over the
+reconciled result, following the clinic template (ankle, knee, hip, lumbar, arms; IC / midstance /
+toe-off; left/right; green/red; scores; correlated weaknesses; mechanics + research-linked
+corrections; plain-language interpretation; limits), and HANDOFF.md §4 (hide/hedge by confidence).
+
+- [x] P1 Presentation model (js/presentation/model.js): sections by body region, rows by phase, L/R
+      cells with value, status shown only when trustworthy, confidence, hedges, "not reliable from
+      video" list, timing + mechanics block, correlated findings, limits. Unit tests.
+- [x] P2 Research-linked corrections library (js/presentation/corrections.js): per finding, cue,
+      drills, evidence with citations (verified by a literature search; unverified marked); tests
+- [x] P3 Copy-paste text summary from the model (template order; interpretation paragraph; limits)
+- [ ] P4 Results screen redesign from the model (mobile first; expandable rows with the why;
+      corrections; timing); Debug tab kept
+- [ ] P5 Full flow on all clients, phone/tablet checks, tests, HANDOFF update
+
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)
 - [x] Owner spot-check of hand marks (3 frames; knee marks inconsistent)

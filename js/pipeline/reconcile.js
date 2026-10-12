@@ -94,11 +94,12 @@ function convention(clips) {
   const posterior = viewSlots(clips, 'posterior').map((slot) => {
     const a = clips[slot].analysis;
     const swaps = a.captureChecks?.posterior?.swapFrames ?? a.clip?.swapFrames ?? null;
-    return { slot, leftOnImage: 'left', mirrored: !!a.clip?.mirrored, swapFrames: swaps, swapCheckPassed: swaps === 0 };
+    const passed = a.captureChecks?.posterior?.swapCheckPassed ?? swaps === 0;
+    return { slot, leftOnImage: 'left', mirrored: !!a.clip?.mirrored, swapFrames: swaps, swapCheckPassed: passed };
   });
   const issues = [
     ...lateral.filter((l) => !l.agrees).map((l) => `${l.slot}: depth says the ${l.depthCheck.leg} leg faces the camera, but the clip is in the ${l.slotLeg}-side slot`),
-    ...posterior.filter((p) => !p.swapCheckPassed).map((p) => `${p.slot}: left/right landmark order swapped in ${p.swapFrames} frame(s); left-right differences from this clip are not reported`),
+    ...posterior.filter((p) => !p.swapCheckPassed).map((p) => `${p.slot}: left/right landmark order swapped in ${p.swapFrames} frame(s), more than 5%; left-right differences from this clip are not reported`),
   ];
   return { rule: 'anatomical left/right in every view', lateral, posterior, issues };
 }

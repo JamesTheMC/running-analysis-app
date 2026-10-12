@@ -3,6 +3,8 @@ import { UNITS, STATUS_LABELS } from '../config.js';
 export function formatValue(def, value, { short = false } = {}) {
   if (value == null) return '—';
   if (def.type === 'boolean') return def.display?.[String(value)] ?? (value ? 'Yes' : 'No');
+  // Non-numeric values on other metric types (e.g. a yes/no record) print as text, never crash.
+  if (typeof value !== 'number') return typeof value === 'boolean' ? (def.display?.[String(value)] ?? (value ? 'Yes' : 'No')) : String(value);
   const unit = UNITS[def.unit] || { suffix: '', decimals: 1 };
   let suffix = short && unit.short ? unit.short : unit.suffix;
   if (value === 1 && unit.singular) suffix = unit.singular;

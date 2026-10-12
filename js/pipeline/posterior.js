@@ -3,6 +3,7 @@
 // carries its medians at midstance −33 / 0 / +33 ms for the timing-sensitivity rule.
 // Left/right differences are allowed only when the clip passed the left/right swap check.
 
+import { swapCheckPassed as swapOk } from './rear-events.js';
 import { clipInfo, landmarkQuality, posteriorEventTable, safely, verticalOscillation } from './gait-events.js';
 import { createEmitter } from './emit.js';
 import { MIN_STRIDES, cell } from './measurements.js';
@@ -17,7 +18,7 @@ const ANAT = { L: 'left', R: 'right' };
 
 export function toPosteriorAnalysis(result, { heightCm } = {}) {
   const { metrics: pm, capture, cadence, midstancePelvis } = result;
-  const swapCheckPassed = capture.swapFrames === 0;
+  const swapCheckPassed = swapOk(capture.swapFrames, result.rows?.length ?? result.bad?.length ?? 0);
   const out = createEmitter('posterior', { slot: 'posterior', swapCheckPassed });
   const pxPerCm = heightCm > 0 && pm.bodyHeightPx > 0 ? pm.bodyHeightPx / heightCm : null;
   const withSweep = (c, side, key) => {

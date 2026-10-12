@@ -26,8 +26,8 @@ export const PLACEHOLDER_ANALYSIS = {
       right: { value: 7.1, quality: 0.9 },
     },
     ic_foot_to_com: {
-      left: { value: 0.42, quality: 0.88 },
-      right: { value: 1.12, quality: 0.86 },
+      left: { value: 9.5, quality: 0.88 }, // cm (invented)
+      right: { value: 18.4, quality: 0.86 },
     },
     ic_knee_flexion: {
       left: { value: 18.4, quality: 0.95 },

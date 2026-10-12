@@ -223,3 +223,21 @@ the output.
   MS: green 0–15°, red > 20° (wide because of the 6–7° direction-dependent bias). Trunk change at peak
   hip extension: < 5° kept, caution only. Foot inclination at IC: template kept, under investigation
   with higher-frame-rate clips. Cadence triggers 160 / 190 spm kept. Y
+
+## Presentation phase (2026-10-12)
+- **One presentation model (js/presentation/model.js) feeds both the results screen and the
+  copy-paste text.** Alt: keep the separate engine summary (two renderings drifted). Y
+- **A coloured status is shown only for scored values at medium/high confidence with no hedge;
+  everything else shows its value with a plain-language hedge.** (HANDOFF §4.) Y
+- **Measurement-error rule: a green value is hedged when its validated error band reaches the flag
+  level; a caution/flag value is hedged when the band reaches normal.** Alt: hedge whenever the band
+  crosses any boundary (made almost every value "borderline"). Y
+- **A correlated finding is low confidence when any of its triggers is hedged.** Y
+- **Pelvic drop is listed under "not reported" with the reason, never shown as a value.** Y
+- **Research-linked suggestions come only from verified literature (reference/corrections-evidence.json:
+  37 PubMed records, abstracts; two spot-checked by me). "Primary" only when the finding rests on
+  values with a shown status; otherwise "Consider". Step-rate cues are personalised to the runner's
+  cadence.** Strengths: step rate for overstride moderate; most others limited/very limited; no
+  tested cue for limited hip extension, arm crossing, lateral trunk lean. Y
+- **Results tabs: Results (visual), Summary text (copy), Debug. The old "Scored report" tab is
+  replaced; scores are shown in the Results tab.** Y
