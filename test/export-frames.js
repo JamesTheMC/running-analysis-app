@@ -2,6 +2,7 @@
 // Request: test-data/debug/annotation_request.json = { jobs: [{ clip, frames: [{ frame, cx, cy, w, h, label }] }] }
 // with (cx, cy) the crop centre and (w, h) the crop size in full-resolution upright pixels.
 // Output: test-data/debug/annotate_<label>.png and annotate_index.json (crop origins).
+import { clipUrl } from './clips.js';
 import { demux } from '../js/pipeline/mp4.js';
 import { decodeSampledFrames } from '../js/pipeline/decode.js';
 
@@ -27,7 +28,7 @@ function grid(ctx, w, h) {
 const req = await (await fetch('../test-data/debug/annotation_request.json')).json();
 const index = [];
 for (const job of req.jobs) {
-  const file = await (await fetch(`../test-data/${job.clip}`)).blob();
+  const file = await (await fetch(await clipUrl(job.clip))).blob();
   const track = await demux(file);
   const wanted = new Map(job.frames.map((f) => [f.frame, f]));
   log(`${job.clip}: ${wanted.size} frames`);

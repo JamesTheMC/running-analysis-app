@@ -11,3 +11,15 @@ export const CLIPS = [
   { id: 'T3-side', client: 'T3', heightCm: 182.8, view: 'lateral', file: 'test 3 6 mph side view.mov', speed: 6, speedUnit: 'mph' },
   { id: 'T3-rear', client: 'T3', heightCm: 182.8, view: 'posterior', file: 'test 3 6 mph rear view.mov', speed: 6, speedUnit: 'mph' },
 ];
+
+// URL of a clip by file name, via the local index (tools/index_clips.py -> test-data/clip-index.json),
+// so the repository never contains folder names.
+let indexCache = null;
+export async function clipUrl(file) {
+  if (!indexCache) {
+    const res = await fetch('/test-data/clip-index.json');
+    indexCache = res.ok ? await res.json() : {};
+  }
+  const rel = indexCache[file] || file;
+  return `/test-data/${rel.split('/').map(encodeURIComponent).join('/')}`;
+}

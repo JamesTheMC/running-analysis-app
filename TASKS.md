@@ -105,6 +105,8 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [x] T1–T3 height 182.8 cm recorded (C0 still unknown, 170 cm assumed)
 
 ## Presentation phase (started 2026-10-12)
+- [ ] Analyse the 8 new side+rear sets (AR, AZ, CH, CD/CS, JW, ML, RQ, RY): pose run, baseline, fixtures
+- [ ] Retire js/engine/summary.js (replaced by js/presentation/*) once its tests are migrated
 Goal: the on-screen results and the copy-paste summary built from ONE presentation model over the
 reconciled result, following the clinic template (ankle, knee, hip, lumbar, arms; IC / midstance /
 toe-off; left/right; green/red; scores; correlated weaknesses; mechanics + research-linked
@@ -116,9 +118,9 @@ corrections; plain-language interpretation; limits), and HANDOFF.md §4 (hide/he
 - [x] P2 Research-linked corrections library (js/presentation/corrections.js): per finding, cue,
       drills, evidence with citations (verified by a literature search; unverified marked); tests
 - [x] P3 Copy-paste text summary from the model (template order; interpretation paragraph; limits)
-- [ ] P4 Results screen redesign from the model (mobile first; expandable rows with the why;
+- [x] P4 Results screen redesign from the model (mobile first; expandable rows with the why;
       corrections; timing); Debug tab kept
-- [ ] P5 Full flow on all clients, phone/tablet checks, tests, HANDOFF update
+- [x] P5 Full flow (T3 real videos), phone/tablet checks, tests; HANDOFF updated —, phone/tablet checks, tests, HANDOFF update
 
 ## Next (Phase 5 follow-up)
 - [x] Provisional thresholds reviewed with the clinician (2026-10-09; DECISIONS.md)

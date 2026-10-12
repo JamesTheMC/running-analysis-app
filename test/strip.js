@@ -1,6 +1,7 @@
 // Frame strips for manual event marking (dev only). Each job: { clip, name, frames: [first, last],
 // box: [x, y, w, h] in full-resolution upright pixels, cols, step (every n-th frame, default 1) }. Saves test-data/debug/strip_<name>.png
 // with each tile labelled by its source frame number. No landmarks are drawn.
+import { clipUrl } from './clips.js';
 import { demux } from '../js/pipeline/mp4.js';
 import { decodeSampledFrames } from '../js/pipeline/decode.js';
 
@@ -11,7 +12,7 @@ export async function makeStrips(jobs) {
   for (const j of jobs) byClip.set(j.clip, [...(byClip.get(j.clip) || []), j]);
   const done = [];
   for (const [clip, list] of byClip) {
-    const file = await (await fetch(`../test-data/${encodeURIComponent(clip)}`)).blob();
+    const file = await (await fetch(await clipUrl(clip))).blob();
     const track = await demux(file);
     const tiles = new Map(); // job -> [{frame, bitmap}]
     const want = (i) => list.filter((j) => i >= j.frames[0] && i <= j.frames[1] && (i - j.frames[0]) % (j.step ?? 1) === 0);

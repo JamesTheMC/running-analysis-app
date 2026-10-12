@@ -1,5 +1,8 @@
 # Handoff: data foundation → results presentation and research-linked corrections
 
+> **Update 2026-10-12: the presentation phase has started and its first version is built** (see
+> §7). The sections below describe the data foundation it uses.
+
 Status at handoff (2026-10-10, branch `milestone-3-checkpoint`). Run the tests: `python3 tools/test.py`.
 Run the app: `python3 tools/devserver.py` and open http://localhost:8000.
 
@@ -435,3 +438,17 @@ match). Between-client correlations are not meaningful with 4 clients.
 | Debug tab | js/views/debug.js |
 | Tests (one command) | tools/test.py → test/unit.html (fixture regression on test/fixtures/clips) |
 | Dev tools | test/batch.html (pose run on all clips), test/strip.html (event strips), test/export-frames.html, test/anchor-loco.js |
+
+---
+
+## 7. Presentation layer (built 2026-10-12)
+| Piece | File | What it does |
+|---|---|---|
+| Presentation model | js/presentation/model.js | Sections by body region (ankle, knee, hip, trunk, arms) and phase; L/R cells with value, status only when trustworthy, hedge text otherwise; measurement-error rule; findings with confidence; timing; not-reliable list |
+| Text | js/presentation/text.js | Copy-paste summary in template order and the plain-language interpretation |
+| Suggestions | js/presentation/corrections.js, evidence.js | Research-linked suggestions per finding; evidence generated from reference/corrections-evidence.json (`python3 tools/build_evidence.py`) |
+| Screen | js/views/results.js | Results (visual, expandable rows) / Summary text / Debug tabs |
+
+Display rules are in DECISIONS.md (Presentation phase). Tests: "Presentation model and text" in
+test/unit.js. Local videos are found by file name via test-data/clip-index.json
+(`python3 tools/index_clips.py`), so folder names never enter the repository.

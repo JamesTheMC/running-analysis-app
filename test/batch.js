@@ -1,4 +1,5 @@
 // Batch pose run over the local clip inventory; caches landmark rows (derived data only).
+import { clipUrl } from './clips.js';
 import { CLIPS } from './clips.js';
 import { analyzeVideo } from '../js/pipeline/run.js';
 
@@ -18,7 +19,7 @@ for (const c of CLIPS.filter((c) => !only || only.includes(c.id))) {
   }
   const t0 = performance.now();
   try {
-    const file = await (await fetch(`../test-data/${encodeURIComponent(c.file)}`)).blob();
+    const file = await (await fetch(await clipUrl(c.file))).blob();
     let last = 0;
     const r = await analyzeVideo(file, {
       view: c.view,
