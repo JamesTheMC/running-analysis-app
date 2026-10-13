@@ -8,6 +8,7 @@
 import { LANDMARKS } from './kinematics.js';
 import { clipInfo, landmarkQuality, lateralEventTable, safely, verticalOscillation } from './gait-events.js';
 import { detectNearSide } from './strides.js';
+import { applyCaptureGate, assessCapture } from './capture-quality.js';
 import { SCORING } from '../config.js';
 import { median } from './stats.js';
 import { IC_SWEEP } from './events.js';
@@ -127,6 +128,8 @@ export function toAnalysis(result, { heightCm } = {}) {
   );
   out.put('arm_shoulder_rom', leg, cell(metrics.shoulderSwing));
 
+  // Capture-quality gate (capture-quality.js): unsuitable clips give no values; degraded ones are capped.
+  const captureQuality = safely(() => applyCaptureGate(out.measurements, assessCapture('lateral', { rows, meta, events: result.events, nearSide: near, cadenceSpm: cadence?.spm })), [], 'captureQuality');
   return {
     source: 'pipeline',
     cyclesDetected: usable,
@@ -141,6 +144,7 @@ export function toAnalysis(result, { heightCm } = {}) {
     meta,
     // For the reconciliation layer (js/pipeline/reconcile.js).
     view: 'lateral',
+    captureQuality,
     ...reconInputs(),
     bodyHeightPx: metrics.bodyHeightPx,
   };

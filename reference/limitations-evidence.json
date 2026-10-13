@@ -1,0 +1,2028 @@
+{
+  "searched": "2026-10-13. PubMed via NCBI E-utilities (esearch, esummary, efetch rettype=abstract). Every new paper's abstract was retrieved and read from its PubMed record; PMID and DOI come from that record. Papers marked 'source: reused' were verified on 2026-10-12 for corrections-evidence.json and their evidence text here is consistent with that file.",
+  "scope_note": "Links between running findings and physical limitations are almost all cross-sectional or acute. 'none' means no tested link was found, or the link was tested and not supported (see note). Strength programmes improve strength and pain but have generally not been shown to change running kinematics; running-specific cues (step rate, mirror/real-time feedback, step width, trunk posture) are the interventions shown to change the running pattern. Movement analysis supports clinical judgment; it is not a diagnosis.",
+  "chains": {
+    "ankle_dorsiflexion": {
+      "findings": [
+        "reduced ankle dorsiflexion at midstance",
+        "small tibial progression (low tibial inclination through stance)",
+        "(possibly) reduced knee flexion at midstance"
+      ],
+      "limitations": [
+        {
+          "name": "Limited ankle dorsiflexion range (calf/soleus stiffness or talocrural restriction)",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Joachim MR, Kliethermes SA, Heiderscheit BC 2024. Preinjury Knee and Ankle Mechanics during Running Are Reduced among Collegiate Runners Who Develop Achilles Tendinopathy. Med Sci Sports Exerc 56(1):128-133",
+              "pmid": "37703042",
+              "doi": "10.1249/MSS.0000000000003276",
+              "design": "prospective cohort (n=106 collegiate runners; 15 AT)",
+              "result": "Runners who later developed Achilles tendinopathy had less peak ankle dorsiflexion during running before injury (26.0 vs 28.7 deg) and less peak knee flexion (43.2 vs 45.9 deg).",
+              "verified": true
+            },
+            {
+              "citation": "Becker J, James S, Wayner R, Osternig L, Chou LS 2017. Biomechanical Factors Associated With Achilles Tendinopathy and Medial Tibial Stress Syndrome in Runners. Am J Sports Med 45(11):2614-2621",
+              "pmid": "28581815",
+              "doi": "10.1177/0363546517708193",
+              "design": "controlled laboratory, case-control (n=42)",
+              "result": "Runners with Achilles tendinopathy or MTSS had less static dorsiflexion ROM (6.1 vs 11.2 deg) and longer rearfoot eversion duration (86% vs 59% of stance) than controls.",
+              "verified": true
+            },
+            {
+              "citation": "Rabin A, Kozol Z, Finestone AS 2014. Limited ankle dorsiflexion increases the risk for mid-portion Achilles tendinopathy in infantry recruits: a prospective cohort study. J Foot Ankle Res 7(1):48",
+              "pmid": "25426172",
+              "doi": "10.1186/s13047-014-0048-3",
+              "design": "prospective cohort (n=70 military recruits; 5 cases)",
+              "result": "Recruits who developed mid-portion Achilles tendinopathy had less non-weight-bearing knee-bent DF ROM (21.1 vs 27.4 deg); only 5 cases.",
+              "verified": true
+            },
+            {
+              "citation": "Hamstra-Wright KL, Bliven KC, Bay C 2015. Risk factors for medial tibial stress syndrome in physically active individuals such as runners and military personnel: a systematic review and meta-analysis. Br J Sports Med 49(6):362-9",
+              "pmid": "25185588",
+              "doi": "10.1136/bjsports-2014-093462",
+              "design": "systematic review + meta-analysis (21 studies)",
+              "result": "Dorsiflexion ROM was clearly NOT a risk factor for MTSS; ankle plantarflexion ROM, BMI, navicular drop and hip ER ROM were.",
+              "verified": true
+            }
+          ],
+          "note": "No retrieved study directly tested whether a low knee-to-wall (WBLT) score produces reduced dorsiflexion or tibial progression during RUNNING. The running-DF link is inferred; static DF ROM relates to some injuries (Achilles) but not MTSS."
+        },
+        {
+          "name": "Low calf (soleus/gastrocnemius) strength-endurance",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link found between calf capacity and midstance dorsiflexion or tibial progression in running (none (clinical reasoning))."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Knee valgus / hip adduction on single-leg tasks (lateral step-down, squat) with low DF",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Rabin A, Portnoy S, Kozol Z 2016. The Association of Ankle Dorsiflexion Range of Motion With Hip and Knee Kinematics During the Lateral Step-down Test. J Orthop Sports Phys Ther 46(11):1002-1009",
+              "pmid": "27686412",
+              "doi": "10.2519/jospt.2016.6621",
+              "design": "controlled laboratory, cross-sectional (n=30)",
+              "result": "Low weight-bearing and non-weight-bearing DF subgroups showed greater peak hip adduction and knee external rotation during lateral step-down; low WB DF also had less peak knee flexion.",
+              "verified": true
+            },
+            {
+              "citation": "Rabin A, Kozol Z 2010. Measures of range of motion and strength among healthy women with differing quality of lower extremity movement during the lateral step-down test. J Orthop Sports Phys Ther 40(12):792-800",
+              "pmid": "20972344",
+              "doi": "10.2519/jospt.2010.3424",
+              "design": "cross-sectional (n=29)",
+              "result": "Women with moderate (vs good) step-down movement quality had less knee-bent and weight-bearing ankle DF ROM; hip strength did not differ (as reported in abstract).",
+              "verified": true
+            },
+            {
+              "citation": "Macrum E, Bell DR, Boling M, Lewek M, Padua D 2012. Effect of limiting ankle-dorsiflexion range of motion on lower extremity kinematics and muscle-activation patterns during a squat. J Sport Rehabil 21(2):144-50",
+              "pmid": "22100617",
+              "doi": "10.1123/jsr.21.2.144",
+              "design": "cross-sectional, experimental wedge condition (n=30)",
+              "result": "Simulated DF restriction (12 deg forefoot wedge) in a double-leg squat increased knee valgus and medial knee displacement, decreased peak knee flexion and quadriceps activity.",
+              "verified": true
+            },
+            {
+              "citation": "Mendonca ILA, Filho FMDN, Badicu G, et al. 2026. Analysis of Ankle Mobility and Dynamic Valgus Knee in Runners With and Without Patellofemoral Pain Syndrome. Health Sci Rep 9(6):e72051",
+              "pmid": "42317222",
+              "doi": "10.1002/hsr2.72051",
+              "design": "cross-sectional (n=40 female runners)",
+              "result": "Female runners with vs without PFP: no difference in WBLT (about 3.8-4.4 cm) or 2D knee valgus on step-down.",
+              "verified": true
+            }
+          ],
+          "note": "Shown in step-down/squat tasks, not in running."
+        },
+        {
+          "text": "Reduced knee flexion (stiffer stance knee)",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Rabin A, Portnoy S, Kozol Z 2016. The Association of Ankle Dorsiflexion Range of Motion With Hip and Knee Kinematics During the Lateral Step-down Test. J Orthop Sports Phys Ther 46(11):1002-1009",
+              "pmid": "27686412",
+              "doi": "10.2519/jospt.2016.6621",
+              "design": "controlled laboratory, cross-sectional (n=30)",
+              "result": "Low weight-bearing DF subgroup had decreased peak knee flexion during step-down.",
+              "verified": true
+            },
+            {
+              "citation": "Joachim MR, Kliethermes SA, Heiderscheit BC 2024. Preinjury Knee and Ankle Mechanics during Running Are Reduced among Collegiate Runners Who Develop Achilles Tendinopathy. Med Sci Sports Exerc 56(1):128-133",
+              "pmid": "37703042",
+              "doi": "10.1249/MSS.0000000000003276",
+              "design": "prospective cohort (n=106 collegiate runners; 15 AT)",
+              "result": "Prospectively, runners who developed Achilles tendinopathy ran with less peak knee flexion and less peak DF.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "text": "Prolonged foot pronation (rearfoot eversion) through stance",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Becker J, James S, Wayner R, Osternig L, Chou LS 2017. Biomechanical Factors Associated With Achilles Tendinopathy and Medial Tibial Stress Syndrome in Runners. Am J Sports Med 45(11):2614-2621",
+              "pmid": "28581815",
+              "doi": "10.1177/0363546517708193",
+              "design": "controlled laboratory, case-control (n=42)",
+              "result": "Injured runners had both lower static DF ROM and longer eversion duration; association only, compensation not tested.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "text": "Early heel rise",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link found in running (clinical reasoning)."
+        },
+        {
+          "text": "Shortened stride or forward trunk lean",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link found."
+        }
+      ],
+      "screens": [
+        {
+          "name": "Weight-bearing lunge test (knee-to-wall)",
+          "how": "Foot facing the wall, heel down, lunge knee to touch wall; slide foot back to the furthest point the knee still touches with heel down; measure big toe-to-wall distance (cm) or tibia angle with an inclinometer; best of 3, both sides.",
+          "positive_if": "Use side-to-side difference and age/sex norms. A difference or change larger than measurement error (MDC about 1.6-1.9 cm or 4.6-4.7 deg; Powden 2015) is real. Age- and sex-specific percentile norms exist (McBride 2026, n=899: DF declines with age, males slightly higher, no left/right difference in healthy adults) but the numeric norms are in the full text, not the abstract. Popular cut-offs (e.g. <10 cm, >2 cm asymmetry) are NOT verified here.",
+          "evidence": [
+            {
+              "citation": "Bennell KL, Talbot RC, Wajswelner H, Techovanich W, Kelly DH, Hall AJ 1998. Intra-rater and inter-rater reliability of a weight-bearing lunge measure of ankle dorsiflexion. Aust J Physiother 44(3):175-180",
+              "pmid": "11676731",
+              "doi": "10.1016/s0004-9514(14)60377-9",
+              "design": "reliability study (n=13)",
+              "result": "Intra-rater ICC 0.97-0.98; inter-rater ICC 0.97 (angle) and 0.99 (distance).",
+              "verified": true
+            },
+            {
+              "citation": "Powden CJ, Hoch JM, Hoch MC 2015. Reliability and minimal detectable change of the weight-bearing lunge test: A systematic review. Man Ther 20(4):524-32",
+              "pmid": "25704110",
+              "doi": "10.1016/j.math.2015.01.004",
+              "design": "systematic review (12 studies)",
+              "result": "Inter-clinician ICC 0.80-0.99, intra-clinician ICC 0.65-0.99; MDC 4.6 deg or 1.6 cm (inter) and 4.7 deg or 1.9 cm (intra).",
+              "verified": true
+            },
+            {
+              "citation": "McBride S, Isabelle PL, Gomez-Carrion A, et al. 2026. International normative values for the weight-bearing lunge test across age and sex in 899 healthy adults. Musculoskelet Sci Pract 82:103525",
+              "pmid": "41723909",
+              "doi": "10.1016/j.msksp.2026.103525",
+              "design": "cross-sectional normative study (n=899)",
+              "result": "Normative values by age and sex (n=899); no meaningful between-limb difference; performance declined with age, especially from 60-69 y; males slightly greater than females.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Single-leg heel-raise test to fatigue (calf capacity)",
+          "how": "Stand on one leg on a 10-deg incline, fingertip support only, raise heel as high as possible at a set pace until fatigue; count reps each side.",
+          "positive_if": "Below age/sex norm: median 24 reps (men) and 21 (women) (Hebert-Losier 2017); median 25/24 (dominant/non-dominant) in Visser 2025. Between-day limits of agreement about +/-6 reps, so side differences smaller than ~6 reps may be noise.",
+          "evidence": [
+            {
+              "citation": "Hebert-Losier K, Wessman C, Alricsson M, Svantesson U 2017. Updated reliability and normative values for the standing heel-rise test in healthy adults. Physiotherapy 103(4):446-452",
+              "pmid": "28886865",
+              "doi": "10.1016/j.physio.2017.03.002",
+              "design": "cross-sectional normative + test-retest (n=566)",
+              "result": "n=566; ICC 1.0; 95% LOA about -6.2 to 6.5 reps; median 24 (men) vs 21 (women); older women outperformed older men; younger, active men scored highest.",
+              "verified": true
+            },
+            {
+              "citation": "Visser TSS, Neill SO, Hebert-Losier K, Eygendaal D, de Vos RJ 2025. Normative values for calf muscle strength-endurance in the general population assessed with the Calf Raise Application. Braz J Phys Ther 29(3):101188",
+              "pmid": "40020545",
+              "doi": "10.1016/j.bjpt.2025.101188",
+              "design": "cross-sectional normative (n=500)",
+              "result": "n=500; median repetitions 25 (dominant) / 24 (non-dominant); no limb difference; lower with female sex, higher BMI, lower activity.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Calf stretching, straight-knee (gastrocnemius) and bent-knee (soleus)",
+          "type": "mobility",
+          "dose": "e.g. 3 x 30 s each position, daily, 6 weeks",
+          "dose_source": "6-week duration from PMID 41169885 (healthy untrained men); hold time/sets: clinical practice, no trial (not stated in retrieved abstracts). Meta-analyses: PMID 16926259, 29223884",
+          "changes_running_pattern": "not shown (PMID 26805699: an 8-week stretching programme did not alter running biomechanics in older runners vs control)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Medeiros DM, Martini TF 2018. Chronic effect of different types of stretching on ankle dorsiflexion range of motion: Systematic review and meta-analysis. Foot (Edinb) 34:28-35",
+              "pmid": "29223884",
+              "doi": "10.1016/j.foot.2017.09.006",
+              "design": "systematic review + meta-analysis (20 controlled trials)",
+              "result": "Chronic static stretching increased DF ROM by 5.17 deg (95% CI 4.39-5.95); PNF 4.32 deg; ballistic not significant.",
+              "verified": true
+            },
+            {
+              "citation": "Radford JA, Burns J, Buchbinder R, Landorf KB, Cook C 2006. Does stretching increase ankle dorsiflexion range of motion? A systematic review. Br J Sports Med 40(10):870-5",
+              "pmid": "16926259",
+              "doi": "10.1136/bjsm.2006.029348",
+              "design": "systematic review + meta-analysis of RCTs",
+              "result": "Calf stretching gave small increases in DF: 2.07 deg (<=15 min total), 3.03 deg (15-30 min), 2.49 deg (>30 min); clinical importance unclear.",
+              "verified": true
+            },
+            {
+              "citation": "Murakami Y, Konrad A, Kasahara K, et al. 2025. Comparison between 6 weeks of static stretching and resistance training programs on passive and active properties of plantar flexors. A randomized controlled trial. Front Physiol 16:1555253",
+              "pmid": "41169885",
+              "doi": "10.3389/fphys.2025.1555253",
+              "design": "RCT (n=36 untrained men, 6 weeks)",
+              "result": "6 weeks static stretching increased DF ROM (d=0.65) and reduced passive stiffness; gains may be partly stretch tolerance.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Calf strengthening: heel raises / heavy-slow or eccentric heel drops, straight and bent knee",
+          "type": "strength",
+          "dose": "e.g. 3 x 15 straight-knee + 3 x 15 bent-knee, progressed with load; 12 weeks for tendon cases (daily eccentric or 3 sessions/week heavy-slow)",
+          "dose_source": "12-week duration from PMID 9617396 and 26018970 (Achilles tendinopathy, not running mechanics); 6-week eccentric programme increased DF ROM in healthy people PMID 18091014; sets/reps not in retrieved abstracts: clinical practice, no trial",
+          "changes_running_pattern": "not tested for DF/tibial progression; PMID 41980349 ankle-and-foot programme gave no clinically meaningful running kinematic change; PMID 31541409 no evidence strength gains transfer to running",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Mahieu NN, McNair P, Cools A, et al. 2008. Effect of eccentric training on the plantar flexor muscle-tendon tissue properties. Med Sci Sports Exerc 40(1):117-23",
+              "pmid": "18091014",
+              "doi": "10.1249/mss.0b013e3181599254",
+              "design": "RCT (n=74 healthy, 6 weeks)",
+              "result": "6-week eccentric heel-drop programme increased DF ROM and reduced passive resistive torque; Achilles tendon stiffness unchanged.",
+              "verified": true
+            },
+            {
+              "citation": "Murakami Y, Konrad A, Kasahara K, et al. 2025. Comparison between 6 weeks of static stretching and resistance training programs on passive and active properties of plantar flexors. A randomized controlled trial. Front Physiol 16:1555253",
+              "pmid": "41169885",
+              "doi": "10.3389/fphys.2025.1555253",
+              "design": "RCT (n=36 untrained men, 6 weeks)",
+              "result": "6 weeks resistance training increased DF ROM (d=0.37) similar to stretching, plus strength and gastrocnemius thickness.",
+              "verified": true
+            },
+            {
+              "citation": "Alfredson H, Pietila T, Jonsson P, Lorentzon R 1998. Heavy-load eccentric calf muscle training for the treatment of chronic Achilles tendinosis. Am J Sports Med 26(3):360-6",
+              "pmid": "9617396",
+              "doi": "10.1177/03635465980260030301",
+              "design": "prospective case series with conventional-treatment comparison group (n=15+15)",
+              "result": "12 weeks heavy-load eccentric calf training: all 15 returned to full running, pain fell, calf strength symmetrical.",
+              "verified": true
+            },
+            {
+              "citation": "Beyer R, Kongsgaard M, Hougs Kjaer B, et al. 2015. Heavy Slow Resistance Versus Eccentric Training as Treatment for Achilles Tendinopathy: A Randomized Controlled Trial. Am J Sports Med 43(7):1704-11",
+              "pmid": "26018970",
+              "doi": "10.1177/0363546515584760",
+              "design": "RCT (n=58)",
+              "result": "Heavy slow resistance and eccentric training (12 weeks) equally improved VISA-A and pain to 52 weeks; better compliance with HSR (92% vs 78%).",
+              "verified": true
+            },
+            {
+              "citation": "Jarske H, Leppanen M, Avela J, et al. 2026. Effects of two pre-running training interventions on running kinematics and strength - A randomized controlled trial in novice recreational runners. Gait Posture 128:110174",
+              "pmid": "41980349",
+              "doi": "10.1016/j.gaitpost.2026.110174",
+              "design": "RCT (n=178 novice runners, 6 months)",
+              "result": "6-month hip-and-core or ankle-and-foot programmes vs static-stretching control: no between-group strength differences; kinematic changes <2 deg (hip IR); authors estimate 25-50% strength gain needed for a 2-deg kinematic change; not clinically meaningful.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Talocrural joint mobilisation (e.g. posterior glide / mobilisation with movement)",
+          "type": "mobility",
+          "dose": "e.g. 3-4 sets of 30-60 s or 10 reps, 1-2 sessions/week, 2-4 weeks",
+          "dose_source": "clinical practice, no trial (retrieved meta-analysis PMID 30870009 is in chronic ankle instability and gives no dose in the abstract)",
+          "changes_running_pattern": "not tested",
+          "priority": 3,
+          "evidence": [
+            {
+              "citation": "Vallandingham RA, Gaven SL, Powden CJ 2019. Changes in Dorsiflexion and Dynamic Postural Control After Mobilizations in Individuals With Chronic Ankle Instability: A Systematic Review and Meta-Analysis. J Athl Train 54(4):403-417",
+              "pmid": "30870009",
+              "doi": "10.4085/1062-6050-380-17",
+              "design": "systematic review + meta-analysis (10 studies, chronic ankle instability)",
+              "result": "In chronic ankle instability, joint mobilisation improved DF ROM vs control with a weak-to-moderate effect (ES 0.41).",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "Calf stretching and loading raise DF ROM by a few degrees, but no trial shows that this changes ankle or tibial angles during running. Treat a low running DF as a reason to screen (WBLT, heel-raise), not as proof of a restriction. Joachim 2024 is the best running-specific data (prospective) and links LOW DF and LOW knee flexion in running to later Achilles tendinopathy."
+    },
+    "hip_extension_trunk_lean": {
+      "findings": [
+        "excess forward trunk lean",
+        "reduced hip extension at late stance / toe-off",
+        "trunk angle change"
+      ],
+      "limitations": [
+        {
+          "name": "Hip flexor tightness (limited passive hip extension, Thomas test)",
+          "link_strength": "none",
+          "evidence": [
+            {
+              "citation": "Schache AG, Blanch PD, Murphy AT 2000. Relation of anterior pelvic tilt during running to clinical and kinematic measures of hip extension. Br J Sports Med 34(4):279-83",
+              "pmid": "10953901",
+              "doi": "10.1136/bjsm.34.4.279",
+              "design": "cross-sectional (n=14 elite athletes, treadmill 20 km/h)",
+              "result": "Thomas-test hip extension flexibility did NOT correlate with anterior pelvic tilt or with peak hip extension during running (elite athletes, 20 km/h).",
+              "verified": true
+            },
+            {
+              "citation": "Mettler JH, Shapiro R, Pohl MB 2019. Effects of a Hip Flexor Stretching Program on Running Kinematics in Individuals With Limited Passive Hip Extension. J Strength Cond Res 33(12):3338-3344",
+              "pmid": "29927892",
+              "doi": "10.1519/JSC.0000000000002586",
+              "design": "pre-post intervention, no control",
+              "result": "3-week home hip flexor stretching increased passive hip extension (p<0.001) but did NOT change running hip extension, anterior pelvic tilt or lumbar extension; change in passive ROM unrelated to running kinematics.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Tested and not supported: static hip flexor length does not predict or change running hip extension at submaximal speed. Possible role at near-maximal speed is untested (Mettler 2019)."
+        },
+        {
+          "name": "Weak hip extensors (gluteus maximus)",
+          "link_strength": "none",
+          "evidence": [
+            {
+              "citation": "Teng HL, Powers CM 2016. Hip-Extensor Strength, Trunk Posture, and Use of the Knee-Extensor Muscles During Running. J Athl Train 51(7):519-24",
+              "pmid": "27513169",
+              "doi": "10.4085/1062-6050-51.8.05",
+              "design": "descriptive laboratory, cross-sectional (n=40)",
+              "result": "OPPOSITE to the proposed chain: weaker hip extensors correlated with a MORE UPRIGHT trunk (r=0.55 with trunk flexion), less hip-extensor work and more knee-extensor work.",
+              "verified": true
+            },
+            {
+              "citation": "Moffit TJ, Montgomery MM, Lockie RG, Pamukoff DN 2020. Association Between Knee- and Hip-Extensor Strength and Running-Related Injury Biomechanics in Collegiate Distance Runners. J Athl Train 55(12):1262-1269",
+              "pmid": "33196827",
+              "doi": "10.4085/1062-6050-0532.19",
+              "design": "cross-sectional (n=36)",
+              "result": "Hip- and knee-extensor isometric strength not associated with forward trunk lean or hip kinematics in collegiate runners.",
+              "verified": true
+            }
+          ],
+          "note": "Tested; the data do not support 'weak glutes cause forward trunk lean'. If anything, stronger hip extensors go with more forward lean."
+        },
+        {
+          "name": "Trunk posture strategy (habit) - forward lean shifts work from knee to hip",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Teng HL, Powers CM 2014. Sagittal plane trunk posture influences patellofemoral joint stress during running. J Orthop Sports Phys Ther 44(10):785-92",
+              "pmid": "25155651",
+              "doi": "10.2519/jospt.2014.5249",
+              "design": "lab, repeated measures (acute)",
+              "result": "Cueing more trunk flexion (14.1 deg) lowered peak patellofemoral joint stress; extended trunk (4.0 deg) raised it.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Teng HL, Powers CM 2015. Influence of trunk posture on lower extremity energetics during running. Med Sci Sports Exerc 47(3):625-30",
+              "pmid": "25003780",
+              "doi": "10.1249/MSS.0000000000000436",
+              "design": "lab, cross-sectional",
+              "result": "High trunk flexion runners (10.8 deg) had more hip-extensor energy generation and less knee-extensor energy absorption than low trunk flexion (3.6 deg).",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2018. Is There a Pathological Gait Associated With Common Soft Tissue Running Injuries? Am J Sports Med 46(12):3023-3031",
+              "pmid": "30193080",
+              "doi": "10.1177/0363546518793657",
+              "design": "controlled laboratory (case-control)",
+              "result": "Injured runners showed greater forward trunk lean at midstance than uninjured (association).",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Trunk lean is a modifiable technique variable; more lean loads the hip/posterior chain and unloads the knee."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Anterior pelvic tilt coupled with reduced terminal-stance hip extension",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Schache AG, Blanch PD, Murphy AT 2000. Relation of anterior pelvic tilt during running to clinical and kinematic measures of hip extension. Br J Sports Med 34(4):279-83",
+              "pmid": "10953901",
+              "doi": "10.1136/bjsm.34.4.279",
+              "design": "cross-sectional (n=14 elite athletes, treadmill 20 km/h)",
+              "result": "Anterior pelvic tilt correlated with peak running hip extension (p<0.01): runners with less hip extension tended to show more anterior tilt.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "text": "Lumbar extension",
+          "link_strength": "none",
+          "evidence": [
+            {
+              "citation": "Mettler JH, Shapiro R, Pohl MB 2019. Effects of a Hip Flexor Stretching Program on Running Kinematics in Individuals With Limited Passive Hip Extension. J Strength Cond Res 33(12):3338-3344",
+              "pmid": "29927892",
+              "doi": "10.1519/JSC.0000000000002586",
+              "design": "pre-post intervention, no control",
+              "result": "Lumbar extension during running unchanged after hip flexor stretching.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "No tested causal link."
+        },
+        {
+          "text": "Shortened stride / overstride",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link found."
+        }
+      ],
+      "screens": [
+        {
+          "name": "Modified Thomas test (hip flexor length)",
+          "how": "Lie at the end of a plinth hugging one knee, keep the low back flat (pelvis neutral); let the other thigh hang; measure hip extension angle with a goniometer/inclinometer.",
+          "positive_if": "Thigh does not reach horizontal (hip extension below 0 deg) is the usual clinical criterion (not verified in retrieved abstracts). Healthy young adults averaged +5.4 deg (SD 9.7) with pelvis controlled (Eimiller 2024). A positive test does NOT predict running hip extension (Schache 2000).",
+          "evidence": [
+            {
+              "citation": "Eimiller K, Stoddard E, Janes B, Smith M, Vincek A 2024. Reliability of Goniometric Techniques for Measuring Hip Flexor Length Using the Modified Thomas Test. Int J Sports Phys Ther 19(8):997-1002",
+              "pmid": "39100940",
+              "doi": "10.26603/001c.120899",
+              "design": "reliability study (n=64)",
+              "result": "With pelvic tilt controlled: intra-rater ICC 0.911, inter-rater ICC 0.851; mean hip extension 5.43 +/- 9.73 deg (n=64).",
+              "verified": true
+            },
+            {
+              "citation": "Gonzalez-de-la-Flor A, Seijas-Otero D 2026. Reliability of physical examination tests for assessing hip flexor flexibility: A systematic review and meta-analysis. PM R 18(7):779-792",
+              "pmid": "41420517",
+              "doi": "10.1002/pmrj.70062",
+              "design": "systematic review + meta-analysis (27 studies)",
+              "result": "Pooled intra-rater ICC 0.90, inter-rater 0.80 across hip flexor tests; high heterogeneity for Thomas/modified Thomas; Thomas test lowest inter-rater ICC 0.62.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Prone hip extension strength (hand-held dynamometry)",
+          "how": "Prone, knee bent 90 deg, push the thigh up into a dynamometer (belt-fixed if possible), 3 maximal reps per side; normalise to body mass.",
+          "positive_if": "No verified normative cut-off. Use side-to-side difference beyond MDC (14-29% with belt fixation; Thorborg 2013).",
+          "evidence": [
+            {
+              "citation": "Thorborg K, Bandholm T, Holmich P 2013. Hip- and knee-strength assessments using a hand-held dynamometer with external belt-fixation are inter-tester reliable. Knee Surg Sports Traumatol Arthrosc 21(3):550-5",
+              "pmid": "22773065",
+              "doi": "10.1007/s00167-012-2115-2",
+              "design": "reliability study (n=21 athletes)",
+              "result": "Belt-fixed HHD for hip abduction, adduction, flexion, extension: ICC 0.76-0.95; SEM 5-11%; MDC 14-29%.",
+              "verified": true
+            },
+            {
+              "citation": "Ehresman BA, Lehecka BJ, Hiser D, Koster L, Wietharn J 2025. Improved Hip Flexibility and Gluteal Function Following a Daily Lunge-and-Reach Stretching Intervention. Int J Sports Phys Ther 20(6):814-823",
+              "pmid": "40469644",
+              "doi": "10.26603/001c.137692",
+              "design": "cohort with randomised allocation to stretch or control (n=23), level 3",
+              "result": "Prone hip extension HHD and modified Thomas test reliability ICC 0.92-0.99 in this study.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Trunk posture cue (adjust forward lean toward the target range; slight forward lean if knee-dominant pain)",
+          "type": "technique",
+          "dose": "in-run cue during easy runs, e.g. 8 sessions over 2-3 weeks with feedback faded",
+          "dose_source": "clinical practice, no trial (trunk-lean evidence is acute, single session)",
+          "changes_running_pattern": "yes, acutely (PMID 25155651); no retraining trial for trunk lean",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Teng HL, Powers CM 2014. Sagittal plane trunk posture influences patellofemoral joint stress during running. J Orthop Sports Phys Ther 44(10):785-92",
+              "pmid": "25155651",
+              "doi": "10.2519/jospt.2014.5249",
+              "design": "lab, repeated measures (acute)",
+              "result": "Runners could adopt flexed (14.1 deg) or extended (4.0 deg) trunk when cued; PFJ stress changed accordingly.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Glute max / hip extensor strengthening (e.g. bridges, hip thrust, step-ups, Romanian deadlift)",
+          "type": "strength",
+          "dose": "e.g. 3 x 8-12, 3 x/week, 6 weeks",
+          "dose_source": "6-week hip-and-core protocol that increased hip extensor strength: PMID 25365133 (PFP); sets/reps not in abstract: clinical practice, no trial",
+          "changes_running_pattern": "not tested for trunk lean or hip extension; cross-sectional data run opposite (PMID 27513169)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Ferber R, Bolgla L, Earl-Boehm JE, Emery C, Hamstra-Wright K 2015. Strengthening of the hip and core versus knee muscles for the treatment of patellofemoral pain: a multicenter randomized controlled trial. J Athl Train 50(4):366-77",
+              "pmid": "25365133",
+              "doi": "10.4085/1062-6050-49.3.70",
+              "design": "multicentre RCT (n=199)",
+              "result": "6-week HIP protocol gained more hip abductor and extensor strength and earlier pain relief than KNEE protocol in PFP (n=199).",
+              "verified": true
+            },
+            {
+              "citation": "Trowell D, Vicenzino B, Saunders N, Fox A, Bonacci J 2020. Effect of Strength Training on Biomechanical and Neuromuscular Variables in Distance Runners: A Systematic Review and Meta-Analysis. Sports Med 50(1):133-150",
+              "pmid": "31541409",
+              "doi": "10.1007/s40279-019-01184-9",
+              "design": "systematic review + meta-analysis (25 studies)",
+              "result": "Concurrent strength + endurance training increased knee flexor, plantarflexor, squat and knee extensor strength more than running alone; very limited evidence on stride parameters and no studies examined running biomechanics, so no evidence that strength adaptations transfer to running.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Hip flexor stretching (kneeling lunge-and-reach)",
+          "type": "mobility",
+          "dose": "5 min daily, 6 weeks (Ehresman) or 3-week home programme (Mettler)",
+          "dose_source": "PMID 40469644 (dose); PMID 29927892",
+          "changes_running_pattern": "no (PMID 29927892: passive hip extension improved, running hip extension and pelvic tilt unchanged)",
+          "priority": 3,
+          "evidence": [
+            {
+              "citation": "Ehresman BA, Lehecka BJ, Hiser D, Koster L, Wietharn J 2025. Improved Hip Flexibility and Gluteal Function Following a Daily Lunge-and-Reach Stretching Intervention. Int J Sports Phys Ther 20(6):814-823",
+              "pmid": "40469644",
+              "doi": "10.26603/001c.137692",
+              "design": "cohort with randomised allocation to stretch or control (n=23), level 3",
+              "result": "5 min daily lunge-and-reach stretch for 6 weeks: modified Thomas test +5.9 deg; single-leg broad jump +12.4 cm; no change in glute strength or bridge endurance.",
+              "verified": true
+            },
+            {
+              "citation": "Mettler JH, Shapiro R, Pohl MB 2019. Effects of a Hip Flexor Stretching Program on Running Kinematics in Individuals With Limited Passive Hip Extension. J Strength Cond Res 33(12):3338-3344",
+              "pmid": "29927892",
+              "doi": "10.1519/JSC.0000000000002586",
+              "design": "pre-post intervention, no control",
+              "result": "Stretching raised passive ROM without changing running kinematics.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "Chain 12 (limited late-stance hip extension) is covered here because its evidence is the same: neither hip flexor length nor hip extensor strength has been shown to drive running hip extension or trunk lean; reduced running hip extension is coupled with anterior pelvic tilt (Schache 2000). The proposed chain 'hip flexor tightness/weak glute max -> forward lean' is contradicted rather than supported. Trunk lean is best treated as a technique variable (cue) with knee-vs-hip load trade-offs."
+    },
+    "overstride": {
+      "findings": [
+        "high foot-to-centre-of-mass distance at contact",
+        "high tibial inclination at initial contact",
+        "heel strike with large foot inclination",
+        "long step length"
+      ],
+      "limitations": [
+        {
+          "name": "Low step rate (cadence) for the speed",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            },
+            {
+              "citation": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB 2011. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc 43(2):296-302",
+              "pmid": "20581720",
+              "doi": "10.1249/MSS.0b013e3181ebedf4",
+              "design": "lab (within-subject, acute)",
+              "result": "Acute +5%/+10% step rate reduced step length, COM vertical excursion, braking impulse, peak knee flexion and knee energy absorption; at +10% peak hip adduction angle and hip adduction/IR moments also decreased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Raising step rate shortens the step and reduces foot strike angle and braking; this is the only tested 'cause' of overstride. Evidence is mostly acute."
+        },
+        {
+          "name": "Limited hip control (hip flexor/glute function)",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link (clinical reasoning)."
+        },
+        {
+          "name": "Limited trailing-side ankle dorsiflexion",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Higher braking impulse and knee/hip energy absorption",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB 2011. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc 43(2):296-302",
+              "pmid": "20581720",
+              "doi": "10.1249/MSS.0b013e3181ebedf4",
+              "design": "lab (within-subject, acute)",
+              "result": "Acute +5%/+10% step rate reduced step length, COM vertical excursion, braking impulse, peak knee flexion and knee energy absorption; at +10% peak hip adduction angle and hip adduction/IR moments also decreased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Step rate relative to speed",
+          "how": "Count steps per minute at the test speed and compare with speed- and sex-stratified reference values.",
+          "positive_if": "Below reference for the speed (Malisoux 2023 tables in full text; numbers not in abstract).",
+          "evidence": [
+            {
+              "citation": "Malisoux L, Napier C, Gette P, Delattre N, Theisen D 2023. Reference Values and Determinants of Spatiotemporal and Kinetic Variables in Recreational Runners. Orthop J Sports Med 11(10):23259671231204629",
+              "pmid": "37868213",
+              "doi": "10.1177/23259671231204629",
+              "design": "descriptive laboratory (n=860 recreational runners)",
+              "result": "Speed- and sex-stratified reference values for cadence, contact time, vertical oscillation etc. in 860 recreational runners; running speed was the only strong determinant (r>0.7).",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Step-rate increase +5-10% (metronome / watch)",
+          "type": "technique",
+          "dose": "+10% step rate, metronome, on all runs; reassess at 4 weeks",
+          "dose_source": "PMID 31657964 (single-session instruction, self-monitored); PMID 35128941 (trial synthesis)",
+          "changes_running_pattern": "yes (PMID 36057913, 20581720, 31657964)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            },
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2019. A 10% Increase in Step Rate Improves Running Kinematics and Clinical Outcomes in Runners With Patellofemoral Pain at 4 Weeks and 3 Months. Am J Sports Med 47(14):3406-3413",
+              "pmid": "31657964",
+              "doi": "10.1177/0363546519879693",
+              "design": "case series (level 4), no control group",
+              "result": "Single session, +10% step rate with metronome, self-monitored with GPS watch: at follow-up pelvic drop -3.1 deg, hip adduction -4.0 deg, knee flexion -4.1 deg; pain and function improved, maintained at 3 months. Case series, no control.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Doyle E, Doyle TLA, Bonacci J, Fuller JT 2022. The Effectiveness of Gait Retraining on Running Kinematics, Kinetics, Performance, Pain, and Injury in Distance Runners: A Systematic Review With Meta-analysis. J Orthop Sports Phys Ther 52(4):192-206",
+              "pmid": "35128941",
+              "doi": "10.2519/jospt.2022.10585",
+              "design": "systematic review + meta-analysis of RCTs",
+              "result": "Moderate certainty: step-rate retraining increased step rate (SMD 1.03) and reduced average vertical loading rate (SMD -0.57). Two trials showed reduced 1-year injury incidence.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Hip flexor and glute strength",
+          "type": "strength",
+          "dose": "e.g. 3 x 8-12, 3 x/week, 6 weeks",
+          "dose_source": "clinical practice, no trial",
+          "changes_running_pattern": "not tested",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Trowell D, Vicenzino B, Saunders N, Fox A, Bonacci J 2020. Effect of Strength Training on Biomechanical and Neuromuscular Variables in Distance Runners: A Systematic Review and Meta-Analysis. Sports Med 50(1):133-150",
+              "pmid": "31541409",
+              "doi": "10.1007/s40279-019-01184-9",
+              "design": "systematic review + meta-analysis (25 studies)",
+              "result": "Concurrent strength + endurance training increased knee flexor, plantarflexor, squat and knee extensor strength more than running alone; very limited evidence on stride parameters and no studies examined running biomechanics, so no evidence that strength adaptations transfer to running.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Calf capacity (heel raises)",
+          "type": "strength",
+          "dose": "e.g. 3 x 15 single-leg, 3 x/week, 6-12 weeks",
+          "dose_source": "clinical practice, no trial",
+          "changes_running_pattern": "not tested",
+          "priority": 3,
+          "evidence": []
+        }
+      ],
+      "strength": "moderate",
+      "notes": "Moderate evidence only for step rate as the modifiable driver. Hip control and trailing-side dorsiflexion as causes of overstride: no tested link."
+    },
+    "hip_frontal_control": {
+      "findings": [
+        "excess hip adduction",
+        "high knee frontal-plane projection angle (2D valgus)",
+        "contralateral pelvic drop"
+      ],
+      "limitations": [
+        {
+          "name": "Weak hip abductors / external rotators",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Landauer S, Konrad A, Paternoster FK 2026. Influence of Hip Abductor Strength on Running Biomechanics in Healthy Populations: A Scoping Review. Sports Med Open 12(1):36",
+              "pmid": "41874888",
+              "doi": "10.1186/s40798-026-01009-w",
+              "design": "scoping review (19 studies; 17 cross-sectional, 2 interventions)",
+              "result": "19 studies (17 cross-sectional, 2 interventions with notable limitations): insufficient support for a consistent association between hip abductor/ER strength and running biomechanics in healthy runners, and no convincing evidence that strengthening these muscles alone changes running kinematics or kinetics.",
+              "verified": true
+            },
+            {
+              "citation": "Schmitz A, Russo K, Edwards L, Noehren B 2014. Do novice runners have weak hips and bad running form? Gait Posture 40(1):82-6",
+              "pmid": "24656715",
+              "doi": "10.1016/j.gaitpost.2014.02.014",
+              "design": "cross-sectional (n=38 female runners)",
+              "result": "Hip abductor/ER isometric strength not related to running hip kinematics; lower side-plank endurance correlated with greater peak hip IR (r=-0.36).",
+              "verified": true
+            },
+            {
+              "citation": "Radzak KN, Stickley CD 2020. Fatigue-Induced Hip-Abductor Weakness and Changes in Biomechanical Risk Factors for Running-Related Injuries. J Athl Train 55(12):1270-1276",
+              "pmid": "32946577",
+              "doi": "10.4085/1062-6050-531-19",
+              "design": "crossover lab study (n=38 males)",
+              "result": "Fatigue reduced hip abductor torque and increased hip adduction angle; abductor torque correlated with hip adduction velocity (r about -0.32 to -0.39), more so when fatigued.",
+              "verified": true
+            },
+            {
+              "citation": "Becker J, Nakajima M, Wu WFW 2018. Factors Contributing to Medial Tibial Stress Syndrome in Runners: A Prospective Study. Med Sci Sports Exerc 50(10):2092-2100",
+              "pmid": "29787473",
+              "doi": "10.1249/MSS.0000000000001674",
+              "design": "prospective cohort (n=24 collegiate runners, 2 years)",
+              "result": "Prospectively, runners who developed MTSS had weaker hip abductors and greater contralateral pelvic drop.",
+              "verified": true
+            },
+            {
+              "citation": "Foch E, Brindle RA, Pohl MB 2023. Lower extremity kinematics during running and hip abductor strength in iliotibial band syndrome: A systematic review and meta-analysis. Gait Posture 101:73-81",
+              "pmid": "36758425",
+              "doi": "10.1016/j.gaitpost.2023.02.001",
+              "design": "systematic review + meta-analysis (17 studies)",
+              "result": "Female runners with current ITBS had lower isometric hip abductor strength (and smaller hip IR) than controls.",
+              "verified": true
+            },
+            {
+              "citation": "Mucha MD, Caldwell W, Schlueter EL, Walters C, Hassen A 2017. Hip abductor strength and lower extremity running related injury in distance runners: A systematic review. J Sci Med Sport 20(4):349-355",
+              "pmid": "27693442",
+              "doi": "10.1016/j.jsams.2016.09.002",
+              "design": "systematic review (11 studies)",
+              "result": "Hip abductor weakness possibly associated with ITBS; unclear for PFP, MTSS, tibial stress fracture, Achilles tendinopathy.",
+              "verified": true
+            },
+            {
+              "citation": "Kendall KD, Patel C, Wiley JP, Pohl MB, Emery CA, Ferber R 2013. Steps toward the validation of the Trendelenburg test: the effect of experimentally reduced hip abductor muscle function on frontal plane mechanics. Clin J Sport Med 23(1):45-51",
+              "pmid": "22797529",
+              "doi": "10.1097/JSM.0b013e31825e66a1",
+              "design": "quasi-experimental nerve block (n=9)",
+              "result": "Nerve block cutting hip abductor strength by 52% did not systematically change pelvic drop or trunk sway in the Trendelenburg test.",
+              "verified": true
+            }
+          ],
+          "note": "Association is inconsistent and mostly cross-sectional; strongest under fatigue and in ITBS/MTSS."
+        },
+        {
+          "name": "Limited ankle dorsiflexion",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Rabin A, Portnoy S, Kozol Z 2016. The Association of Ankle Dorsiflexion Range of Motion With Hip and Knee Kinematics During the Lateral Step-down Test. J Orthop Sports Phys Ther 46(11):1002-1009",
+              "pmid": "27686412",
+              "doi": "10.2519/jospt.2016.6621",
+              "design": "controlled laboratory, cross-sectional (n=30)",
+              "result": "Low DF participants showed greater peak hip adduction during lateral step-down (not running).",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Poor frontal-plane motor control / habit",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Willy RW, Scholz JP, Davis IS 2012. Mirror gait retraining for the treatment of patellofemoral pain in female runners. Clin Biomech 27(10):1045-51",
+              "pmid": "22917625",
+              "doi": "10.1016/j.clinbiomech.2012.07.011",
+              "design": "pre-post intervention, no control group",
+              "result": "8 sessions of mirror plus verbal feedback during treadmill running (feedback removed progressively over last 4): reduced peak hip adduction, contralateral pelvic drop and hip abduction moment (ES 0.69-2.91); transferred to single-leg squat and step descent; pain and function improved; mostly maintained at 1 and 3 months. No control group.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Noehren B, Scholz J, Davis I 2011. The effect of real-time gait retraining on hip kinematics, pain and function in subjects with patellofemoral pain syndrome. Br J Sports Med 45(9):691-6",
+              "pmid": "20584755",
+              "doi": "10.1136/bjsm.2009.069112",
+              "design": "pre-post intervention, no control group",
+              "result": "8 sessions of real-time hip adduction feedback (faded): reduced hip adduction and contralateral pelvic drop while running; pain and function improved; maintained at 1 month. No control group.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Movement retraining changes running hip adduction without needing strength change, which supports a control/habit component."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Contralateral pelvic drop",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Becker J, Nakajima M, Wu WFW 2018. Factors Contributing to Medial Tibial Stress Syndrome in Runners: A Prospective Study. Med Sci Sports Exerc 50(10):2092-2100",
+              "pmid": "29787473",
+              "doi": "10.1249/MSS.0000000000001674",
+              "design": "prospective cohort (n=24 collegiate runners, 2 years)",
+              "result": "Greater pelvic drop with weaker abductors in runners who developed MTSS.",
+              "verified": true
+            },
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2018. Is There a Pathological Gait Associated With Common Soft Tissue Running Injuries? Am J Sports Med 46(12):3023-3031",
+              "pmid": "30193080",
+              "doi": "10.1177/0363546518793657",
+              "design": "controlled laboratory (case-control)",
+              "result": "Greater pelvic drop in injured runners; each 1 deg = 80% higher odds of injured classification.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "text": "Trunk lean toward stance side",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Foch E, Reinbolt JA, Zhang S, Fitzhugh EC, Milner CE 2015. Associations between iliotibial band injury status and running biomechanics in women. Gait Posture 41(2):706-10",
+              "pmid": "25701012",
+              "doi": "10.1016/j.gaitpost.2015.01.031",
+              "design": "cross-sectional",
+              "result": "Current ITBS: 1.8 deg more ipsilateral trunk flexion (lean toward stance).",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "text": "2D knee valgus does not equal 3D knee abduction",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Dingenen B, Staes FF, Santermans L, et al. 2018. Are two-dimensional measured frontal plane angles related to three-dimensional measured kinematic profiles during running? Phys Ther Sport 29:84-92",
+              "pmid": "28642097",
+              "doi": "10.1016/j.ptsp.2017.02.001",
+              "design": "observational validity/reliability",
+              "result": "2D knee valgus NOT related to 3D knee abduction; 2D pelvic drop and hip adduction were related to 3D.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Single-leg squat (visual rating good/fair/poor)",
+          "how": "Arms crossed, squat on one leg ~5 reps; rate trunk, pelvis, hip and knee alignment.",
+          "positive_if": "Rated 'poor' (knee moves medially, pelvis drops, trunk shifts). Good performers had higher hip abduction torque (+0.47 Nm/BW) and trunk side-flexion force (Crossley 2011).",
+          "evidence": [
+            {
+              "citation": "Crossley KM, Zhang WJ, Schache AG, Bryant A, Cowan SM 2011. Performance on the single-leg squat task indicates hip abductor muscle function. Am J Sports Med 39(4):866-73",
+              "pmid": "21335344",
+              "doi": "10.1177/0363546510395456",
+              "design": "diagnostic cohort (n=34)",
+              "result": "Rater agreement with expert panel 73-87% (kappa 0.60-0.80); intra-rater kappa 0.61-0.80; good performers had earlier gluteus medius onset and more abduction torque.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Lateral step-down quality",
+          "how": "Step down slowly from a 15-20 cm step on one leg, 5 reps; rate movement quality.",
+          "positive_if": "Moderate or poor quality on the 6-point scale (visual). Reliability only moderate.",
+          "evidence": [
+            {
+              "citation": "Piva SR, Fitzgerald K, Irrgang JJ, et al. 2006. Reliability of measures of impairments associated with patellofemoral pain syndrome. BMC Musculoskelet Disord 7:33",
+              "pmid": "16579850",
+              "doi": "10.1186/1471-2474-7-33",
+              "design": "inter-tester reliability (n=30 PFPS)",
+              "result": "Step-down quality inter-tester ICC 0.67-0.79 (moderate); hip abductor strength ICC 0.85-0.97, SEM 1.8 kg; hip ER strength SEM 2.4 kg.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Side-lying hip abduction strength (hand-held dynamometer)",
+          "how": "Side-lying, hip slightly extended, dynamometer just above lateral knee (belt-fixed), 3 maximal pushes per side; normalise to body mass.",
+          "positive_if": "Side difference larger than MDC (14-29%; Thorborg 2013). Trendelenburg test only useful for marked weakness (<30% body weight; Kendall 2013). No verified running-specific cut-off.",
+          "evidence": [
+            {
+              "citation": "Thorborg K, Bandholm T, Holmich P 2013. Hip- and knee-strength assessments using a hand-held dynamometer with external belt-fixation are inter-tester reliable. Knee Surg Sports Traumatol Arthrosc 21(3):550-5",
+              "pmid": "22773065",
+              "doi": "10.1007/s00167-012-2115-2",
+              "design": "reliability study (n=21 athletes)",
+              "result": "Belt-fixed HHD ICC 0.76-0.95; MDC 14-29%.",
+              "verified": true
+            },
+            {
+              "citation": "Kendall KD, Patel C, Wiley JP, Pohl MB, Emery CA, Ferber R 2013. Steps toward the validation of the Trendelenburg test: the effect of experimentally reduced hip abductor muscle function on frontal plane mechanics. Clin J Sport Med 23(1):45-51",
+              "pmid": "22797529",
+              "doi": "10.1097/JSM.0b013e31825e66a1",
+              "design": "quasi-experimental nerve block (n=9)",
+              "result": "Trendelenburg test should not screen abductor strength in people stronger than 30% BW.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Running retraining with mirror or real-time feedback (knees apart, level pelvis)",
+          "type": "technique",
+          "dose": "8 treadmill sessions over ~2 weeks, feedback faded over the last 4",
+          "dose_source": "PMID 22917625; PMID 20584755",
+          "changes_running_pattern": "yes (PMID 22917625, 20584755; 26979886: only running retraining reduced peak hip adduction)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Willy RW, Scholz JP, Davis IS 2012. Mirror gait retraining for the treatment of patellofemoral pain in female runners. Clin Biomech 27(10):1045-51",
+              "pmid": "22917625",
+              "doi": "10.1016/j.clinbiomech.2012.07.011",
+              "design": "pre-post intervention, no control group",
+              "result": "8 sessions of mirror plus verbal feedback during treadmill running (feedback removed progressively over last 4): reduced peak hip adduction, contralateral pelvic drop and hip abduction moment (ES 0.69-2.91); transferred to single-leg squat and step descent; pain and function improved; mostly maintained at 1 and 3 months. No control group.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Noehren B, Scholz J, Davis I 2011. The effect of real-time gait retraining on hip kinematics, pain and function in subjects with patellofemoral pain syndrome. Br J Sports Med 45(9):691-6",
+              "pmid": "20584755",
+              "doi": "10.1136/bjsm.2009.069112",
+              "design": "pre-post intervention, no control group",
+              "result": "8 sessions of real-time hip adduction feedback (faded): reduced hip adduction and contralateral pelvic drop while running; pain and function improved; maintained at 1 month. No control group.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Neal BS, Barton CJ, Gallie R, O'Halloran P, Morrissey D 2016. Runners with patellofemoral pain have altered biomechanics which targeted interventions can modify: A systematic review and meta-analysis. Gait Posture 45:69-82",
+              "pmid": "26979886",
+              "doi": "10.1016/j.gaitpost.2015.11.018",
+              "design": "systematic review + meta-analysis",
+              "result": "Both running retraining and proximal strengthening improved pain/function, but only running retraining reduced peak hip adduction.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Step-rate increase +10%",
+          "type": "technique",
+          "dose": "+10% step rate with metronome on all runs; reassess at 4 weeks",
+          "dose_source": "PMID 31657964",
+          "changes_running_pattern": "yes (PMID 31657964, 36057913, 20581720)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2019. A 10% Increase in Step Rate Improves Running Kinematics and Clinical Outcomes in Runners With Patellofemoral Pain at 4 Weeks and 3 Months. Am J Sports Med 47(14):3406-3413",
+              "pmid": "31657964",
+              "doi": "10.1177/0363546519879693",
+              "design": "case series (level 4), no control group",
+              "result": "Single session, +10% step rate with metronome, self-monitored with GPS watch: at follow-up pelvic drop -3.1 deg, hip adduction -4.0 deg, knee flexion -4.1 deg; pain and function improved, maintained at 3 months. Case series, no control.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Hip abductor and external rotator strengthening (side-lying abduction, clams, side plank, banded walks, progressing to single-leg work)",
+          "type": "strength",
+          "dose": "e.g. 3 x 10-15, 3 x/week, 6-8 weeks",
+          "dose_source": "frequency/duration from trials: 3 x/week for 8 weeks PMID 22027216; 3 x/week for 6 weeks PMID 21765220; 6 weeks PMID 25365133; 8 weeks PMID 20929936; 4+4 weeks PMID 21654093; 3 weeks PMID 21391799. Sets/reps not in abstracts: clinical practice",
+          "changes_running_pattern": "mostly not shown: no change in running mechanics (PMID 21765220), no change in 2D knee valgus (PMID 21391799), knee abduction moment fell but joint angles unchanged (PMID 20929936), <2 deg change (PMID 41980349), no convincing evidence (PMID 41874888). One RCT (PMID 39468623, MTSS) reported reduced 2D FPPA and pelvic drop after 8 weeks; the abstract does not state the test task. Does improve pain and strength (PMID 22027216, 21654093, 25365133)",
+          "priority": 3,
+          "evidence": [
+            {
+              "citation": "Willy RW, Davis IS 2011. The effect of a hip-strengthening program on mechanics during running and during a single-leg squat. J Orthop Sports Phys Ther 41(9):625-32",
+              "pmid": "21765220",
+              "doi": "10.2519/jospt.2011.3470",
+              "design": "block randomized controlled trial",
+              "result": "Hip abductor/ER strengthening plus single-leg-squat movement training 3x/week for 6 weeks: hip strength increased (P<.005) but NO change in hip or knee mechanics during running; single-leg squat hip adduction, IR and pelvic drop improved.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Khayambashi K, Mohammadkhani Z, Ghaznavi K, Lyle MA, Powers CM 2012. The effects of isolated hip abductor and external rotator muscle strengthening on pain, health status, and hip strength in females with patellofemoral pain: a randomized controlled trial. J Orthop Sports Phys Ther 42(1):22-9",
+              "pmid": "22027216",
+              "doi": "10.2519/jospt.2012.3704",
+              "design": "controlled trial, sequential allocation (n=28)",
+              "result": "Isolated hip abductor/ER strengthening 3 x/week for 8 weeks improved pain, WOMAC and hip strength vs no-exercise control; sustained at 6 months.",
+              "verified": true
+            },
+            {
+              "citation": "Dolak KL, Silkman C, Medina McKeon J, et al. 2011. Hip strengthening prior to functional exercises reduces pain sooner than quadriceps strengthening in females with patellofemoral pain syndrome: a randomized clinical trial. J Orthop Sports Phys Ther 41(8):560-70",
+              "pmid": "21654093",
+              "doi": "10.2519/jospt.2011.3499",
+              "design": "RCT (n=33)",
+              "result": "4 weeks hip strengthening then 4 weeks functional exercise: earlier pain reduction than quadriceps-first; +21% abductor strength.",
+              "verified": true
+            },
+            {
+              "citation": "Ferber R, Bolgla L, Earl-Boehm JE, Emery C, Hamstra-Wright K 2015. Strengthening of the hip and core versus knee muscles for the treatment of patellofemoral pain: a multicenter randomized controlled trial. J Athl Train 50(4):366-77",
+              "pmid": "25365133",
+              "doi": "10.4085/1062-6050-49.3.70",
+              "design": "multicentre RCT (n=199)",
+              "result": "6-week hip/core vs knee protocol: both improved; hip earlier pain relief and greater abductor/extensor strength.",
+              "verified": true
+            },
+            {
+              "citation": "Earl JE, Hoch AZ 2011. A proximal strengthening program improves pain, function, and biomechanics in women with patellofemoral pain syndrome. Am J Sports Med 39(1):154-63",
+              "pmid": "20929936",
+              "doi": "10.1177/0363546510379967",
+              "design": "case series, level 4 (n=19)",
+              "result": "8-week hip/core programme: pain, function, strength improved; knee abduction moment during running reduced; no change in joint ROM.",
+              "verified": true
+            },
+            {
+              "citation": "Ferber R, Kendall KD, Farr L 2011. Changes in knee biomechanics after a hip-abductor strengthening protocol for runners with patellofemoral pain syndrome. J Athl Train 46(2):142-9",
+              "pmid": "21391799",
+              "doi": "10.4085/1062-6050-46.2.142",
+              "design": "cohort, PFPS runners vs untreated controls (n=15+10)",
+              "result": "3-week hip abductor programme in runners with PFPS: strength up, pain down, stride-to-stride knee variability down; peak 2D genu valgum unchanged.",
+              "verified": true
+            },
+            {
+              "citation": "Lashien SA, Abdelnaeem AO, Gomaa EF 2024. Effect of hip abductors training on pelvic drop and knee valgus in runners with medial tibial stress syndrome: a randomized controlled trial. J Orthop Surg Res 19(1):700",
+              "pmid": "39468623",
+              "doi": "10.1186/s13018-024-05139-3",
+              "design": "single-blind RCT (n=40 runners with MTSS, 8 weeks)",
+              "result": "8 weeks functional hip abductor training plus PT vs PT alone: greater reduction in 2D FPPA and pelvic drop.",
+              "verified": true
+            },
+            {
+              "citation": "Landauer S, Konrad A, Paternoster FK 2026. Influence of Hip Abductor Strength on Running Biomechanics in Healthy Populations: A Scoping Review. Sports Med Open 12(1):36",
+              "pmid": "41874888",
+              "doi": "10.1186/s40798-026-01009-w",
+              "design": "scoping review (19 studies; 17 cross-sectional, 2 interventions)",
+              "result": "19 studies (17 cross-sectional, 2 interventions with notable limitations): insufficient support for a consistent association between hip abductor/ER strength and running biomechanics in healthy runners, and no convincing evidence that strengthening these muscles alone changes running kinematics or kinetics.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Single-leg control training (single-leg squat/step-down with mirror)",
+          "type": "motor control",
+          "dose": "e.g. 3 x 10 each side, 3 x/week, 6 weeks",
+          "dose_source": "part of the PMID 21765220 programme (3 x/week, 6 weeks); sets/reps: clinical practice",
+          "changes_running_pattern": "no (improved single-leg squat mechanics only; PMID 21765220)",
+          "priority": 4,
+          "evidence": [
+            {
+              "citation": "Willy RW, Davis IS 2011. The effect of a hip-strengthening program on mechanics during running and during a single-leg squat. J Orthop Sports Phys Ther 41(9):625-32",
+              "pmid": "21765220",
+              "doi": "10.2519/jospt.2011.3470",
+              "design": "block randomized controlled trial",
+              "result": "Hip abductor/ER strengthening plus single-leg-squat movement training 3x/week for 6 weeks: hip strength increased (P<.005) but NO change in hip or knee mechanics during running; single-leg squat hip adduction, IR and pelvic drop improved.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "strength": "moderate",
+      "notes": "Moderate evidence that running-specific retraining (mirror, real-time feedback, step rate) changes hip adduction in running. Strength programmes reliably improve strength and pain but generally do NOT change running kinematics (Willy & Davis 2011, Landauer 2026). Weakness as a cause is inconsistent and fatigue-dependent."
+    },
+    "knee_flexion_midstance": {
+      "findings": [
+        "excess knee flexion at midstance (above range)",
+        "too little knee flexion at midstance / stiff landing",
+        "knee flexion at initial contact"
+      ],
+      "limitations": [
+        {
+          "name": "Low step rate / long step (for EXCESS knee flexion)",
+          "link_strength": "strong",
+          "evidence": [
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            },
+            {
+              "citation": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB 2011. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc 43(2):296-302",
+              "pmid": "20581720",
+              "doi": "10.1249/MSS.0b013e3181ebedf4",
+              "design": "lab (within-subject, acute)",
+              "result": "Acute +5%/+10% step rate reduced step length, COM vertical excursion, braking impulse, peak knee flexion and knee energy absorption; at +10% peak hip adduction angle and hip adduction/IR moments also decreased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Strong evidence that increasing step rate reduces peak knee flexion (acute)."
+        },
+        {
+          "name": "Quadriceps weakness (proposed for excess flexion)",
+          "link_strength": "none",
+          "evidence": [
+            {
+              "citation": "Moffit TJ, Montgomery MM, Lockie RG, Pamukoff DN 2020. Association Between Knee- and Hip-Extensor Strength and Running-Related Injury Biomechanics in Collegiate Distance Runners. J Athl Train 55(12):1262-1269",
+              "pmid": "33196827",
+              "doi": "10.4085/1062-6050-0532.19",
+              "design": "cross-sectional (n=36)",
+              "result": "Greater 1RM back-squat strength was weakly associated with LARGER peak knee flexion (deltaR2=0.11); isometric knee-extensor strength not associated.",
+              "verified": true
+            }
+          ],
+          "note": "Not supported: in healthy runners stronger squatters flex more, not less. No tested link for soleus capacity."
+        },
+        {
+          "name": "Forward trunk lean shifts demand away from knee",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Teng HL, Powers CM 2015. Influence of trunk posture on lower extremity energetics during running. Med Sci Sports Exerc 47(3):625-30",
+              "pmid": "25003780",
+              "doi": "10.1249/MSS.0000000000000436",
+              "design": "lab, cross-sectional",
+              "result": "More trunk flexion = less knee-extensor energy absorption.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Teng HL, Powers CM 2016. Hip-Extensor Strength, Trunk Posture, and Use of the Knee-Extensor Muscles During Running. J Athl Train 51(7):519-24",
+              "pmid": "27513169",
+              "doi": "10.4085/1062-6050-51.8.05",
+              "design": "descriptive laboratory, cross-sectional (n=40)",
+              "result": "Weaker hip extensors with more upright trunk and more knee-extensor work.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Limited ankle dorsiflexion (for TOO LITTLE knee flexion)",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Rabin A, Portnoy S, Kozol Z 2016. The Association of Ankle Dorsiflexion Range of Motion With Hip and Knee Kinematics During the Lateral Step-down Test. J Orthop Sports Phys Ther 46(11):1002-1009",
+              "pmid": "27686412",
+              "doi": "10.2519/jospt.2016.6621",
+              "design": "controlled laboratory, cross-sectional (n=30)",
+              "result": "Low WB DF had less peak knee flexion on step-down.",
+              "verified": true
+            },
+            {
+              "citation": "Macrum E, Bell DR, Boling M, Lewek M, Padua D 2012. Effect of limiting ankle-dorsiflexion range of motion on lower extremity kinematics and muscle-activation patterns during a squat. J Sport Rehabil 21(2):144-50",
+              "pmid": "22100617",
+              "doi": "10.1123/jsr.21.2.144",
+              "design": "cross-sectional, experimental wedge condition (n=30)",
+              "result": "Simulated DF restriction reduced peak knee flexion in squat.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Low lower-limb strength (for TOO LITTLE knee flexion)",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Moffit TJ, Montgomery MM, Lockie RG, Pamukoff DN 2020. Association Between Knee- and Hip-Extensor Strength and Running-Related Injury Biomechanics in Collegiate Distance Runners. J Athl Train 55(12):1262-1269",
+              "pmid": "33196827",
+              "doi": "10.4085/1062-6050-0532.19",
+              "design": "cross-sectional (n=36)",
+              "result": "Weaker back squat associated with smaller peak knee flexion (cross-sectional).",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Too little knee flexion (stiff knee) is linked prospectively to Achilles tendinopathy",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Joachim MR, Kliethermes SA, Heiderscheit BC 2024. Preinjury Knee and Ankle Mechanics during Running Are Reduced among Collegiate Runners Who Develop Achilles Tendinopathy. Med Sci Sports Exerc 56(1):128-133",
+              "pmid": "37703042",
+              "doi": "10.1249/MSS.0000000000003276",
+              "design": "prospective cohort (n=106 collegiate runners; 15 AT)",
+              "result": "Pre-injury peak knee flexion 43.2 vs 45.9 deg in those who developed AT; the limb with less knee flexion had greater odds (OR 1.29).",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "text": "More extended knee at initial contact in injured runners",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2018. Is There a Pathological Gait Associated With Common Soft Tissue Running Injuries? Am J Sports Med 46(12):3023-3031",
+              "pmid": "30193080",
+              "doi": "10.1177/0363546518793657",
+              "design": "controlled laboratory (case-control)",
+              "result": "Injured runners had a more extended knee at initial contact (association).",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Single-leg squat / step-down depth and control",
+          "how": "Single-leg squat or step-down; note depth reached and control.",
+          "positive_if": "Unable to reach depth with control; no verified cut-off.",
+          "evidence": [
+            {
+              "citation": "Crossley KM, Zhang WJ, Schache AG, Bryant A, Cowan SM 2011. Performance on the single-leg squat task indicates hip abductor muscle function. Am J Sports Med 39(4):866-73",
+              "pmid": "21335344",
+              "doi": "10.1177/0363546510395456",
+              "design": "diagnostic cohort (n=34)",
+              "result": "Single-leg squat rating reliability kappa 0.60-0.80.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Weight-bearing lunge (for stiff-knee pattern)",
+          "how": "See ankle_dorsiflexion screen.",
+          "positive_if": "See ankle_dorsiflexion.",
+          "evidence": [
+            {
+              "citation": "Powden CJ, Hoch JM, Hoch MC 2015. Reliability and minimal detectable change of the weight-bearing lunge test: A systematic review. Man Ther 20(4):524-32",
+              "pmid": "25704110",
+              "doi": "10.1016/j.math.2015.01.004",
+              "design": "systematic review (12 studies)",
+              "result": "WBLT MDC 1.6-1.9 cm.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Step-rate increase +5-10% (for excess knee flexion)",
+          "type": "technique",
+          "dose": "+10% step rate with metronome; reassess at 4 weeks",
+          "dose_source": "PMID 31657964",
+          "changes_running_pattern": "yes (PMID 36057913: strong evidence; PMID 31657964 knee flexion -4.1 deg)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            },
+            {
+              "citation": "Bramah C, Preece SJ, Gill N, Herrington L 2019. A 10% Increase in Step Rate Improves Running Kinematics and Clinical Outcomes in Runners With Patellofemoral Pain at 4 Weeks and 3 Months. Am J Sports Med 47(14):3406-3413",
+              "pmid": "31657964",
+              "doi": "10.1177/0363546519879693",
+              "design": "case series (level 4), no control group",
+              "result": "Single session, +10% step rate with metronome, self-monitored with GPS watch: at follow-up pelvic drop -3.1 deg, hip adduction -4.0 deg, knee flexion -4.1 deg; pain and function improved, maintained at 3 months. Case series, no control.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Quadriceps / lower-limb heavy strength (squat, split squat, leg press)",
+          "type": "strength",
+          "dose": "2-4 lower-body exercises, 2-3 x/week, 8-12 weeks",
+          "dose_source": "PMID 26694507 (programmes in trials: 40-70% 1RM, 2-3 x/week, 8-12 weeks; outcome running economy, not knee angle)",
+          "changes_running_pattern": "not shown (PMID 31541409: no study measured running biomechanics)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Balsalobre-Fernandez C, Santos-Concejero J, Grivas GV 2016. Effects of Strength Training on Running Economy in Highly Trained Runners: A Systematic Review With Meta-Analysis of Controlled Trials. J Strength Cond Res 30(8):2361-8",
+              "pmid": "26694507",
+              "doi": "10.1519/JSC.0000000000001316",
+              "design": "systematic review + meta-analysis (5 controlled trials, n=93)",
+              "result": "Strength + plyometric training 2-3 x/week for 8-12 weeks improved running economy in highly trained runners (SMD -1.42).",
+              "verified": true
+            },
+            {
+              "citation": "Trowell D, Vicenzino B, Saunders N, Fox A, Bonacci J 2020. Effect of Strength Training on Biomechanical and Neuromuscular Variables in Distance Runners: A Systematic Review and Meta-Analysis. Sports Med 50(1):133-150",
+              "pmid": "31541409",
+              "doi": "10.1007/s40279-019-01184-9",
+              "design": "systematic review + meta-analysis (25 studies)",
+              "result": "Concurrent strength + endurance training increased knee flexor, plantarflexor, squat and knee extensor strength more than running alone; very limited evidence on stride parameters and no studies examined running biomechanics, so no evidence that strength adaptations transfer to running.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Soleus / calf capacity (seated and bent-knee heel raises)",
+          "type": "strength",
+          "dose": "e.g. 3 x 15-20, 3 x/week, 8-12 weeks",
+          "dose_source": "clinical practice, no trial",
+          "changes_running_pattern": "not tested",
+          "priority": 3,
+          "evidence": []
+        }
+      ],
+      "strength": "limited",
+      "notes": "For EXCESS knee flexion the only strong modifiable driver is step rate. The quadriceps-weakness explanation is not supported in healthy runners. For TOO LITTLE knee flexion, limited prospective evidence links it to Achilles tendinopathy; DF restriction and low squat strength are cross-sectional associations."
+    },
+    "crossover_step_width": {
+      "findings": [
+        "crossover gait / narrow step width (rear view)"
+      ],
+      "limitations": [
+        {
+          "name": "Habitual narrow base of gait, sex and speed",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Stiffler-Joachim MR, Wille C, Kliethermes S, Heiderscheit B 2020. Factors Influencing Base of Gait During Running: Consideration of Sex, Speed, Kinematics, and Anthropometrics. J Athl Train 55(12):1300-1306",
+              "pmid": "33064810",
+              "doi": "10.4085/1062-6050-565-19",
+              "design": "cross-sectional record review (n=166)",
+              "result": "Base of gait narrower at faster speeds and in males at faster speeds; associated with foot inclination at contact, peak hip adduction and ankle dorsiflexion; pelvis (ASIS) width most associated anthropometric factor.",
+              "verified": true
+            }
+          ],
+          "note": "Interpret step width relative to speed and sex."
+        },
+        {
+          "name": "Hip abductor weakness",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link found between hip strength and step width in running."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Narrow step width raises hip adduction, rearfoot eversion, knee abduction moment, ITB strain and tibial stress",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Brindle RA, Milner CE, Zhang S, Fitzhugh EC 2014. Changing step width alters lower extremity biomechanics during running. Gait Posture 39(1):124-8",
+              "pmid": "23831430",
+              "doi": "10.1016/j.gaitpost.2013.06.010",
+              "design": "lab (acute)",
+              "result": "Hip adduction, rearfoot eversion and knee abduction moment/impulse fell as step width increased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Meardon SA, Campbell S, Derrick TR 2012. Step width alters iliotibial band strain during running. Sports Biomech 11(4):464-72",
+              "pmid": "23259236",
+              "doi": "10.1080/14763141.2012.699547",
+              "design": "lab + modelling (acute)",
+              "result": "ITB strain and strain rate higher with narrow step width.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Meardon SA, Derrick TR 2014. Effect of step width manipulation on tibial stress during running. J Biomech 47(11):2738-44",
+              "pmid": "24935171",
+              "doi": "10.1016/j.jbiomech.2014.04.047",
+              "design": "lab + modelling (acute)",
+              "result": "Tibial stress higher with narrow step width.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "None specific",
+          "how": "Use the video measure itself; screen hip control (single-leg squat, abduction HHD) if pattern persists.",
+          "positive_if": "No verified clinical screen for crossover.",
+          "evidence": []
+        }
+      ],
+      "work": [
+        {
+          "item": "Cue a wider step (e.g. 'run either side of a line')",
+          "type": "technique",
+          "dose": "in-run cue, faded over ~8 sessions",
+          "dose_source": "clinical practice, no trial (step-width evidence is acute)",
+          "changes_running_pattern": "yes, acutely (PMID 23831430, 23259236, 24935171)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Brindle RA, Milner CE, Zhang S, Fitzhugh EC 2014. Changing step width alters lower extremity biomechanics during running. Gait Posture 39(1):124-8",
+              "pmid": "23831430",
+              "doi": "10.1016/j.gaitpost.2013.06.010",
+              "design": "lab (acute)",
+              "result": "Wider step acutely reduced hip adduction and knee abduction moment.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Hip abductor strengthening",
+          "type": "strength",
+          "dose": "e.g. 3 x 10-15, 3 x/week, 6-8 weeks",
+          "dose_source": "frequency/duration PMID 22027216; sets/reps clinical practice",
+          "changes_running_pattern": "not tested for step width",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Landauer S, Konrad A, Paternoster FK 2026. Influence of Hip Abductor Strength on Running Biomechanics in Healthy Populations: A Scoping Review. Sports Med Open 12(1):36",
+              "pmid": "41874888",
+              "doi": "10.1186/s40798-026-01009-w",
+              "design": "scoping review (19 studies; 17 cross-sectional, 2 interventions)",
+              "result": "19 studies (17 cross-sectional, 2 interventions with notable limitations): insufficient support for a consistent association between hip abductor/ER strength and running biomechanics in healthy runners, and no convincing evidence that strengthening these muscles alone changes running kinematics or kinetics.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "The consequences of narrow step width are shown in acute lab studies; causes are mostly anthropometry, speed and coupled kinematics. No tested link to weakness."
+    },
+    "trunk_lateral_lean": {
+      "findings": [
+        "trunk lateral lean toward stance (rear view)"
+      ],
+      "limitations": [
+        {
+          "name": "Hip abductor weakness (compensated Trendelenburg)",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Kendall KD, Patel C, Wiley JP, Pohl MB, Emery CA, Ferber R 2013. Steps toward the validation of the Trendelenburg test: the effect of experimentally reduced hip abductor muscle function on frontal plane mechanics. Clin J Sport Med 23(1):45-51",
+              "pmid": "22797529",
+              "doi": "10.1097/JSM.0b013e31825e66a1",
+              "design": "quasi-experimental nerve block (n=9)",
+              "result": "52% experimental abductor weakness did not systematically change trunk sway or pelvic drop in strong individuals; only 1 of 9 compensated.",
+              "verified": true
+            },
+            {
+              "citation": "Crossley KM, Zhang WJ, Schache AG, Bryant A, Cowan SM 2011. Performance on the single-leg squat task indicates hip abductor muscle function. Am J Sports Med 39(4):866-73",
+              "pmid": "21335344",
+              "doi": "10.1177/0363546510395456",
+              "design": "diagnostic cohort (n=34)",
+              "result": "Good single-leg squat performers had greater hip abduction torque and trunk side-flexion force.",
+              "verified": true
+            }
+          ],
+          "note": "Not shown in running."
+        },
+        {
+          "name": "Fatigue / reduced trunk control",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Glover NA, Chaudhari AM 2024. Neuromuscular and trunk control mediate factors associated with injury in fatigued runners. J Biomech 170:112176",
+              "pmid": "38820995",
+              "doi": "10.1016/j.jbiomech.2024.112176",
+              "design": "lab, pre-post fatiguing run (n=11)",
+              "result": "Lateral trunk lean increased with fatigue and mediated the rise in loading rate (n=11).",
+              "verified": true
+            },
+            {
+              "citation": "Schmitz A, Russo K, Edwards L, Noehren B 2014. Do novice runners have weak hips and bad running form? Gait Posture 40(1):82-6",
+              "pmid": "24656715",
+              "doi": "10.1016/j.gaitpost.2014.02.014",
+              "design": "cross-sectional (n=38 female runners)",
+              "result": "Lower side-plank endurance correlated with greater hip IR in running.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Associated with current ITBS",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Foch E, Reinbolt JA, Zhang S, Fitzhugh EC, Milner CE 2015. Associations between iliotibial band injury status and running biomechanics in women. Gait Posture 41(2):706-10",
+              "pmid": "25701012",
+              "doi": "10.1016/j.gaitpost.2015.01.031",
+              "design": "cross-sectional",
+              "result": "Current ITBS: 1.8 deg more ipsilateral trunk lean.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Single-leg squat (trunk shift)",
+          "how": "Watch for trunk shift over stance leg during single-leg squat.",
+          "positive_if": "Rated poor (Crossley 2011).",
+          "evidence": [
+            {
+              "citation": "Crossley KM, Zhang WJ, Schache AG, Bryant A, Cowan SM 2011. Performance on the single-leg squat task indicates hip abductor muscle function. Am J Sports Med 39(4):866-73",
+              "pmid": "21335344",
+              "doi": "10.1177/0363546510395456",
+              "design": "diagnostic cohort (n=34)",
+              "result": "kappa 0.60-0.80.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Side plank endurance",
+          "how": "Time in side plank each side.",
+          "positive_if": "No verified cut-off; compare sides.",
+          "evidence": [
+            {
+              "citation": "Schmitz A, Russo K, Edwards L, Noehren B 2014. Do novice runners have weak hips and bad running form? Gait Posture 40(1):82-6",
+              "pmid": "24656715",
+              "doi": "10.1016/j.gaitpost.2014.02.014",
+              "design": "cross-sectional (n=38 female runners)",
+              "result": "Side-plank endurance related to running hip IR.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Lateral trunk endurance (side plank progressions)",
+          "type": "strength",
+          "dose": "e.g. 3 x 30-45 s each side, 3 x/week, 6-8 weeks",
+          "dose_source": "clinical practice, no trial (Earl & Hoch PMID 20929936 improved lateral core endurance over 8 weeks; dose not in abstract)",
+          "changes_running_pattern": "not tested",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Earl JE, Hoch AZ 2011. A proximal strengthening program improves pain, function, and biomechanics in women with patellofemoral pain syndrome. Am J Sports Med 39(1):154-63",
+              "pmid": "20929936",
+              "doi": "10.1177/0363546510379967",
+              "design": "case series, level 4 (n=19)",
+              "result": "8-week hip/core programme improved lateral core endurance.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Mirror feedback for level trunk/pelvis",
+          "type": "technique",
+          "dose": "8 sessions, faded over last 4",
+          "dose_source": "PMID 22917625 (targeted hip/pelvis, not trunk)",
+          "changes_running_pattern": "not tested for trunk lean (shown for hip adduction/pelvic drop)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Willy RW, Scholz JP, Davis IS 2012. Mirror gait retraining for the treatment of patellofemoral pain in female runners. Clin Biomech 27(10):1045-51",
+              "pmid": "22917625",
+              "doi": "10.1016/j.clinbiomech.2012.07.011",
+              "design": "pre-post intervention, no control group",
+              "result": "8 sessions of mirror plus verbal feedback during treadmill running (feedback removed progressively over last 4): reduced peak hip adduction, contralateral pelvic drop and hip abduction moment (ES 0.69-2.91); transferred to single-leg squat and step descent; pain and function improved; mostly maintained at 1 and 3 months. No control group.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "Lateral trunk lean in running: no trial targets it. Links to fatigue and ITBS are associations."
+    },
+    "arm_crossover": {
+      "findings": [
+        "arm crossing midline (rear view)"
+      ],
+      "limitations": [
+        {
+          "name": "Any specific limitation",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link between arm crossing and a physical limitation."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Arm swing counters trunk/pelvis rotation; removing it raises energy cost",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Arellano CJ, Kram R 2014. The metabolic cost of human running: is swinging the arms worth it? J Exp Biol 217(Pt 14):2456-61",
+              "pmid": "25031455",
+              "doi": "10.1242/jeb.100420",
+              "design": "lab (acute)",
+              "result": "Restricting arm swing raised metabolic power 3-13%; shoulder and pelvis rotation increased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Koo YJ, Ogihara N, Koo S 2025. Active Arm Swing During Running Improves Rotational Stability of the Upper Body and Metabolic Energy Efficiency. Ann Biomed Eng 53(4):1003-1013",
+              "pmid": "39900823",
+              "doi": "10.1007/s10439-025-03688-0",
+              "design": "computer simulation",
+              "result": "Simulation: active arm swing lowest cost of transport and torso rotation.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Moore IS 2016. Is There an Economical Running Technique? A Review of Modifiable Biomechanical Factors Affecting Running Economy. Sports Med 46(6):793-807",
+              "pmid": "26816209",
+              "doi": "10.1007/s40279-016-0474-4",
+              "design": "narrative review",
+              "result": "Maintaining arm swing listed among factors beneficial for running economy.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "None",
+          "how": "No clinical screen identified.",
+          "positive_if": "n/a",
+          "evidence": []
+        }
+      ],
+      "work": [
+        {
+          "item": "Cue relaxed forward-back arm swing",
+          "type": "technique",
+          "dose": "in-run cue",
+          "dose_source": "clinical practice, no trial",
+          "changes_running_pattern": "not tested",
+          "priority": 1,
+          "evidence": []
+        }
+      ],
+      "strength": "none",
+      "notes": "No study links arm crossing midline to injury or limitation; evidence only shows arm swing itself matters for economy and trunk rotation."
+    },
+    "asymmetry": {
+      "findings": [
+        "left/right step-time asymmetry",
+        "side-to-side differences in other metrics"
+      ],
+      "limitations": [
+        {
+          "name": "Unilateral strength or ROM deficit, prior injury",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link between a specific limitation and step-time asymmetry."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Some asymmetry is normal; injured and uninjured runners show similar asymmetry levels",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Zifchock RA, Davis I, Higginson J, McCaw S, Royer T 2008. Side-to-side differences in overuse running injury susceptibility: a retrospective study. Hum Mov Sci 27(6):888-902",
+              "pmid": "18639948",
+              "doi": "10.1016/j.humov.2008.03.007",
+              "design": "retrospective case-control",
+              "result": "Asymmetry levels similar in injured vs never-injured runners: some asymmetry is normal; hip IR ROM and tibial acceleration higher on injured side.",
+              "verified": true
+            },
+            {
+              "citation": "Desai GA, Gruber AH 2022. Bilateral differences in coordination variability among injured and uninjured runners: A prospective study. J Biomech 132:110938",
+              "pmid": "34998179",
+              "doi": "10.1016/j.jbiomech.2021.110938",
+              "design": "prospective cohort (n=31)",
+              "result": "Between-limb coordination variability asymmetry did not predict injury; limb-specific values did.",
+              "verified": true
+            },
+            {
+              "citation": "Joachim MR, Kliethermes SA, Heiderscheit BC 2024. Preinjury Knee and Ankle Mechanics during Running Are Reduced among Collegiate Runners Who Develop Achilles Tendinopathy. Med Sci Sports Exerc 56(1):128-133",
+              "pmid": "37703042",
+              "doi": "10.1249/MSS.0000000000003276",
+              "design": "prospective cohort (n=106 collegiate runners; 15 AT)",
+              "result": "The limb with less peak knee flexion had higher odds of Achilles tendinopathy (OR 1.29).",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Side-to-side screens (WBLT, heel-raise, HHD, single-leg squat)",
+          "how": "Run the relevant screens on both sides.",
+          "positive_if": "Side difference larger than each test's MDC.",
+          "evidence": [
+            {
+              "citation": "Powden CJ, Hoch JM, Hoch MC 2015. Reliability and minimal detectable change of the weight-bearing lunge test: A systematic review. Man Ther 20(4):524-32",
+              "pmid": "25704110",
+              "doi": "10.1016/j.math.2015.01.004",
+              "design": "systematic review (12 studies)",
+              "result": "WBLT MDC 1.6-1.9 cm.",
+              "verified": true
+            },
+            {
+              "citation": "Thorborg K, Bandholm T, Holmich P 2013. Hip- and knee-strength assessments using a hand-held dynamometer with external belt-fixation are inter-tester reliable. Knee Surg Sports Traumatol Arthrosc 21(3):550-5",
+              "pmid": "22773065",
+              "doi": "10.1007/s00167-012-2115-2",
+              "design": "reliability study (n=21 athletes)",
+              "result": "HHD MDC 14-29%.",
+              "verified": true
+            },
+            {
+              "citation": "Hebert-Losier K, Wessman C, Alricsson M, Svantesson U 2017. Updated reliability and normative values for the standing heel-rise test in healthy adults. Physiotherapy 103(4):446-452",
+              "pmid": "28886865",
+              "doi": "10.1016/j.physio.2017.03.002",
+              "design": "cross-sectional normative + test-retest (n=566)",
+              "result": "Heel-raise LOA about +/-6 reps.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Address the specific side-to-side deficit found on screening",
+          "type": "strength",
+          "dose": "per the relevant chain",
+          "dose_source": "clinical practice, no trial",
+          "changes_running_pattern": "not tested",
+          "priority": 1,
+          "evidence": []
+        }
+      ],
+      "strength": "limited",
+      "notes": "Do not flag asymmetry alone as a problem; look at the specific limb's values. No study tested step-time asymmetry against a physical limitation."
+    },
+    "vertical_oscillation": {
+      "findings": [
+        "high vertical oscillation (bounce)"
+      ],
+      "limitations": [
+        {
+          "name": "Low step rate",
+          "link_strength": "moderate",
+          "evidence": [
+            {
+              "citation": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB 2011. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc 43(2):296-302",
+              "pmid": "20581720",
+              "doi": "10.1249/MSS.0b013e3181ebedf4",
+              "design": "lab (within-subject, acute)",
+              "result": "Acute +5%/+10% step rate reduced step length, COM vertical excursion, braking impulse, peak knee flexion and knee energy absorption; at +10% peak hip adduction angle and hip adduction/IR moments also decreased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ],
+          "note": "Raising step rate reduces COM vertical excursion (acute)."
+        },
+        {
+          "name": "Strength/stiffness deficit",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link."
+        }
+      ],
+      "compensations": [
+        {
+          "text": "Higher energy cost",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Folland JP, Allen SJ, Black MI, Handsaker JC, Forrester SE 2017. Running Technique is an Important Component of Running Economy and Performance. Med Sci Sports Exerc 49(7):1412-1423",
+              "pmid": "28263283",
+              "doi": "10.1249/MSS.0000000000001245",
+              "design": "cross-sectional (n=97 endurance runners)",
+              "result": "Pelvis vertical oscillation during contact (normalised to height) was one of three variables explaining 39% of energy cost variance.",
+              "verified": true
+            },
+            {
+              "citation": "Moore IS 2016. Is There an Economical Running Technique? A Review of Modifiable Biomechanical Factors Affecting Running Economy. Sports Med 46(6):793-807",
+              "pmid": "26816209",
+              "doi": "10.1007/s40279-016-0474-4",
+              "design": "narrative review",
+              "result": "Lower vertical oscillation listed as beneficial for running economy.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "text": "Higher peak vertical force",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Adams D, Pozzi F, Willy RW, Carrol A, Zeni J 2018. Altering cadence or vertical oscillation during running: effects on running related injury factors. Int J Sports Phys Ther 13(4):633-642",
+              "pmid": "30140556",
+              "doi": null,
+              "design": "cross-sectional, acute repeated measures (n=20)",
+              "result": "Cue to reduce vertical oscillation lowered loading rates and peak vGRF; did not reduce braking impulse.",
+              "verified": true,
+              "doi_note": "PubMed record lists no DOI (PMCID PMC6088121)"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "name": "Compare with speed-matched reference",
+          "how": "Compare oscillation with speed/sex reference values.",
+          "positive_if": "Above reference (Malisoux 2023 tables; not in abstract).",
+          "evidence": [
+            {
+              "citation": "Malisoux L, Napier C, Gette P, Delattre N, Theisen D 2023. Reference Values and Determinants of Spatiotemporal and Kinetic Variables in Recreational Runners. Orthop J Sports Med 11(10):23259671231204629",
+              "pmid": "37868213",
+              "doi": "10.1177/23259671231204629",
+              "design": "descriptive laboratory (n=860 recreational runners)",
+              "result": "Reference values; speed the main determinant.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Cue 'run lower/quieter' or step-rate +5-10%",
+          "type": "technique",
+          "dose": "in-run cue; +10% step rate",
+          "dose_source": "PMID 30140556 (acute); PMID 31657964",
+          "changes_running_pattern": "yes, acutely (PMID 30140556, 20581720)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Adams D, Pozzi F, Willy RW, Carrol A, Zeni J 2018. Altering cadence or vertical oscillation during running: effects on running related injury factors. Int J Sports Phys Ther 13(4):633-642",
+              "pmid": "30140556",
+              "doi": null,
+              "design": "cross-sectional, acute repeated measures (n=20)",
+              "result": "Low-oscillation and high-cadence cues both reduced loading rates.",
+              "verified": true,
+              "doi_note": "PubMed record lists no DOI (PMCID PMC6088121)"
+            },
+            {
+              "citation": "Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB 2011. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc 43(2):296-302",
+              "pmid": "20581720",
+              "doi": "10.1249/MSS.0b013e3181ebedf4",
+              "design": "lab (within-subject, acute)",
+              "result": "Acute +5%/+10% step rate reduced step length, COM vertical excursion, braking impulse, peak knee flexion and knee energy absorption; at +10% peak hip adduction angle and hip adduction/IR moments also decreased.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            }
+          ]
+        },
+        {
+          "item": "Heavy resistance + plyometric training",
+          "type": "strength",
+          "dose": "2-3 x/week, 8-12 weeks (heavy loads, 10-14 weeks gave larger effects)",
+          "dose_source": "PMID 26694507, 36370207 (outcome running economy)",
+          "changes_running_pattern": "not shown (PMID 31541409)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Eihara Y, Takao K, Sugiyama T, et al. 2022. Heavy Resistance Training Versus Plyometric Training for Improving Running Economy and Running Time Trial Performance: A Systematic Review and Meta-analysis. Sports Med Open 8(1):138",
+              "pmid": "36370207",
+              "doi": "10.1186/s40798-022-00511-1",
+              "design": "systematic review + meta-analysis (22 studies)",
+              "result": "Heavy resistance training improved economy (g=-0.32) more than plyometrics (g=-0.13); >=90% 1RM and 10-14 weeks gave larger effects.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "Oscillation relates to economy and loading; only cues have been shown to change it."
+    },
+    "contact_time_cadence": {
+      "findings": [
+        "long ground contact time",
+        "low cadence"
+      ],
+      "limitations": [
+        {
+          "name": "Running speed (main determinant)",
+          "link_strength": "strong",
+          "evidence": [
+            {
+              "citation": "Malisoux L, Napier C, Gette P, Delattre N, Theisen D 2023. Reference Values and Determinants of Spatiotemporal and Kinetic Variables in Recreational Runners. Orthop J Sports Med 11(10):23259671231204629",
+              "pmid": "37868213",
+              "doi": "10.1177/23259671231204629",
+              "design": "descriptive laboratory (n=860 recreational runners)",
+              "result": "Running speed was the only variable highly correlated (r>0.7) with spatiotemporal variables in 860 runners.",
+              "verified": true
+            }
+          ],
+          "note": "Always compare against speed-matched references."
+        },
+        {
+          "name": "Fatigue",
+          "link_strength": "strong",
+          "evidence": [
+            {
+              "citation": "Trowell D, Kenneally-Dabrowski C, Bonacci J 2025. Effects of running-induced fatigue on joint kinematics and kinetics during overground running: a systematic review and meta-analysis. Sports Biomech 24(11):3109-3135",
+              "pmid": "38752790",
+              "doi": "10.1080/14763141.2024.2353390",
+              "design": "systematic review + meta-analysis (16 studies)",
+              "result": "Strong evidence fatigue increases contact time at constant speed (SMD 0.52); joint angles unchanged.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Low step rate",
+          "link_strength": "limited",
+          "evidence": [
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "name": "Calf/plantarflexor capacity",
+          "link_strength": "none",
+          "evidence": [],
+          "note": "No tested link."
+        }
+      ],
+      "compensations": [],
+      "screens": [
+        {
+          "name": "Speed-matched comparison",
+          "how": "Compare with references at the same speed; note fatigue state.",
+          "positive_if": "Outside speed/sex reference (Malisoux 2023).",
+          "evidence": [
+            {
+              "citation": "Malisoux L, Napier C, Gette P, Delattre N, Theisen D 2023. Reference Values and Determinants of Spatiotemporal and Kinetic Variables in Recreational Runners. Orthop J Sports Med 11(10):23259671231204629",
+              "pmid": "37868213",
+              "doi": "10.1177/23259671231204629",
+              "design": "descriptive laboratory (n=860 recreational runners)",
+              "result": "Reference values.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "item": "Step-rate increase +5-10%",
+          "type": "technique",
+          "dose": "+10% step rate with metronome",
+          "dose_source": "PMID 31657964; PMID 35128941",
+          "changes_running_pattern": "yes for step rate (PMID 35128941); contact time change only indirectly shown (PMID 36057913)",
+          "priority": 1,
+          "evidence": [
+            {
+              "citation": "Doyle E, Doyle TLA, Bonacci J, Fuller JT 2022. The Effectiveness of Gait Retraining on Running Kinematics, Kinetics, Performance, Pain, and Injury in Distance Runners: A Systematic Review With Meta-analysis. J Orthop Sports Phys Ther 52(4):192-206",
+              "pmid": "35128941",
+              "doi": "10.2519/jospt.2022.10585",
+              "design": "systematic review + meta-analysis of RCTs",
+              "result": "Moderate certainty: step-rate retraining increased step rate (SMD 1.03) and reduced average vertical loading rate (SMD -0.57). Two trials showed reduced 1-year injury incidence.",
+              "verified": true,
+              "source": "reused from corrections-evidence.json (verified 2026-10-12)"
+            },
+            {
+              "citation": "Anderson LM, Martin JF, Barton CJ, Bonanno DR 2022. What is the Effect of Changing Running Step Rate on Injury, Performance and Biomechanics? A Systematic Review and Meta-analysis. Sports Med Open 8(1):112",
+              "pmid": "36057913",
+              "doi": "10.1186/s40798-022-00504-0",
+              "design": "systematic review + meta-analysis (37 studies)",
+              "result": "Increasing step rate: strong evidence of reduced peak knee flexion (SMD 0.66); moderate evidence of reduced step length (0.93), peak hip adduction (0.40), peak knee extensor moment (0.50) and foot strike angle (0.62); limited evidence of reduced braking impulse (0.64). Decreasing step rate: limited evidence of increased contact time (-0.95). Mostly immediate effects; injury/performance effects inconclusive.",
+              "verified": true
+            }
+          ]
+        },
+        {
+          "item": "Heavy resistance training (squat, calf raise, deadlift)",
+          "type": "strength",
+          "dose": "2-3 x/week, 8-14 weeks, near-maximal loads",
+          "dose_source": "PMID 36370207, 26694507",
+          "changes_running_pattern": "not shown (PMID 31541409); stretching did not change contact time (PMID 19528850)",
+          "priority": 2,
+          "evidence": [
+            {
+              "citation": "Eihara Y, Takao K, Sugiyama T, et al. 2022. Heavy Resistance Training Versus Plyometric Training for Improving Running Economy and Running Time Trial Performance: A Systematic Review and Meta-analysis. Sports Med Open 8(1):138",
+              "pmid": "36370207",
+              "doi": "10.1186/s40798-022-00511-1",
+              "design": "systematic review + meta-analysis (22 studies)",
+              "result": "Heavy resistance improved economy more than plyometrics.",
+              "verified": true
+            },
+            {
+              "citation": "Trowell D, Vicenzino B, Saunders N, Fox A, Bonacci J 2020. Effect of Strength Training on Biomechanical and Neuromuscular Variables in Distance Runners: A Systematic Review and Meta-Analysis. Sports Med 50(1):133-150",
+              "pmid": "31541409",
+              "doi": "10.1007/s40279-019-01184-9",
+              "design": "systematic review + meta-analysis (25 studies)",
+              "result": "Concurrent strength + endurance training increased knee flexor, plantarflexor, squat and knee extensor strength more than running alone; very limited evidence on stride parameters and no studies examined running biomechanics, so no evidence that strength adaptations transfer to running.",
+              "verified": true
+            },
+            {
+              "citation": "Caplan N, Rogers R, Parr MK, Hayes PR 2009. The effect of proprioceptive neuromuscular facilitation and static stretch training on running mechanics. J Strength Cond Res 23(4):1175-80",
+              "pmid": "19528850",
+              "doi": "10.1519/JSC.0b013e318199d6f6",
+              "design": "randomised two-group trial, no control (n=18 rugby league players)",
+              "result": "5 weeks hamstring stretching (4 d/week) changed sprint stride length/rate but not contact time.",
+              "verified": true
+            }
+          ]
+        }
+      ],
+      "strength": "limited",
+      "notes": "Contact time is mainly speed- and fatigue-driven; interpret only against speed-matched references."
+    }
+  },
+  "unverified": [
+    "Hoch MC, McKeon PO 2011 (PMID 21429784) WBLT asymmetry norms: PubMed record has no abstract, so no numbers used.",
+    "Commonly quoted WBLT cut-offs (<10 cm toe-to-wall; >2 cm side difference): not found in any retrieved abstract.",
+    "McBride 2026 (PMID 41723909) numeric WBLT norms by age/sex: in full text, not abstract.",
+    "Malisoux 2023 (PMID 37868213) numeric speed-stratified reference values: in full text, not abstract.",
+    "Modified Thomas test 'thigh below horizontal' positive criterion: standard practice, not verified in retrieved abstracts.",
+    "Exact sets/reps of the Alfredson (3 x 15, twice daily), Khayambashi, Dolak, Earl & Hoch, Ferber and Willy & Davis programmes: not stated in the abstracts; only frequency/duration used.",
+    "Early heel rise as a compensation for limited dorsiflexion during running: no PubMed record found.",
+    "Any study linking arm crossing midline, step-time asymmetry, or crossover to a specific physical limitation: none found."
+  ]
+}

@@ -10,6 +10,19 @@ import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
 import { cadenceFromDurations, cadenceFromStrides, computeMetrics } from './metrics.js';
 import { applyHipAnchor, applyLegAnchor, medianThighPx } from './hip-anchor.js';
 import { STABILIZE, stabilizeRows } from './stabilize.js';
+import { fixLegSwaps } from './leg-identity.js';
+
+// OFF by default (opts.legIdentity === true to enable): on 2026-10-13 the continuity rule flagged
+// 483 "swaps" on C0 (legs crossing look like swaps) and did not fix AR/AZ/CD. Kept for future work.
+// Leg-label flicker is corrected IN PLACE before anything else, so every consumer of `rows` (events,
+// metrics, event tables, debug overlay) sees the same corrected landmarks.
+function correctLegIdentity(rows, opts) {
+  if (opts.legIdentity !== true || rows.legIdentityFixed != null) return rows.legIdentityFixed ?? 0;
+  const { rows: fixed, swapped } = fixLegSwaps(rows);
+  for (let i = 0; i < rows.length; i++) rows[i] = fixed[i];
+  Object.defineProperty(rows, 'legIdentityFixed', { value: swapped, enumerable: false, configurable: true });
+  return swapped;
+}
 import { HIP_ANCHOR, LEG_ANCHOR } from '../config.js';
 import { REAR_EVENTS, detectRearEvents, pelvisLowMidstance, posteriorCaptureChecks, segmentRear, segmentationMidstance, orderViolations } from './rear-events.js';
 import { frontalBodyHeightPx, posteriorMetrics } from './posterior-metrics.js';
@@ -91,6 +104,7 @@ export async function analyzeVideo(file, opts = {}) {
 
 // Posterior view (Milestone 4): events only so far. Metrics are added after the event contact sheet is reviewed.
 export function postProcessRear(rows, meta, opts = {}) {
+  const legSwapsFixed = correctLegIdentity(rows, opts);
   const bad = tibiaGate(rows);
   const seg = segmentRear(rows, bad, meta.fs);
   seg.fs = meta.fs;
@@ -111,11 +125,12 @@ export function postProcessRear(rows, meta, opts = {}) {
   const mbad = bad.map((b, i) => b || swapped[i]);
   const metrics = { ...posteriorMetrics(srows, mbad, midstancePelvis, meta.fs), bodyHeightPx: frontalBodyHeightPx(srows, mbad), fs: meta.fs };
   const cadence = cadenceFromDurations(seg.peaks.slice(1).map((p, i) => (p - seg.peaks[i]) / meta.fs));
-  return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, view: 'posterior', summary: referenceSummary(rows, bad) };
+  return { bad, seg, events, sweep, midstance, midstancePelvis, capture, metrics, cadence, legSwapsFixed, view: 'posterior', summary: referenceSummary(rows, bad) };
 }
 
 // Everything after pose estimation. Pure: can be re-run on cached rows (test page).
 export function postProcess(rows, meta, opts = {}) {
+  const legSwapsFixed = correctLegIdentity(rows, opts);
   const bad = tibiaGate(rows);
   const seg = segmentStrides(rows, bad, meta.fs, { nearSide: opts.nearSide });
   seg.fs = meta.fs;
@@ -145,7 +160,7 @@ export function postProcess(rows, meta, opts = {}) {
     IC_SWEEP.map((t) => [t, t === EVENTS.contactTolerance ? metrics : computeMetrics({ rows: mrows, bad, seg, hipExt, events: (eventsSweep[t] = detectEvents(rows, bad, seg, { contactTolerance: t })) })]),
   );
   const cadence = cadenceFromStrides(rows, seg);
-  return { bad, seg, hipExt, hipWindows, events, eventsSweep, metrics, sweep, cadence, hipAnchor: anchor, legAnchor: leg, summary: referenceSummary(rows, bad) };
+  return { bad, seg, hipExt, hipWindows, events, eventsSweep, metrics, sweep, cadence, legSwapsFixed, hipAnchor: anchor, legAnchor: leg, summary: referenceSummary(rows, bad) };
 }
 
 // Same keys and semantics as summarize() in reference/reference_gait_pipeline.py (minus the

@@ -241,3 +241,24 @@ the output.
   tested cue for limited hip extension, arm crossing, lateral trunk lean. Y
 - **Results tabs: Results (visual), Summary text (copy), Debug. The old "Scored report" tab is
   replaced; scores are shown in the Results tab.** Y
+
+## Multi-runner benchmark (2026-10-13)
+- **8 new runners (AR, AZ, CD, CH, JW, ML, RQ, RY) run through the pipeline; all 16 clips are a
+  different setup: 720p landscape, camera at floor level with a wide lens, console/upright crossing
+  the hips (side) and the near swing foot magnified (rear); CD also crops the head.** Y
+- **CS/CD resolved: same runner.** The rear file is now named CD; side and rear show the same shoes
+  (teal/white, yellow soles) and build. Y
+- **Stride signal drift removed (1.5 s running mean) before period estimation.** The oblique camera
+  made the inter-ankle signal drift with belt position, halving the stride period. C0/T unchanged. Y
+- **Velocity fallback for side events (foot carried back by the belt) when the height method finds
+  < 50% valid strides.** On T1–T3 it agrees with the validated height events within ±1 frame. Y
+- **Leg-identity continuity correction built but OFF** (flagged legs crossing as swaps on C0). Y
+- **After three attempts the new setup still gives 9–42% valid side strides and 0–20% rear
+  midstances: workaround = capture-quality gate (js/pipeline/capture-quality.js).** Unsuitable clips
+  give no values or timing, only the reason and re-filming advice; degraded clips are capped at low
+  confidence; head/shoulders out of frame suppresses trunk and arm metrics. Thresholds from the data:
+  side ≥ 75% valid strides suitable, < 50% unsuitable; rear ≥ 70% of expected midstances suitable,
+  < 50% unsuitable; L/R swaps > 10% unsuitable; cadence outside 120–220 spm unsuitable. All 16 new
+  clips are unsuitable; C0 and T1–T3 suitable. Y
+- **New-runner fixtures are 30 s excerpts (900 analysed frames) of each clip** (keeps the repo small;
+  the gate verdict is identical on the excerpt and the full clip). Y

@@ -40,6 +40,11 @@ export const EVENTS = {
   // the lowest-foot frames). Forward, not "must move backward": at push-off the heel rises and the
   // mid-foot slows before the toe leaves, which would cut toe-off early (C0-side check).
   forwardSpeedShare: 0.25,
+  // Velocity fallback: stance = mid-foot moving backward faster than this share of belt speed; used
+  // when fewer than `velocityFallbackBelow` of the strides are valid with the height method.
+  velocityShare: 0.4,
+  velocityFallbackBelow: 0.5,
+  forceMethod: null, // tests/validation only: 'height' | 'velocity'
   slopeMinStrides: 20, // belt slope used only with this many strides ...
   slopeMinZ: 2, // ... and when |slope| exceeds this many standard errors
   // Stance duration as a share of the stride. Upper limit 0.65, not 0.5: recreational runners at
@@ -169,8 +174,38 @@ export function detectEvents(rows, bad, seg, { contactTolerance = EVENTS.contact
     const notForward = (i) => !(beltSpeed > 0) || !Number.isFinite(vSlow[i]) || vSlow[i] <= EVENTS.forwardSpeedShare * beltSpeed;
     const bridgeGap = Math.max(1, Math.round(EVENTS.bridgeGapSec * seg.fs));
 
+    // Velocity fallback (low/oblique cameras where the belt height test fails): stance = the foot
+    // carried backward by the belt. Belt speed here = the 20th-percentile (most backward) mid-foot speed.
+    const vSorted = vx.filter(Number.isFinite).sort((a, b) => a - b);
+    const vBelt = vSorted.length ? -vSorted[Math.floor(0.2 * vSorted.length)] : NaN;
+    const back = (v) => Number.isFinite(v) && vBelt > 0 && v <= -EVENTS.velocityShare * vBelt;
+    const velocityStance = (lo, hi, peak) => {
+      const runs = [];
+      let start = null;
+      let gap = 0;
+      let end = null;
+      for (let i = lo; i <= hi + 1; i++) {
+        if (i <= hi && back(vx[i])) {
+          if (start == null) start = i;
+          end = i;
+          gap = 0;
+        } else if (start != null && (++gap > bridgeGap || i > hi)) {
+          runs.push([start, end]);
+          start = null;
+          gap = 0;
+        }
+      }
+      if (!runs.length) return null;
+      const run = runs.find(([a, b]) => peak >= a && peak <= b) || runs.reduce((x, y) => (y[1] - y[0] > x[1] - x[0] ? y : x));
+      let [ic, to] = run;
+      while (to + 1 <= hi && back(vToe[to + 1])) to++; // the toe stays with the belt until toe-off
+      return [ic, to];
+    };
+
     let prevTo = null;
-    const strides = cycles.map((c) => {
+    const build = (mode) => {
+    prevTo = null;
+    return cycles.map((c) => {
       const s = { cycle: c.cycle, side, fwd: c.fwd, back: c.back, valid: true, reasons: [], lowQuality: [] };
       const [lo, hi] = win(c);
       const idx = [];
@@ -197,8 +232,15 @@ export function detectEvents(rows, bad, seg, { contactTolerance = EVENTS.contact
         }
         return last;
       };
-      s.ic = grow(-1);
-      s.to = grow(1);
+      if (mode === 'velocity') {
+        const v = velocityStance(lo, hi, peak);
+        if (!v) return { ...s, valid: false, reasons: ['no backward foot motion in this stride'] };
+        [s.ic, s.to] = v;
+        s.method = 'velocity';
+      } else {
+        s.ic = grow(-1);
+        s.to = grow(1);
+      }
 
       // MS: ankle passes under the hip midpoint (signed by running direction).
       const facing = seg.ref.facing;
@@ -250,6 +292,20 @@ export function detectEvents(rows, bad, seg, { contactTolerance = EVENTS.contact
       }
       return s;
     });
+    };
+
+    // Height-based events by default; the velocity method when fewer than half the strides are valid
+    // and it does better (AR/AZ/CD/CH/JW/ML/RQ/RY clips: floor-level wide-angle camera, 2026-10-13).
+    let strides = build(EVENTS.forceMethod || 'height');
+    let method = EVENTS.forceMethod || 'height';
+    const share = (st) => (st.length ? st.filter((x) => x.valid).length / st.length : 0);
+    if (!EVENTS.forceMethod && share(strides) < EVENTS.velocityFallbackBelow) {
+      const alt = build('velocity');
+      if (share(alt) > share(strides)) {
+        strides = alt;
+        method = 'velocity';
+      }
+    }
 
     const valid = strides.filter((s) => s.valid);
     out[side] = {
@@ -259,6 +315,7 @@ export function detectEvents(rows, bad, seg, { contactTolerance = EVENTS.contact
       footLength: footLen,
       tolerance: tol,
       beltSpeedPxPerFrame: beltSpeed,
+      method, // 'height' (foot on the belt) or 'velocity' (foot carried back by the belt)
       strides,
       validCount: valid.length,
       goodCount: valid.filter((s) => !s.lowQuality.length).length,

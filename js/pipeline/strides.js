@@ -32,6 +32,7 @@ export const STRIDE = {
   windowSweep: ['late-stance', 0, 0.05, 0.1, 0.15],
   gapFillSec: 0.1,
   periodPeakShare: 0.8, // shortest autocorrelation peak within 80% of the best = the stride period
+  driftWindowSec: 1.5, // running-mean window removed from the stride signal (slow drift)
 };
 
 const oddAtLeast = (n, lo) => Math.max(lo, n % 2 ? n : n + 1);
@@ -143,15 +144,38 @@ function lateStanceWindow(sig, fwd, back, sign, cycleLen, n) {
   return [ws, we];
 }
 
+// Remove slow drift: subtract a running mean over `sec` seconds (NaN-aware). On low, oblique side
+// cameras (AR/AZ/CD clips) the inter-ankle separation drifts with the runner's position on the belt
+// and perspective; the drift dominated the autocorrelation and halved the detected stride period
+// (cadence 216–276 spm). On C0/T clips the drift is negligible and the result is unchanged.
+export function removeDrift(a, fs, sec = STRIDE.driftWindowSec) {
+  const n = a.length;
+  const w = Math.max(3, Math.round(sec * fs));
+  const cs = new Float64Array(n + 1);
+  const cnt = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) {
+    const ok = Number.isFinite(a[i]);
+    cs[i + 1] = cs[i] + (ok ? a[i] : 0);
+    cnt[i + 1] = cnt[i] + (ok ? 1 : 0);
+  }
+  return Array.from(a, (v, i) => {
+    const lo = Math.max(0, i - (w >> 1));
+    const hi = Math.min(n, i + (w >> 1) + 1);
+    const c = cnt[hi] - cnt[lo];
+    return Number.isFinite(v) && c > 0 ? v - (cs[hi] - cs[lo]) / c : NaN;
+  });
+}
+
 export function segmentStrides(rows, bad, fs, { nearSide } = {}) {
   const near = nearSide ? { side: nearSide, source: 'given' } : { ...detectNearSide(rows), source: 'auto' };
   const far = near.side === 'L' ? 'R' : 'L';
   const ref = referenceSignal(rows, bad, near.side);
-  const period = estimatePeriod(smoothSeries(ref.raw, fs), fs);
+  const raw = removeDrift(ref.raw, fs);
+  const period = estimatePeriod(smoothSeries(raw, fs), fs);
   const empty = { near, far, ref, sig: ref.raw, periodSec: null, peaks: [], cycles: [] };
   if (!period) return empty;
 
-  const sig = savgol(fillGaps(ref.raw, Math.round(STRIDE.gapFillSec * fs)), oddAtLeast(Math.round(period * STRIDE.referenceSmoothing), 5), 2);
+  const sig = savgol(fillGaps(raw, Math.round(STRIDE.gapFillSec * fs)), oddAtLeast(Math.round(period * STRIDE.referenceSmoothing), 5), 2);
   const peaks = trackPeaks(sig, period);
   const [lo, hi] = STRIDE.stepRange.map((k) => Math.round(k * period));
   const cycles = [];

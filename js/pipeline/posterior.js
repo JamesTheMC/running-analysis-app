@@ -5,6 +5,7 @@
 
 import { swapCheckPassed as swapOk } from './rear-events.js';
 import { clipInfo, landmarkQuality, posteriorEventTable, safely, verticalOscillation } from './gait-events.js';
+import { applyCaptureGate, assessCapture } from './capture-quality.js';
 import { createEmitter } from './emit.js';
 import { MIN_STRIDES, cell } from './measurements.js';
 import { median } from './stats.js';
@@ -105,7 +106,14 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
   out.put('ms_spine_shift', 'mid', psis);
 
   const valid = (s) => midstancePelvis[s].filter((h) => h.valid).length;
+  // Capture-quality gate (capture-quality.js).
+  const captureQuality = safely(
+    () => applyCaptureGate(out.measurements, assessCapture('posterior', { rows: result.rows, meta: result.meta, cadenceSpm: cadence?.spm, midstanceValid: valid('L') + valid('R'), swapFrames: capture.swapFrames })),
+    [],
+    'captureQuality',
+  );
   return {
+    captureQuality,
     source: 'pipeline',
     measurements: out.measurements,
     violations: out.violations,

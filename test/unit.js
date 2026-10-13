@@ -603,6 +603,23 @@ section = 'Fixture regression (committed landmark fixtures, all clients; no vide
       return `${Object.keys(expected[client]).length} values within tolerance`;
     });
   }
+  await testAsync('capture gate: floor-level wide-angle clips (8 runners) give no values, only the reason', async () => {
+    for (const client of ['AR', 'AZ', 'CD', 'CH', 'JW', 'ML', 'RQ', 'RY']) {
+      const { clips, result } = await sessionFor(client);
+      for (const [slot, c] of Object.entries(clips)) {
+        assert(c.analysis.captureQuality?.level === 'unsuitable', `${client} ${slot}: ${c.analysis.captureQuality?.level}`);
+        for (const cells of Object.values(c.analysis.measurements)) for (const cell of Object.values(cells)) assert(cell.value == null, `${client} ${slot}: value leaked`);
+      }
+      assert(result.convention.issues.some((i) => /video setup unsuitable/.test(i)), `${client}: no capture warning`);
+      assert(!result.timing.crossChecks.some((x) => x.reported != null), `${client}: timing from unsuitable clips`);
+    }
+  });
+  await testAsync('capture gate: validated clips (C0, T1–T3) are suitable', async () => {
+    for (const client of ['C0', 'T1', 'T2', 'T3']) {
+      const { clips } = await sessionFor(client);
+      for (const [slot, c] of Object.entries(clips)) assert(c.analysis.captureQuality?.level === 'suitable', `${client} ${slot}: ${c.analysis.captureQuality?.level} ${c.analysis.captureQuality?.reasons}`);
+    }
+  });
   await testAsync('one view only: missing view reported as not assessed', async () => {
     const { reconcileSession } = await import('../js/pipeline/reconcile.js');
     const { clips, intake } = await sessionFor('T3');

@@ -99,6 +99,12 @@ function convention(clips) {
   });
   const issues = [
     ...lateral.filter((l) => !l.agrees).map((l) => `${l.slot}: depth says the ${l.depthCheck.leg} leg faces the camera, but the clip is in the ${l.slotLeg}-side slot`),
+    ...Object.keys(CLIP_SLOTS)
+      .filter((s) => clips[s]?.analysis?.captureQuality && clips[s].analysis.captureQuality.level !== 'suitable')
+      .map((s) => {
+        const q = clips[s].analysis.captureQuality;
+        return `${CLIP_SLOTS[s].label}: video setup ${q.level} (${q.reasons.join('; ')}). ${q.advice.join(' ')}`;
+      }),
     ...posterior.filter((p) => !p.swapCheckPassed).map((p) => `${p.slot}: left/right landmark order swapped in ${p.swapFrames} frame(s), more than 5%; left-right differences from this clip are not reported`),
   ];
   return { rule: 'anatomical left/right in every view', lateral, posterior, issues };
@@ -111,6 +117,8 @@ function viewTiming(clips) {
     const a = clips[slot]?.analysis;
     const t = a?.eventTable;
     if (!t) continue;
+    // A clip whose video setup is unsuitable contributes no timing (capture-quality.js).
+    if (a.captureQuality?.level === 'unsuitable') continue;
     const legConf = Object.fromEntries(Object.entries(t.legs).map(([leg, l]) => [leg, l.summary.confidence]));
     // Timing confidence of the view: the best leg's event confidence, low if step timing is unreliable.
     const best = Object.values(legConf).reduce((x, y) => (RANK[y] > RANK[x] ? y : x), 'none');
@@ -197,6 +205,10 @@ function cellConfidence(def, cell, eventConf) {
   const reasons = [];
   let conf = confidenceFor(def, cell.quality);
   if (!conf) return { confidence: 'none', reasons: ['too few measurable strides'] };
+  if (cell.qualityCap) {
+    conf = minConf(conf, cell.qualityCap);
+    reasons.push(cell.qualityNote || 'video setup degraded');
+  }
   if (def.baselineConfidence && RANK[def.baselineConfidence] < RANK.high) reasons.push(`metric capped at ${def.baselineConfidence} (2D reliability)`);
   if (cell.quality != null && cell.quality < 0.7) reasons.push(`${Math.round(cell.quality * 100)}% of strides measurable`);
   if (eventConf && RANK[eventConf] < RANK[conf]) {
@@ -341,7 +353,7 @@ export function reconcileSession(session) {
     views,
     clips: slots.map((s) => {
       const a = clips[s].analysis;
-      return { slot: s, view: CLIP_SLOTS[s].view, speed: clips[s].speed ?? null, speedUnit: clips[s].speedUnit ?? null, inclinePct: clips[s].incline ?? null, ...(a.clip || {}), nearLeg: a.nearSide ?? null, landmarkQuality: a.landmarkQuality ?? null, reconErrors: a.reconErrors?.length ? a.reconErrors : undefined };
+      return { slot: s, view: CLIP_SLOTS[s].view, captureQuality: a.captureQuality ? { level: a.captureQuality.level, reasons: a.captureQuality.reasons, upperBodyOk: a.captureQuality.upperBodyOk } : null, speed: clips[s].speed ?? null, speedUnit: clips[s].speedUnit ?? null, inclinePct: clips[s].incline ?? null, ...(a.clip || {}), nearLeg: a.nearSide ?? null, landmarkQuality: a.landmarkQuality ?? null, reconErrors: a.reconErrors?.length ? a.reconErrors : undefined };
     }),
     convention: conv,
     alignment: {
