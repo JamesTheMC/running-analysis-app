@@ -1036,3 +1036,42 @@ abbr.p {
     grid-template-columns: 1fr;
   }
 }
+
+/* Why it may be happening */
+.x-section .pri li {
+  margin-bottom: 4px;
+}
+.x-entry .r-detail ul,
+.x-entry .r-detail ol {
+  margin: 2px 0 8px;
+  padding-left: 20px;
+}
+
+/* Print / Save as PDF */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  nav.tabs,
+  .actions,
+  .btn,
+  .interp-meta,
+  .explain-meta {
+    display: none !important;
+  }
+  .card {
+    break-inside: avoid-page;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  textarea.interpretation {
+    border: none;
+    resize: none;
+    height: auto;
+    overflow: visible;
+  }
+  a {
+    color: #000;
+  }
+}

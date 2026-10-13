@@ -2,6 +2,7 @@
 // (model.js), in the clinic template order: ankle, knee, hip, lumbar (trunk), arms, then timing,
 // correlated findings, suggestions, interpretation and limits.
 import { STATUS_WORD } from './model.js';
+import { explanationsText } from './explain.js';
 
 const SIDE = { left: 'L', right: 'R', mid: '' };
 const MISSING_LEG = /^needs a lateral clip filmed from the (left|right)$/;
@@ -61,13 +62,13 @@ export function buildInterpretation(model) {
   if (solidFindings.length) p.push(`Findings that occur together: ${list(solidFindings.map((f) => lower(f.label)))}.`);
   const weakFindings = model.findings.filter((f) => f.confidence === 'low');
   if (weakFindings.length) p.push(`Possible, but resting on borderline or low-confidence values: ${list(weakFindings.map((f) => lower(f.label)))}.`);
-  const top = (model.corrections || []).filter((c) => c.priority === 'primary').slice(0, 3);
-  if (top.length) p.push(`Suggested focus: ${list(top.map((c) => lower(c.cue)))}.`);
+  const top = model.explanations?.priorities || [];
+  if (top.length) p.push(`Suggested focus (to confirm with screening): ${list(top.slice(0, 3).map((x) => lower(x.title)))}.`);
   p.push('This is movement analysis from 2D video to support clinical judgment, not a diagnosis; values marked low confidence or borderline are indicative only.');
   return p.join(' ');
 }
 
-export function buildSummaryText(model, interpretation) {
+export function buildSummaryText(model, interpretation, explainText) {
   const h = model.header;
   const out = [];
   out.push(`GAIT ANALYSIS SUMMARY | ${h.client} | ${h.date}`);
@@ -102,9 +103,9 @@ export function buildSummaryText(model, interpretation) {
     for (const f of model.findings) out.push(`${f.label}${f.confidence === 'low' ? ' (low confidence)' : ''}: ${f.triggers.map((t) => `${t.text}${t.value ? ` (${t.value})` : ''}`).join('; ')}`);
   }
 
-  if (model.corrections?.length) {
-    out.push('', 'WHAT TO WORK ON (research-linked; clinician to confirm)');
-    for (const c of model.corrections) out.push(`- ${c.priority === 'consider' ? 'Consider: ' : ''}${c.cue} [for: ${c.forText}; evidence: ${c.strength}${c.refs?.length ? `; ${c.refs.join('; ')}` : ''}]`);
+  if (model.explanations) {
+    out.push('', 'WHY IT MAY BE HAPPENING AND WHAT TO WORK ON (clinician to review before sharing)');
+    out.push(explainText ?? explanationsText(model.explanations));
   }
 
   if (model.notReliable.length) {

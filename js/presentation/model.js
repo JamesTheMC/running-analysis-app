@@ -13,6 +13,7 @@ import { PHASES, SUMMARY_SECTIONS, CLIP_SLOTS, NOT_MEASURABLE } from '../config.
 import { cellValue, formatDiff } from '../engine/format.js';
 import { statusFor } from '../engine/analysis.js';
 import { VALIDATION_ERROR } from '../pipeline/reconcile.js';
+import { buildExplanations } from './explain.js';
 
 // Shown in "Not reliable from video" instead of as values (validation, reference/VALIDATION.md).
 export const NOT_RELIABLE = {
@@ -192,5 +193,6 @@ export function buildModel(session, results, extras = {}) {
     phases: PHASES.map((p) => ({ id: p.id, label: PHASE_LABEL[p.id] })),
   };
   model.corrections = extras.corrections ? extras.corrections(model, { results, rec }) : [];
+  model.explanations = buildExplanations(model);
   return model;
 }

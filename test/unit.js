@@ -710,6 +710,75 @@ section = 'Presentation model and text (fixtures)';
   });
 }
 
+section = 'Why it may be happening and what to work on';
+{
+  const { buildExplanations, explanationsText } = await import('../js/presentation/explain.js');
+  const { VERIFIED_PMIDS } = await import('../js/presentation/limitations.js');
+  // Minimal models: one cell per metric, with or without a trustworthy shown status.
+  const cell = (key, value, status, extra = {}) => ({ key, assessed: true, value, text: `${value}`, status, rawStatus: status, confidence: 'medium', hedge: null, ...extra });
+  const row = (id, phase, cells, green = 'x') => ({ id, label: id, phase, range: { green }, cells: Object.fromEntries(cells.map((c) => [c.key, c])) });
+  const mk = (rows, cadence) => ({ sections: [{ id: 'X', rows }], timing: { rows: cadence ? [{ label: 'Cadence', text: `${cadence} steps/min`, confidence: 'high', agreement: 'agree' }] : [] }, findings: [], notReliable: [] });
+  test('a full entry only when the measurement is trusted; otherwise a screening note', () => {
+    const trusted = buildExplanations(mk([row('ms_hip_adduction', 'midstance', [cell('left', 16, 'red')])]));
+    assert(trusted.entries.length === 1 && trusted.entries[0].kind === 'full' && trusted.entries[0].work.length, JSON.stringify(trusted.entries.map((e) => e.kind)));
+    const hedged = buildExplanations(mk([row('ms_hip_adduction', 'midstance', [cell('left', 16, null, { rawStatus: 'red', hedge: 'borderline: within measurement error' })])]));
+    assert(hedged.entries[0].kind === 'screen' && !hedged.priorities.length, 'hedged finding produced a full entry');
+    const t = explanationsText(hedged);
+    assert(/Worth screening/.test(t) && !/What to work on/.test(t), t);
+  });
+  test('merged entry lists every finding it may explain (one step-rate priority, not three lists)', () => {
+    const ex = buildExplanations(mk([row('ic_foot_to_com', 'initial_contact', [cell('right', 22, 'red')]), row('ic_tibial_inclination', 'initial_contact', [cell('right', 12, 'red')])], 150));
+    const step = ex.entries.filter((e) => e.id === 'step_rate');
+    assert(step.length === 1 && step[0].findings.length === 3, JSON.stringify(ex.entries.map((e) => [e.id, e.findings.length])));
+    assert(ex.priorities[0].id === 'step_rate' && ex.priorities[0].explains.length === 3, JSON.stringify(ex.priorities));
+  });
+  test('findings common to nearly all runners are softened, not given a full plan', () => {
+    const ex = buildExplanations(mk([row('ms_max_knee_flexion', 'midstance', [cell('right', 58, 'red')])]));
+    assert(ex.entries[0].kind === 'screen' && ex.entries[0].softened, JSON.stringify(ex.entries[0]));
+  });
+  test('no opposite advice in one entry (excess knee bend never suggests stiff-knee work)', () => {
+    const ex = buildExplanations(mk([row('ic_foot_to_com', 'initial_contact', [cell('right', 22, 'red')]), row('ms_max_knee_flexion', 'midstance', [cell('right', 58, 'red')])]));
+    const txt = JSON.stringify(ex.entries);
+    assert(!/stiff-knee|too little knee flexion|for TOO LITTLE/i.test(txt), 'opposite advice present');
+  });
+  test('every cited paper is in the verified PubMed list', () => {
+    const verified = new Set(VERIFIED_PMIDS);
+    const all = [buildExplanations(mk([row('ms_hip_adduction', 'midstance', [cell('left', 16, 'red')]), row('ms_crossover', 'midstance', [cell('left', true, 'yellow')]), row('ic_foot_to_com', 'initial_contact', [cell('right', 22, 'red')]), row('to_hip_extension', 'toe_off', [cell('right', 3, 'red')]), row('ic_spine_lean', 'initial_contact', [cell('mid', 25, 'red')])], 150))];
+    let n = 0;
+    for (const ex of all) for (const e of ex.entries) for (const src of e.sources) {
+      n++;
+      assert(verified.has(String(src.pmid)), `${e.id}: PMID ${src.pmid} (${src.short}) not verified`);
+    }
+    return `${n} citations checked`;
+  });
+  await testAsync('screen and Summary text match (titles, findings, work items)', async () => {
+    const { sessionFor } = await import('./fixture-regression.js');
+    const { buildModel } = await import('../js/presentation/model.js');
+    const { buildSummaryText, buildInterpretation } = await import('../js/presentation/text.js');
+    const { renderResults } = await import('../js/views/results.js');
+    const { CLIP_SLOTS: SL } = await import('../js/config.js');
+    const { intake, clips, result } = await sessionFor('T2');
+    const session = { intake, clips, reconciled: result };
+    session.views = [...new Set(Object.keys(clips).map((k) => SL[k].view))];
+    session.analysis = mergeSession(clips);
+    const res = analyze(session);
+    const m = buildModel(session, res);
+    const explainText = explanationsText(m.explanations);
+    const state = { session, tab: 'results', interpretation: buildInterpretation(m), explainText, model: m };
+    const html = renderResults(state, res, m);
+    const text = buildSummaryText(m, state.interpretation, explainText);
+    const strip = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+    const screen = strip(html);
+    for (const e of m.explanations.entries) {
+      assert(screen.includes(e.title) && text.toLowerCase().includes(e.title.toLowerCase()), `title ${e.title}`);
+      for (const f of e.findings) assert(screen.includes(f.label) && text.includes(f.label), `finding ${f.label}`);
+      for (const w of e.kind === 'full' ? e.work : []) assert(screen.includes(w.item) && text.includes(w.item), `work ${w.item}`);
+    }
+    assert(text.includes(explainText), 'Summary text does not carry the editable section');
+    return `${m.explanations.entries.length} entries`;
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);

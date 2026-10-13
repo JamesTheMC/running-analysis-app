@@ -2,6 +2,7 @@ import { PLACEHOLDER_ANALYSIS, DEMO_INTAKE } from './placeholder.js';
 import { analyze, intakeNumbers } from './engine/analysis.js';
 import { buildModel } from './presentation/model.js';
 import { buildInterpretation, buildSummaryText } from './presentation/text.js';
+import { explanationsText } from './presentation/explain.js';
 import { correctionsFor } from './presentation/corrections.js';
 import { renderUpload } from './views/upload.js';
 import { renderIntake } from './views/intake.js';
@@ -69,7 +70,7 @@ function render() {
   else if (state.screen === 'analyzing') root.innerHTML = renderAnalyzing(state);
   else root.innerHTML = renderUpload(state);
   if (state.screen === 'intake') wireIntake();
-  if (state.screen === 'results') autosize(root.querySelector('.interpretation'));
+  if (state.screen === 'results') for (const t of root.querySelectorAll('textarea.interpretation')) autosize(t);
   if (state.screen === 'results' && state.tab === 'debug' && state.session?.reconciled) mountDebug(root, state);
 }
 
@@ -85,6 +86,10 @@ function recompute({ resetInterpretation = false } = {}) {
   results = analyze(s);
   // One presentation model feeds the results screen and the copy-paste text.
   state.model = buildModel(s, results, { corrections: correctionsFor });
+  if (resetInterpretation || !state.explainEdited) {
+    state.explainText = explanationsText(state.model.explanations);
+    state.explainEdited = false;
+  }
   if (resetInterpretation || !state.interpretationEdited) {
     state.interpretation = buildInterpretation(state.model);
     state.interpretationEdited = false;
@@ -269,7 +274,7 @@ function newSession() {
 }
 
 async function copySummary(button) {
-  const text = buildSummaryText(state.model, state.interpretation);
+  const text = buildSummaryText(state.model, state.interpretation, state.explainText);
   const ok = await copyText(text);
   button.textContent = ok ? 'Copied ✓' : 'Copy failed. Select the text manually.';
   button.classList.toggle('is-done', ok);
@@ -300,6 +305,15 @@ root.addEventListener('click', (e) => {
     go('intake');
   }
   else if (action === 'copy') copySummary(el);
+  else if (action === 'print') {
+    // Export: the browser's print dialog (Save as PDF); every detail is expanded for printing.
+    for (const d of root.querySelectorAll('details')) d.open = true;
+    window.print();
+  } else if (action === 'reset-explain') {
+    state.explainText = explanationsText(state.model.explanations);
+    state.explainEdited = false;
+    render();
+  }
   else if (action === 'copy-json') {
     copyText(JSON.stringify(state.session.reconciled, null, 1)).then((ok) => (el.textContent = ok ? 'Copied ✓' : 'Copy failed'));
   }
@@ -317,6 +331,15 @@ root.addEventListener('change', (e) => {
 });
 
 root.addEventListener('input', (e) => {
+  if (e.target.matches('[data-action="edit-explain"]')) {
+    state.explainText = e.target.value;
+    autosize(e.target);
+    if (!state.explainEdited) {
+      state.explainEdited = true;
+      const meta = root.querySelector('.explain-meta');
+      if (meta) meta.innerHTML = '<span class="muted">Edited. Exercise lists and doses are editable here.</span><button class="btn btn-link" data-action="reset-explain">Reset</button>';
+    }
+  }
   if (e.target.matches('[data-action="edit-interpretation"]')) {
     state.interpretation = e.target.value;
     autosize(e.target);

@@ -82,14 +82,36 @@ function findingsHtml(m) {
     .join('')}<p class="muted small">Findings that occur together; considerations for clinical review, not diagnoses.</p></section>`;
 }
 
-function correctionsHtml(m) {
-  if (!m.corrections?.length) return '';
-  return `<section class="card"><h3>What to work on</h3><p class="muted small">Research-linked suggestions for the findings above; clinician to confirm.</p>${m.corrections
-    .map(
-      (c) => `<details class="r-row"><summary><span class="r-name">${c.priority === 'consider' ? '<span class="hedge">Consider:</span> ' : ''}${esc(c.cue)}</span><span class="r-cells"><span class="chip chip-ev">${esc(c.strength)} evidence</span><span class="hedge">for ${esc(c.forText)}</span></span></summary>
-      <div class="r-detail small"><p>For: ${esc(c.forText)}</p>${c.why ? `<p>${esc(c.why)}</p>` : ''}${(c.evidence || []).map((e) => `<p>${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.short)}</a>` : esc(e.short)}: ${esc(e.result)}${e.verified === false ? ' <span class="hedge">unverified</span>' : ''}</p>`).join('')}${c.caveats ? `<p class="muted">${esc(c.caveats)}</p>` : ''}</div></details>`,
-    )
-    .join('')}</section>`;
+const STRENGTH = (s) => (s === 'none' ? 'no tested link' : s);
+const link = (e) => (e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.short)}</a>` : esc(e.short));
+
+function explainHtml(state, m) {
+  const ex = m.explanations;
+  if (!ex) return '';
+  const pri = ex.priorities.length
+    ? `<ol class="small pri">${ex.priorities.map((p) => `<li><strong>${esc(p.title)}</strong>: may explain ${esc(p.explains.join('; '))} <span class="chip chip-ev">${esc(p.strength)} evidence</span></li>`).join('')}</ol>`
+    : '<p class="muted small">No finding here is firm enough for a full plan; see the screening notes below.</p>';
+  const entry = (e) => `<details class="r-row x-entry"${e.kind === 'full' ? ' open' : ''}>
+    <summary><span class="r-name">${e.kind === 'screen' ? '<span class="hedge">Worth screening:</span> ' : ''}${esc(e.title)}</span><span class="r-cells"><span class="chip chip-ev">${esc(e.strength)} evidence</span></span></summary>
+    <div class="r-detail small">
+      <p><strong>What we saw:</strong> ${e.findings.map((f) => `${esc(f.label)} ${esc(f.value)}${f.range ? ` <span class="muted">(${esc(f.range)})</span>` : ''}${f.phase ? ` <span class="muted">at ${esc(f.phase)}</span>` : ''}${f.hedge ? ` <span class="hedge">${esc(f.hedge)}</span>` : ''}`).join('; ')}</p>
+      ${e.softened ? `<p class="hedge">${esc(e.softened)}</p>` : ''}
+      ${e.context ? `<p class="muted">${esc(e.context)}</p>` : ''}
+      ${(e.caveats || []).map((c) => `<p class="muted">Caveat: ${esc(c)}.</p>`).join('')}
+      ${e.kind === 'full' ? `<p><strong>Could be contributing</strong> <span class="muted">(unconfirmed until screened)</span>:</p><ul class="tight">${e.limitations.map((l) => `<li>${esc(l.name)} <span class="muted">[${esc(STRENGTH(l.strength))}]</span></li>`).join('')}</ul>` : ''}
+      ${e.kind === 'full' && e.compensations.length ? `<p><strong>It may also show up as:</strong></p><ul class="tight">${e.compensations.map((c) => `<li>${esc(c.text)} <span class="muted">[${esc(STRENGTH(c.strength))}]</span></li>`).join('')}</ul>` : ''}
+      ${e.screens.length ? `<p><strong>Screen to confirm:</strong></p><ul class="tight">${e.screens.map((x) => `<li>${esc(x.name)}${x.how ? `: ${esc(x.how)}` : ''}${x.positiveIf ? ` <span class="muted">(positive if: ${esc(x.positiveIf)})</span>` : ''}</li>`).join('')}</ul>` : ''}
+      ${e.kind === 'full' && e.work.length ? `<p><strong>What to work on</strong> (in order):</p><ol class="tight">${e.work.map((w) => `<li>${esc(w.item)}: ${esc(w.dose)} <span class="muted">[${esc(w.type)}; dose: ${esc(w.doseLabel)}; changes the running pattern: ${esc(w.changesRunning)}]</span></li>`).join('')}</ol>` : ''}
+      ${e.sources.length ? `<p class="muted">Sources: ${e.sources.map(link).join(', ')}</p>` : ''}
+    </div></details>`;
+  return `<section class="card x-section"><h3>Why it may be happening and what to work on</h3>
+    <p class="banner small" role="note"><strong>Clinician to review before sharing.</strong> ${esc(ex.reviewNote.replace(/^Clinician to review before sharing\. /, ''))}</p>
+    <h4 class="r-phase">Top priorities</h4>${pri}
+    ${ex.entries.map(entry).join('')}
+    <h4 class="r-phase">Text to share (edit before sharing)</h4>
+    <textarea class="interpretation explain-text" data-action="edit-explain" aria-label="Why it may be happening and what to work on (editable)">${esc(state.explainText ?? '')}</textarea>
+    <div class="explain-meta small"><span class="muted">${state.explainEdited ? 'Edited' : 'Auto-generated'}. Exercise lists and doses are editable here.</span>${state.explainEdited ? '<button class="btn btn-link" data-action="reset-explain">Reset</button>' : ''}</div>
+  </section>`;
 }
 
 function limitsHtml(m) {
@@ -114,13 +136,13 @@ function resultsTab(state, m) {
     ${timingHtml(m.timing)}
     ${m.sections.map(sectionHtml).join('')}
     ${findingsHtml(m)}
-    ${correctionsHtml(m)}
+    ${explainHtml(state, m)}
     ${limitsHtml(m)}
-    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button></div>`;
+    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button><button class="btn btn-secondary" data-action="print">Print / Save as PDF</button></div>`;
 }
 
 function textTab(state, m) {
-  return `<section class="card summary"><pre class="summary-text">${esc(buildSummaryText(m, state.interpretation))}</pre></section>
+  return `<section class="card summary"><pre class="summary-text">${esc(buildSummaryText(m, state.interpretation, state.explainText))}</pre></section>
     <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button></div>`;
 }
 

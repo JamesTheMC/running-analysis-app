@@ -442,3 +442,12 @@ Contact frames, scale from height 182.8 cm: clinician 17.1–27.9 cm, app 21.5�
 Error +2.4 cm bias / 2.4 cm mean abs (max 5.0 cm, n 6). Heel point error 14–63 px (largest in
 early swing, blurred shoe). On C0 the error was +9.1 cm (blind marks), so the metric stays
 "pending validation" until a second setup is clinician-checked.
+
+## 8 new runners (AR, AZ, CD, CH, JW, ML, RQ, RY), 2026-10-13
+All 16 clips are a floor-level wide-angle setup and are rated unsuitable by the capture gate (no
+values reported). Landmark accuracy at 30 frames (15 side, 15 rear; blind AI marks):
+side knee flexion +10.6 / 14.0°, tibial −13.6 / 15.3°, hip extension −1.2 / 7.7°, trunk lean
++7.1 / 7.3°, ankle DF −5.8 / 6.7°; rear hip adduction −1.8 / 5.2°, knee frontal angle −10.8 / 20.5°
+(hidden swing-knee outliers), trunk lateral lean 0.0 / 2.7°. Accurate where the leg is visible (CH,
+RQ, JW side), very poor where the console hides the leg or the head is cropped (CD). Cross-runner
+table: BENCHMARK.md.

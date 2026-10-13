@@ -7,6 +7,7 @@ import { mergeSession } from '../js/pipeline/session.js';
 import { analyze } from '../js/engine/analysis.js';
 import { buildModel } from '../js/presentation/model.js';
 import { buildInterpretation } from '../js/presentation/text.js';
+import { explanationsText } from '../js/presentation/explain.js';
 import { correctionsFor } from '../js/presentation/corrections.js';
 import { renderResults } from '../js/views/results.js';
 
@@ -19,7 +20,7 @@ session.views = [...new Set(Object.keys(clips).map((s) => CLIP_SLOTS[s].view))];
 session.analysis = mergeSession(clips);
 const results = analyze(session);
 const model = buildModel(session, results, { corrections: correctionsFor });
-const state = { session, tab: q.get('tab') || 'results', interpretation: buildInterpretation(model), interpretationEdited: false, model };
+const state = { session, tab: q.get('tab') || 'results', interpretation: buildInterpretation(model), interpretationEdited: false, explainText: explanationsText(model.explanations), explainEdited: false, model };
 const app = document.getElementById('app');
 app.innerHTML = renderResults(state, results, model);
 if (!q.has('collapsed')) for (const d of app.querySelectorAll('details')) d.open = true;

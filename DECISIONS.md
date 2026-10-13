@@ -262,3 +262,28 @@ the output.
   clips are unsuitable; C0 and T1–T3 suitable. Y
 - **New-runner fixtures are 30 s excerpts (900 analysed frames) of each clip** (keeps the repo small;
   the gate verdict is identical on the excerpt and the full clip). Y
+
+## "Why it may be happening and what to work on" (2026-10-13)
+- **Evidence: reference/limitations-evidence.json (75 PubMed records; 57 new, all PMIDs/DOIs
+  matched to their records; 3 spot-checked by me), compiled into js/presentation/limitations.js
+  with the list of verified PMIDs; a test fails if any shown citation is outside that list.** Y
+- **The literature contradicts three proposed chains, and the app follows the literature:** weak
+  glute max goes with a MORE upright trunk (Teng & Powers 2016), Thomas-test hip flexor length does
+  not predict running hip extension and stretching does not change it (Schache 2000, Mettler 2019),
+  quadriceps weakness is not linked to excess knee flexion (Moffit 2020). These show as "no tested
+  link". Y
+- **Full entry only for findings with a shown (trustworthy) status; borderline / low-confidence /
+  pending findings get a "worth screening" note with the screen; "not reported" metrics get none.** Y
+- **Chains sharing a limitation are merged (step rate: overstride + excess knee flexion + low cadence
+  + contact time + vertical bounce; hip/pelvis control: hip adduction + knee valgus + crossover +
+  lateral lean); top priorities ranked by findings explained, then evidence strength.** Y
+- **Items are filtered by the direction of the finding** (excess vs too little knee flexion) so one
+  entry never recommends opposing work; speed and fatigue are shown as context, not limitations;
+  "2D valgus ≠ 3D abduction" is shown as a caveat. Y
+- **Findings common to every benchmarked session (max stance knee flexion, tibial inclination,
+  foot-to-COM) are softened to screening notes** (likely measurement bias or a tight range). Y
+- **The new section replaces the earlier "What to work on" list** (its cues are inside the entries;
+  one priority list instead of overlapping ones). Section text is editable on screen and is what the
+  copy text and the print/PDF export carry. Y
+- **Export = "Print / Save as PDF" (browser print with a print stylesheet; details expanded).** No
+  three-phase still-image panels exist yet, so findings name their phase in text instead of linking. Y

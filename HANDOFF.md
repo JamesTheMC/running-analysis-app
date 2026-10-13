@@ -452,3 +452,12 @@ match). Between-client correlations are not meaningful with 4 clients.
 Display rules are in DECISIONS.md (Presentation phase). Tests: "Presentation model and text" in
 test/unit.js. Local videos are found by file name via test-data/clip-index.json
 (`python3 tools/index_clips.py`), so folder names never enter the repository.
+
+## 8. Multi-runner benchmark and corrective section (2026-10-13)
+- BENCHMARK.md: 12 client codes / 10 runners; only C0 and T1–T3 (2 runners) are suitable; the 8 new
+  runners' floor-level wide-angle clips are rejected by the capture-quality gate
+  (js/pipeline/capture-quality.js) with reasons and re-filming advice.
+- "Why it may be happening and what to work on": js/presentation/explain.js (entries, merging,
+  softening, direction filter), js/presentation/limitations.js (generated evidence; rebuild with
+  `python3 tools/build_evidence.py`). Rendered in the Results tab (cards + editable text), the
+  Summary text and the print/PDF export.
