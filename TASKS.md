@@ -108,8 +108,23 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
 - [x] 8 new runners run (all 16 clips unsuitable: floor-level wide-angle camera); capture-quality gate; BENCHMARK.md
 - [x] CS/CD resolved: same runner
 - [x] "Why it may be happening and what to work on" section (screen, text, print/PDF), verified evidence, tests
-- [ ] Re-film the 8 new runners per the capture plan (hip-height camera, whole body in frame)
-- [ ] Three-phase still-image panels (then link findings to the phase panel)
+- [ ] Re-film per guide.html and reference/REFILM_PROTOCOL.md: T3 in all four views + 2–3 of the 8 new
+      runners (owner); then `python3 tools/revalidate.py`, blind marks on test/mark-clip.html, re-run
+- [x] Three-phase still-image panels, linked from the corrective section (2026-10-15)
+
+## Views, video check, guide (2026-10-15)
+- [x] Any combination of left / right / rear / front; view detection + Clip check with override; add a
+      view later; metric-to-view matrix (code + HANDOFF §9, test-locked)
+- [x] "Not assessed: needs <view>" everywhere; coverage indicator; coverage-labelled scores;
+      compareCoverage warning; "Confirm with the <view>" in corrective entries
+- [x] Video check (pass / warn / fail, fixes, quality score → confidence), calibrated on 24 clips;
+      quick check during pose; tests on every view subset and every benchmark clip
+- [x] Capture guide (guide.html, printable), re-filming protocol, one-command re-validation, marking page
+- [ ] Validate the front view on real front-view clips (until then experimental, unscored)
+- [ ] Re-check provisional gate thresholds (camera height proportions, lighting) and guide settings
+      (distance, margin, height tolerance) on the re-filmed clips
+- [ ] Mirrored-clip overlay in debug.js (same flip as the phase panels); test with a mirrored clip
+- [ ] In-app comparison of two sessions (compareCoverage warning is ready)
 - [ ] Retire js/engine/summary.js (replaced by js/presentation/*) once its tests are migrated
 Goal: the on-screen results and the copy-paste summary built from ONE presentation model over the
 reconciled result, following the clinic template (ankle, knee, hip, lumbar, arms; IC / midstance /

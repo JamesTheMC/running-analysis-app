@@ -105,3 +105,18 @@ export function compareCoverage(a, b) {
     warning: `Different view coverage: ${name(a)} (${Math.round(a.share * 100)}% of the metric set) vs ${name(b)} (${Math.round(b.share * 100)}%). Compare only metrics assessed in both; scores rest on different metric sets.`,
   };
 }
+
+// The matrix as Markdown table rows (HANDOFF.md §9 must contain exactly these; checked by a test).
+export function matrixMarkdownRows() {
+  const names = (slots) => (slots.length ? slots.map((s) => SLOT_SHORT[s]).join(', ') : '—');
+  const rows = viewMatrix().map(({ id, label, cells }) => {
+    const keys = Object.keys(cells);
+    const c = cells[keys[0]];
+    const lateralLr = keys.length === 2 && c.authoritative[0]?.startsWith('lateral');
+    const auth = lateralLr ? 'L: left side view; R: right side view' : c.authoritative.length === 2 ? 'left or right side view' : names(c.authoritative);
+    const cross = c.crossCheck || (lateralLr ? 'none (far leg never used)' : '—');
+    return `| \`${id}\` | ${label} | ${keys.length === 2 ? 'L, R' : 'mid'} | ${auth} | ${names(c.experimental)} | ${cross} |`;
+  });
+  const timing = TIMING_MATRIX.map((t) => `| ${t.quantity} | (timing) | — | ${names(t.authoritative)} | ${names(t.experimental)} | ${t.crossCheck} |`);
+  return [...rows, ...timing];
+}

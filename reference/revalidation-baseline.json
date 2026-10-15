@@ -1,0 +1,13 @@
+{
+  "note": "Validation error BEFORE re-filming, from BENCHMARK.md section 4 (2026-10-13): mean absolute error app vs hand marks, degrees (foot-to-COM cm). cross = cross-runner mean of C0, T1-T3 and the 8 new runners' pose check; T = T1-T3 (clinician side marks). Keys = metric name as in test/revalidate.js | view. Client codes only.",
+  "errors": {
+    "knee flexion|side": { "cross": 10.1, "T": 7.8 },
+    "tibial inclination|side": { "cross": 8.3, "T": 1.7 },
+    "hip extension|side": { "cross": 6.4, "T": 3.2 },
+    "trunk lean|side": { "cross": 6.7, "T": 6.9 },
+    "ankle dorsiflexion|side": { "cross": 10.4, "T": 3.8 },
+    "hipAdduction|rear": { "cross": 3.4, "T": 3.1 },
+    "kneeValgus|rear": { "cross": 8.0, "T": 1.5 },
+    "trunkLateralLean|rear": { "cross": 2.5, "T": 1.7 }
+  }
+}

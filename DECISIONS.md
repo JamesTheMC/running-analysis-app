@@ -287,3 +287,57 @@ the output.
   copy text and the print/PDF export carry. Y
 - **Export = "Print / Save as PDF" (browser print with a print stylesheet; details expanded).** No
   three-phase still-image panels exist yet, so findings name their phase in text instead of linking. Y
+
+## Any view combination, video check, guide, phase panels (2026-10-15)
+- **Four clip slots, any subset: left side, right side, rear, front.** One explicit matrix in code
+  (js/pipeline/view-matrix.js) and HANDOFF.md §9, kept identical by a test. Left side authoritative for
+  left-leg sagittal values, right side for right-leg; trunk (midline) sagittal values from either side
+  view, combined when both exist; frontal-plane values from the rear view. Two side views cross-check
+  cadence, step times and step-time symmetry (existing reconcile cross-checks, now across any slots). Y
+- **Front view is experimental.** No front-view clip exists to validate against, so front values run
+  through the rear pipeline on mirrored landmarks (x → width − x, z → −z), are listed in a separate
+  block, and are never scored, never findings, never in the corrective section, never reported timing.
+  Alt: compute front metrics with their own formulas (unvalidated either way). Y
+- **View detection from the pose, confirmed on a Clip check screen.** Shoulder width ÷ torso length
+  (side 0.10–0.27, rear 0.67–0.82 on the 24 clips; threshold midway 0.425), left/right order for rear
+  vs front, depth for the near leg. The clinician's choice wins over depth (the convention check still
+  reports a disagreement). Pose runs once; changing the view re-runs only the view-specific steps. Y
+- **Partial results: every cell is a value or "Not assessed: needs the <view>"** (shown, not hidden;
+  previously missing-leg cells were hidden behind one header line). Coverage indicator = share of the
+  41 reportable values whose authoritative view is present and passed the video check. Y
+- **Scores are labelled with their basis** ("scored over N assessed values only; partial coverage …").
+  `compareCoverage` warns when two sessions differ in coverage; the app has no in-app session
+  comparison yet, so the warning is used by the re-validation report (before vs after). Y
+- **Corrective entries say "Confirm with the <view>"** when a related trigger metric or the other leg
+  was not assessed because its view is missing. Y
+- **Video check levels pass / warn / fail** (were suitable / degraded / unsuitable). Fail: no values or
+  timing; warn: all values capped at low confidence with the issue noted; pass: the clip quality score
+  (0.85^warns × 0.4^fails) caps confidence below 0.85 (medium) and below 0.6 (low). Y
+- **Footage checks calibrated on the 24 clips** (reference/GATE_CALIBRATION.md, research script
+  tools/gate_features.py): camera height from body proportions (side) and foot length ÷ hip width
+  (rear) carries the separation; 8/8 good pass, 16/16 problem clips fail with the camera-height
+  reason (CD side also framing). **Known limitation:** the console hiding the hips is not visible in
+  MediaPipe output (hips still reported at visibility ≈ 1); those clips are caught by camera height,
+  whose fix also clears the console. Side-view wide-angle cannot be separated from camera height
+  ('na'). Proportion thresholds rest on two well-filmed runners: provisional, re-check after re-filming. Y
+- **30 fps passes with a note** (T1–T3 validated at 30 fps); warn below 24 fps. The guide asks 60 fps. Y
+- **Runner size judged in source-video pixels** (analysed px ÷ 0.45), not analysed pixels, so a
+  correctly framed landscape 720p clip is not warned (lead review of the calibration). Y
+- **Quick video check after the first ~150 analysed frames**, shown while pose tracking continues
+  ("before analysis runs" in practice: pose is the only slow step and it keeps going; the full check on
+  the whole clip decides). Y
+- **Lighting from frame brightness** sampled once a second during pose (32×18 copy; only the numbers
+  are kept). Thresholds provisional (no dark clip to calibrate on). Y
+- **Capture guide** = guide.html (printable one page, linked before upload); distances, heights,
+  margin and warm-up marked provisional until the next filming session (REFILM_PROTOCOL.md). Y
+- **One-command re-validation** `python3 tools/revalidate.py`: discovers clips named
+  CODE_YYYY-MM-DD_VIEW_SPEED, poses them headless on this Mac (verified: a full T3 clip re-run
+  headless reproduced every value exactly), runs the check, pipeline and validation against blind
+  marks from test/mark-clip.html, and rewrites BENCHMARK.md §8 (before = the client's benchmark
+  session and the §4 errors in reference/revalidation-baseline.json; after = the latest session). Y
+- **Phase panels:** a still per phase per available view from the stride closest to the clip medians
+  (best event confidence); toe-off panel shows the stride's PEAK hip extension frame (late stance),
+  because hip extension is a peak metric (the toe-off frame read 0° vs the listed 5.1°). Arcs coloured
+  only for trustworthy values. Rear: midstance only (rear IC/TO are low-confidence timing). Head blur
+  on by default; mirrored clips drawn flipped to match the un-mirrored landmarks (untested: no mirrored
+  clip exists). Y

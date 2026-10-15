@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mark a clip</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; --muted: #5b6672; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #0f1419; --fg: #e6e9ec; --muted: #9aa5b1; } }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; padding: 16px; margin: 0; }
+      canvas { max-width: 100%; max-height: 78vh; cursor: crosshair; display: block; }
+      .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+      button { font: inherit; padding: 6px 12px; }
+      .muted { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <h1>Blind hand marking (dev only)</h1>
+    <p class="muted">Mark joint centres on frames picked from the clip's gait events; the app's own landmarks are hidden.
+      Side view: shoulder, hip, knee, ankle, heel, toe of the leg facing the camera. Rear/front: both sides. Keys: z = undo, ← → = frame.
+      Marks save automatically to test-data/debug (local, gitignored); <code>python3 tools/revalidate.py</code> compares them with the app.</p>
+    <div class="bar"><button id="prev">‹ Prev</button><button id="nextBtn">Next ›</button><button id="undo">Undo</button><strong id="next"></strong><span id="pos" class="muted"></span><span id="status" class="muted"></span></div>
+    <canvas id="canvas" aria-label="Video frame to mark"></canvas>
+    <script type="module" src="mark-clip.js"></script>
+  </body>
+</html>

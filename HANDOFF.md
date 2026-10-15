@@ -461,3 +461,91 @@ test/unit.js. Local videos are found by file name via test-data/clip-index.json
   softening, direction filter), js/presentation/limitations.js (generated evidence; rebuild with
   `python3 tools/build_evidence.py`). Rendered in the Results tab (cards + editable text), the
   Summary text and the print/PDF export.
+
+
+## 9. Any view combination, video check, phase panels (2026-10-15)
+
+### Views and clip slots
+Four views, any subset (one clip up to all four): **left side** (`lateral_left`, runner's left faces the
+camera), **right side** (`lateral_right`), **rear** (`posterior`), **front** (`anterior`, experimental).
+On upload the view is detected from the pose (js/pipeline/view-detect.js: shoulder width ÷ torso length
+0.10–0.27 on side clips vs 0.67–0.82 on rear clips; left/right order tells rear from front; depth tells
+which side faces the camera) and shown on the **Clip check** screen with the video check; the clinician
+can change it (the view-specific analysis re-runs on the same pose data). A view can be added or
+replaced at any time ("Add a view" on Results); results update for the new set of views.
+
+The front view runs the rear pipeline on mirrored landmarks (x → width − x, z → −z; js/pipeline/run.js
+`postProcessFront`). No front-view clip exists yet, so its values are **experimental**: listed in a
+separate "Front view (experimental)" block, never scored, never findings, never in the corrective section.
+
+### Metric-to-view matrix (js/pipeline/view-matrix.js; a test keeps this table identical to the code)
+| Metric | Label | Cells | Authoritative view | Experimental | Cross-check |
+|---|---|---|---|---|---|
+| `ic_foot_strike` | Foot strike pattern | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ic_foot_inclination` | Foot inclination | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ic_tibial_inclination` | Tibial inclination | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ic_foot_to_com` | Foot-to-COM distance | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ic_knee_flexion` | Knee flexion | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ic_spine_lean` | Forward trunk lean | mid | left or right side view | — | both side views: combined; noted when more than 3° apart |
+| `ms_max_knee_flexion` | Max knee flexion | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ms_knee_flexion_excursion` | Knee flexion excursion | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ms_ankle` | Ankle at midstance | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ms_knee_ankle_sync` | Knee/ankle sync | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `ms_spine_lean` | Forward trunk lean | mid | left or right side view | — | both side views: combined; noted when more than 3° apart |
+| `ms_pelvic_drop` | Contralateral pelvic drop | L, R | rear view | front view | — |
+| `ms_hip_adduction` | Hip adduction | L, R | rear view | front view | — |
+| `ms_knee_varus_valgus` | Knee frontal-plane projection angle | L, R | rear view | front view | — |
+| `ms_crossover` | Crossover pattern | L, R | rear view | front view | — |
+| `ms_spine_shift` | Spine shift (PSIS rule) | mid | rear view | front view | — |
+| `ms_foot_midline` | Foot position vs midline | L, R | rear view | front view | — |
+| `ms_step_width` | Step width | mid | rear view | front view | — |
+| `arm_crossover` | Arm crossing midline | L, R | rear view | front view | — |
+| `ms_trunk_lateral_lean` | Trunk lateral lean | mid | rear view | front view | — |
+| `ms_lateral_shift` | Trunk lateral shift | mid | rear view | front view | — |
+| `to_hip_extension` | Hip extension | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `trunk_change_peak_hip_ext` | Trunk angle change at peak hip extension (trunk-angle proxy) | mid | left or right side view | — | both side views: combined; noted when more than 3° apart |
+| `arm_elbow_angle` | Elbow angle | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| `arm_shoulder_rom` | Shoulder swing ROM | L, R | L: left side view; R: right side view | — | none (far leg never used) |
+| cadence | (timing) | — | left side view, right side view, rear view | front view | all views agree within 3%; otherwise the higher-confidence view |
+| step time, left | (timing) | — | left side view, right side view, rear view | front view | within one frame of the coarser clip |
+| step time, right | (timing) | — | left side view, right side view, rear view | front view | within one frame of the coarser clip |
+| step-time asymmetry (+ = left longer) | (timing) | — | left side view, right side view, rear view | front view | within 5 percentage points (left/right symmetry) |
+| contact time | (timing) | — | left side view, right side view | — | two side views within 25 ms; rear/front not observable |
+| vertical oscillation (pelvis) | (timing) | — | left side view, right side view | — | two side views within 1.5 cm; rear reads high (perspective), information only |
+
+Not built (any view): out-toe, Achilles angle, rearfoot eversion. Never: pelvic tilt, lordosis, rotation.
+Pelvic drop is computed but never shown (not reliable, §4).
+
+### Partial results and coverage
+- Each cell is a value or **"Not assessed: needs the <view>"** (or "<view> failed the video check …"),
+  never a blank; the screen and the copy text carry the same reason.
+- **Coverage indicator** at the top of Results and in the text: views used, views not uploaded, views
+  that failed the video check, and the share of the metric set assessable (41 values: 15 from one side
+  view, 14 from the rear, 27 from both sides, 29 from one side + rear, 41 from left + right + rear).
+- **Scores** use only assessed, scored values and say so ("Scored over N assessed values only (partial
+  coverage: …)"). `compareCoverage(a, b)` warns when two sessions have different coverage (there is no
+  in-app session comparison yet; the re-validation report uses it).
+- Corrective entries come only from assessed values; an entry says **"Confirm with the <view>"** when a
+  related measure, or the other leg, was not assessed because its view is missing.
+
+### Video check (capture-quality gate)
+js/pipeline/footage-checks.js (11 footage checks, calibrated in reference/GATE_CALIBRATION.md) +
+js/pipeline/capture-quality.js (event checks: valid strides / midstances, left/right swaps, plausible
+cadence; cadence agreement across views in reconcile.js). **pass** = values used; **warn** = values
+reported at low confidence with the issue noted; **fail** = no values or timing, only the reason and what
+to fix. The clip quality score (0.85^warns × 0.4^fails) caps per-metric confidence (≥ 0.85 no cap,
+≥ 0.6 medium, else low). A **quick check** runs on the first ~150 analysed frames while pose tracking
+continues. On the 24 benchmark clips: 8/8 good clips pass, 16/16 floor-level clips fail with the
+camera-height reason (CD side also framing). Limits: the console hiding the hips is not visible in the
+landmarks (MediaPipe still reports the hips); the floor-level camera check catches those clips and its
+fix (raise the camera to hip height) also clears the console. Lighting is judged from frame brightness
+sampled during analysis (thresholds provisional, no calibration data yet).
+
+### Phase panels
+js/views/phase-panels.js (+ css/panels.css): per available view, a still at initial contact, midstance
+and peak hip extension (late stance) from a representative stride (closest to the clip medians, best
+event confidence; labelled "Stride n of N"), wireframe and angle arcs coloured only when the value is
+trustworthy, that phase's metrics beside it, left and right side by side; rear: each leg at its own
+midstance. Controls: hide overlay, step ±1/±3 frames, head blur (on by default). Stills are drawn on the
+device from the local video and never stored. Findings in the corrective section link to their phase
+panel. Printed in the PDF export.

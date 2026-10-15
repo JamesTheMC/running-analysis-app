@@ -69,7 +69,8 @@ const FIX = {
 };
 
 // Most important first (used to order summary fixes).
-const PRIORITY = ['framing', 'camera_height', 'hip_occlusion', 'wide_angle', 'lower_limb_visibility', 'runner_size', 'squareness', 'camera_tilt', 'motion_blur', 'lighting', 'frame_rate'];
+// Event checks (capture-quality.js) come after the footage causes they usually stem from.
+const PRIORITY = ['framing', 'camera_height', 'hip_occlusion', 'wide_angle', 'lower_limb_visibility', 'event_detection', 'cadence_plausible', 'leg_swaps', 'runner_size', 'squareness', 'camera_tilt', 'motion_blur', 'lighting', 'frame_rate'];
 
 // ---- small numeric helpers (same definitions as tools/gate_features.py) ----
 const finite = (xs) => xs.filter((x) => x != null && Number.isFinite(x));

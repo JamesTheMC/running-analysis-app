@@ -871,6 +871,13 @@ section = 'View combinations (derived fixtures: T3 right side + rear filmed; lef
       return `${m.coverage.assessable}/${m.coverage.total} assessable, ${weighted} scored`;
     });
   }
+  await testAsync('HANDOFF.md §9 matrix is identical to the code', async () => {
+    const { matrixMarkdownRows } = await import('../js/pipeline/view-matrix.js');
+    const doc = await (await fetch('../HANDOFF.md')).text();
+    const missing = matrixMarkdownRows().filter((r) => !doc.includes(r));
+    assert(!missing.length, `not in HANDOFF.md: ${missing.slice(0, 2).join(' / ')}`);
+    return `${matrixMarkdownRows().length} rows`;
+  });
   test('comparing sessions with different view coverage warns', () => {
     const a = { signature: 'lateral_right', usable: ['lateral_right'], share: 0.4 };
     const b = { signature: 'lateral_right+posterior', usable: ['lateral_right', 'posterior'], share: 0.7 };

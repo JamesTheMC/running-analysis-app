@@ -9,12 +9,15 @@ client codes cover **10 runners**. Reproduce: `test/benchmark.js` (from committe
 |---|---|---|---|
 | C0 | 1080×1920 portrait, 120 fps, hip-height camera | suitable | suitable |
 | T1, T2, T3 | 1080×1920 portrait, 30 fps, hip-height camera | suitable | suitable |
-| AR, AZ, CH, JW, ML, RQ, RY | 1280×720 landscape, 30 fps, **floor-level wide-angle camera** | unsuitable | unsuitable |
-| CD | same, side clip 960×572 cropped; **head out of frame** | unsuitable | unsuitable |
+| AR, AZ, CH, JW, ML, RQ, RY | 1280×720 landscape, 30 fps, **floor-level wide-angle camera** | fail | fail |
+| CD | same, side clip 960×572 cropped; **head out of frame** | fail | fail |
 
-Unsuitable = capture-quality gate (js/pipeline/capture-quality.js): no values or timing are reported
-from the clip, only the reason and re-filming advice. All 16 new clips ran through pose estimation
-without crashing.
+Fail = video check (capture-quality gate: js/pipeline/footage-checks.js + capture-quality.js): no
+values or timing are reported from the clip, only the reason and what to fix. All 16 new clips ran
+through pose estimation without crashing. Since 2026-10-15 the check also judges the footage itself
+(camera height, framing, visibility, tilt, squareness, size, frame rate, blur, lighting; calibrated in
+reference/GATE_CALIBRATION.md): 8/8 validated clips pass; 16/16 floor-level clips fail with the
+camera-height reason (CD side also framing). Per-clip verdicts: §8.
 
 ## 2. Event detection (share of strides with valid events)
 | Client | Side | Rear (midstances found / expected) | Cadence side / rear (spm) |
@@ -84,3 +87,58 @@ pending validation): the corrective section softens these to "worth screening" n
 Only 2 runners (4 sessions) produce reported values; the 8 new runners need re-filming per
 reference/CAPTURE_PLAN.md (hip-height camera, square to the treadmill, whole body in frame). Hand
 marks are mostly AI blind marks; the side-view T1–T3 knees, hips, ankles and heels are clinician marks.
+
+<!-- revalidate:start -->
+## 8. Re-validation (auto: `python3 tools/revalidate.py`)
+
+Last run 2026-10-15. 0 new clip(s) found in test-data/ (named CODE_YYYY-MM-DD_VIEW_SPEED). Generated; do not edit by hand.
+
+### Video check per clip
+| Clip | Session | View used (detected) | Verdict | Quality | Main reason |
+|---|---|---|---|---|---|
+| C0-side | benchmark | left side | pass | 100% | — |
+| C0-rear | benchmark | rear | pass | 100% | — |
+| T1-side | benchmark | right side | pass | 100% | — |
+| T1-rear | benchmark | rear | pass | 100% | — |
+| T2-side | benchmark | right side | pass | 100% | — |
+| T2-rear | benchmark | rear | pass | 100% | — |
+| T3-side | benchmark | right side | pass | 100% | — |
+| T3-rear | benchmark | rear | pass | 100% | — |
+| AR-side | benchmark | right side | fail | 5% | Camera height: legs look 13% longer relative to the trunk than from a hip-height camera (h |
+| AR-rear | benchmark | rear | fail | 1% | Camera height: feet look 56% of hip width long (soles face a low camera; hip-height view:  |
+| AZ-side | benchmark | right side | fail | 6% | Camera height: legs look 16% longer relative to the trunk than from a hip-height camera (h |
+| AZ-rear | benchmark | rear | fail | 1% | Camera height: feet look 42% of hip width long (soles face a low camera; hip-height view:  |
+| CD-side | benchmark | right side | fail | 1% | Whole body in frame: head at the top edge or not found in 5% of frames; a foot beyond the  |
+| CD-rear | benchmark | rear | fail | 0% | Whole body in frame: head at the top edge or not found in 21% of frames; a foot beyond the |
+| CH-side | benchmark | right side | fail | 6% | Camera height: legs look 12% longer relative to the trunk than from a hip-height camera (h |
+| CH-rear | benchmark | rear | fail | 6% | Camera height: feet look 38% of hip width long (soles face a low camera; hip-height view:  |
+| JW-side | benchmark | right side | fail | 6% | Camera height: legs look 6% longer relative to the trunk than from a hip-height camera (hi |
+| JW-rear | benchmark | rear | fail | 5% | Camera height: feet look 42% of hip width long (soles face a low camera; hip-height view:  |
+| ML-side | benchmark | right side | fail | 6% | Camera height: legs look 24% longer relative to the trunk than from a hip-height camera (h |
+| ML-rear | benchmark | rear | fail | 5% | Camera height: feet look 44% of hip width long (soles face a low camera; hip-height view:  |
+| RQ-side | benchmark | right side | fail | 6% | Camera height: legs look 21% longer relative to the trunk than from a hip-height camera (h |
+| RQ-rear | benchmark | rear | fail | 6% | Camera height: feet look 36% of hip width long (soles face a low camera; hip-height view:  |
+| RY-side | benchmark | right side | fail | 6% | Camera height: legs look 9% longer relative to the trunk than from a hip-height camera (hi |
+| RY-rear | benchmark | rear | fail | 1% | Camera height: feet look 35% of hip width long (soles face a low camera; hip-height view:  |
+
+Benchmark clips: 8/8 validated clips pass; 16/16 floor-level clips fail or warn.
+
+### Values before → after (per runner, view, metric)
+Before = the earlier benchmark session of that client code; after = its latest new session.
+
+No runner has a new session yet.
+
+### Validation error per metric and view (app − hand marks; mean absolute error, bias)
+Before = BENCHMARK.md §4 (cross-runner mean / T1–T3); after = hand marks on the new clips (test/mark-clip.html).
+
+| Metric | View | Before: cross-runner / T1–T3 | After (per clip) |
+|---|---|---|---|
+| knee flexion | side | 10.1 / 7.8 | no new marks |
+| tibial inclination | side | 8.3 / 1.7 | no new marks |
+| hip extension | side | 6.4 / 3.2 | no new marks |
+| trunk lean | side | 6.7 / 6.9 | no new marks |
+| ankle dorsiflexion | side | 10.4 / 3.8 | no new marks |
+| hipAdduction | rear | 3.4 / 3.1 | no new marks |
+| kneeValgus | rear | 8.0 / 1.5 | no new marks |
+| trunkLateralLean | rear | 2.5 / 1.7 | no new marks |
+<!-- revalidate:end -->

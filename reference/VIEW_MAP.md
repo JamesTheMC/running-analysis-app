@@ -5,6 +5,12 @@ Source of truth for which camera view each metric may be computed from. Enforced
 engine (`js/engine/analysis.js`), checked by `test/unit.html`. A value from a disallowed view is never
 shown: the report says "not assessed from this view".
 
+**2026-10-15:** four views, any subset: left side, right side, rear, and front (anterior). The full
+matrix (authoritative view per metric and cell, experimental views, cross-checks, timing) is in
+`js/pipeline/view-matrix.js` and HANDOFF.md §9. Front-view clips may compute every built rear-view
+(frontal-plane) metric, but only as experimental values: listed separately, never scored or used for
+findings, until validated on real front-view video.
+
 ## Lateral clips (filmed from the left or the right)
 
 Near leg and near arm only. Far-leg values are never used.

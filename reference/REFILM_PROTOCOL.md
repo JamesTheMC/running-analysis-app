@@ -42,23 +42,22 @@ the rear view, the log sheet below.
    `CODE_YYYY-MM-DD_VIEW_SPEED`, e.g. `T3_2026-10-20_left_6.0mph.mov`. Client codes only.
 2. **Run the re-validation** (one command, from the repo folder):
    `python3 tools/revalidate.py`
-   It runs the capture-quality gate, the full pipeline and the validation on every new clip, and
-   updates BENCHMARK.md with before / after numbers per metric, per view and per runner.
-   (This command is being built separately; this protocol only describes its use.)
-3. **Hand-mark frames, blind to the app's values.** About 10 frames per clip, spread across initial
-   contact, midstance and toe-off of different strides. Use the marking page
-   `test/mark-joints.html` (open it through the dev server, `python3 tools/devserver.py`, then
-   http://localhost:8000/test/mark-joints.html):
-   - It shows one exported frame at a time (crops saved as `test-data/debug/annotate_<frame>.png`
-     by `test/export-frames.html`, which draws no landmarks so the marker stays blind).
-   - Click the near-side **hip, knee, ankle and heel** in order; the next point is selected
-     automatically. Click a step to re-place a point; tick "Unsure" when the near leg is unclear;
-     Previous / Next / Clear frame.
-   - Marks save as you go to `test-data/debug/clinician_marks.json` (this computer only).
-   - Today the page's frame list is fixed to the 30 T1–T3 side frames (`vcrop_01`…`vcrop_30`) and
-     its instructions describe a runner facing right. For the new clips the frame list and the text
-     must be updated for the new exports (left-side and rear frames included); rear frames need the
-     rear point set (shoulder, hip, knee, ankle, heel) used by `test/annotation-compare.js`.
+   It indexes the clips, tracks the pose of each new clip on this computer (about a minute per
+   clip; landmarks cached in `test-data/debug/`), runs the video check, the full pipeline per
+   session (client code + date) and the validation, and rewrites BENCHMARK.md §8: video check per
+   clip, values per runner, view and metric before → after, and validation error before → after.
+   A clip whose name does not follow the pattern is ignored (rename it and re-run).
+3. **Hand-mark frames, blind to the app's values.** Open the dev server (`python3 tools/devserver.py`)
+   and http://localhost:8000/test/mark-clip.html?clip=CODE_YYYY-MM-DD_VIEW (e.g.
+   `?clip=T3_2026-10-20_left`; run step 2 first so the clip's landmarks exist).
+   - The page picks frames from the clip's own gait events (side: 4 initial contacts, 4 midstances,
+     4 toe-offs of valid strides spread over the clip; rear/front: 6 midstances per leg) and shows
+     the video frame with no app landmarks, so the marking is blind.
+   - Side view: click the shoulder, hip, knee, ankle, heel and toe of the leg facing the camera.
+     Rear/front: left and right shoulder, hip, knee, ankle and heel. The next point is named above
+     the frame; z = undo, ← → = previous / next frame.
+   - Marks save as you go to `test-data/debug/marks_<clip>.json` (this computer only).
+   - Then run `python3 tools/revalidate.py` again: the error table in BENCHMARK.md §8 fills in.
 4. **Compare:**
    - **T3 new vs earlier T3** (6 mph): expected agreement within the validated error: knee ±7°,
      hip extension ±3°, tibial inclination ±2°, hip adduction ±3°; cadence within 3%.
