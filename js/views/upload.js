@@ -9,7 +9,7 @@ export function renderUpload(state) {
     <section class="screen">
       <header class="screen-head">
         <h1>${adding ? 'Add a clip' : 'New analysis'}</h1>
-        ${adding ? `<p class="muted small">Still open: ${esc(remaining.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' · '))}</p>` : ''}
+        ${adding ? `<p class="muted small">Not yet uploaded: ${esc(remaining.map((s) => CLIP_SLOTS[s].short).join(' · ') || 'none (a new clip replaces the one in its view)')}</p>` : ''}
         ${adding ? `<p class="muted">Session ${esc(state.session.intake.clientCode)} · ${esc(state.session.intake.sessionDate)}</p>` : ''}
       </header>
 
@@ -26,12 +26,15 @@ export function renderUpload(state) {
         <strong>Stays on this device.</strong> The video is never uploaded. Sessions are labeled by client code and date only.
       </p>
 
+      <a class="card guide-link" href="guide.html"><strong>Capture guide</strong> <span class="muted small">How to film: camera at hip height, 1x lens, whole body in frame. Printable.</span></a>
+
       <details class="card">
-        <summary>Capture protocol</summary>
+        <summary>Capture protocol (short)</summary>
         <ul class="tight">
           <li>${protocolHtml('lateral')}</li>
           <li>${protocolHtml('posterior')}</li>
-          <li>A side camera only tracks the near-side arm. Film the other side in a second pass for bilateral arms.</li>
+          <li>${protocolHtml('anterior')}</li>
+          <li>Any combination works, from one clip to all four views; the results show which views were used and what is not assessed.</li>
         </ul>
       </details>
 

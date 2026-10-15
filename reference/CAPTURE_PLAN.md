@@ -1,9 +1,30 @@
-# Guided filming: plan only (not built)
+# Capture plan
 
-Goal: help the clinician film three clips that the analysis can trust, from the phone running the app:
-**left lateral**, **right lateral** and **posterior**. Plan only; nothing here is implemented.
+**Source of truth for how to film: [`guide.html`](../guide.html)** (the one-page Capture guide, opened
+from the upload screen and printable as a PDF). If this file and the guide disagree, the guide wins.
+Settings marked * in the guide are provisional until the re-filming session in
+[REFILM_PROTOCOL.md](REFILM_PROTOCOL.md).
 
-## What a web app can and cannot control on iPhone Safari
+## Guide settings in brief (2026-10-15)
+- Tripod, main 1x lens (not ultra-wide 0.5x), no zoom, landscape, phone's own camera file.
+- 60 fps minimum, 120 fps if offered (analysed at 60 Hz); 30 fps runs with a warning (±33 ms timing).
+- Lens level with the runner's hip (±10 cm*, about 1.1–1.2 m* above the floor), level and square to
+  the belt; about 3.5 m* (3–4 m*) from the runner; ~10%* frame margin; runner ≥ half the frame height.
+- Warm-up about 5 min*; 30–60 s* at one constant speed per clip; console/rails must not hide hips,
+  knees or feet; fitted clothing; even light, plain background, nobody else in frame.
+- Views: left, right, rear, front (front experimental, not scored). Ideal three: left + right + rear,
+  or one side + rear + front.
+- File name `CODE_YYYY-MM-DD_VIEW_SPEED` (VIEW = left/right/rear/front), client code only.
+
+Why: the 16 clips from 8 runners in BENCHMARK.md were filmed from floor level with a wide lens and the
+console hiding the hips; the capture gate refused all of them.
+
+## Guided filming in the app: plan only (not built)
+
+Goal: help the clinician film clips the analysis can trust from the phone running the app, with live
+set-up overlays. Nothing below is implemented.
+
+### What a web app can and cannot control on iPhone Safari
 
 Checked on 2026-10-08 against MDN's browser-compat-data (the data behind MDN's compatibility tables),
 MDN reference pages and WebKit sources. **Unverified** means no authoritative source was found; it must
@@ -31,7 +52,7 @@ be tested on a device before relying on it.
 **cannot** guarantee 120 fps, turn HDR off, lock orientation, or lock focus/exposure. Those need either
 the native Camera app (with the clinician setting 120 fps and HDR in Settings) or a native iOS build.
 
-## Proposed web flow (two stages, so 120 fps stays possible)
+### Proposed web flow (two stages, so 120 fps stays possible)
 
 1. **Set-up assistant (live preview, `getUserMedia`):** per view, overlays on the live picture.
    - **Runner outline** (silhouette for the chosen view) to size the runner: whole body in frame, feet
@@ -53,16 +74,10 @@ the native Camera app (with the clinician setting 120 fps and HDR in Settings) o
 3. **After analysis:** the existing checks (frame rate, length, near-side stride count, posterior
    off-centre estimate) confirm or reject the clip, with a "re-film" prompt.
 
-Per-view targets (shared with the in-app protocol text):
+Per-view overlays: side = outline facing the correct way, belt line, level; rear (and front) =
+outline, vertical centre line, level, live off-centre read-out. Camera positions as in `guide.html`.
 
-| View | Camera position | Overlay |
-|---|---|---|
-| Left lateral / right lateral | Perpendicular to the belt, level, fixed, about pelvis height, as far back as the room allows | Side-view outline facing the correct way; belt line; level |
-| Posterior | Directly behind, centred on the belt midline, level, about pelvis height, as far back as the room allows | Rear-view outline; vertical centre line; level; live off-centre read-out |
-
-All three: whole body in frame, good light, at least 30 s of steady running, 120 fps recommended.
-
-## What would need a native iOS camera build
+### What would need a native iOS camera build
 
 - Guaranteed 120/240 fps capture at a chosen resolution (camera format selection).
 - HDR off (SDR recording), which avoids the HDR colour conversion difference seen in Milestone 2.
@@ -73,18 +88,15 @@ All three: whole body in frame, good light, at least 30 s of steady running, 120
 (These are standard camera-framework capabilities on iOS; specific API details were not checked for
 this plan.)
 
-## Open questions
+### Open questions
 
 1. Measure `getCapabilities()` on the clinic's iPhones to see whether in-page recording reaches 60 or
    120 fps.
 2. Decide whether a live pose overlay during set-up is worth the battery and heat cost.
 
-## Additions (2026-10-12)
-- **Rear view, for pelvic drop:** two small coloured tape dots on the PSIS (the dimples at the base of
-  the back), with a fitted top or the shirt tucked up so the dots stay visible. Without them pelvic
-  drop cannot be validated and stays hidden.
-- **Rear view, for arm crossing:** camera at about shoulder height and far enough back that the
-  wrists stay in frame when the arms swing forward.
-- **Side view:** keep the treadmill's side upright from crossing the near leg; 60 fps or higher if the
-  phone allows (30 fps blurs the knee in early swing).
+## Additions (2026-10-12), reconciled with the guide (2026-10-15)
+- **Rear view, pelvic drop:** optional tape dots on the PSIS (now in the guide as optional).
+- **Rear view, arm crossing:** the earlier "camera at shoulder height" note is **superseded**: the
+  guide keeps the lens at hip height for every view; the 10%* margin keeps the wrists in frame.
+- **Side view:** keep the treadmill upright from crossing the near leg; 60 fps or higher (in the guide).
 - Record the runner's height with every session.

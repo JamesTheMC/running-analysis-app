@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'" />
+    <title>Footage Gate Check</title>
+    <style>
+      :root { --bg: #fff; --fg: #1a1f24; --muted: #5b6670; --line: #d9dee3; --ok: #1a7f37; --warn: #9a6700; --bad: #c62828; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) { --bg: #0f1419; --fg: #e6e9ec; --muted: #9aa5b1; --line: #2b333b; --ok: #4ac26b; --warn: #d4a72c; --bad: #ff6b6b; }
+      }
+      body { background: var(--bg); color: var(--fg); font: 14px/1.45 -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; }
+      h1 { font-size: 18px; margin: 0 0 8px; }
+      h2 { font-size: 15px; margin: 20px 0 6px; }
+      .pass { color: var(--ok); }
+      .warn { color: var(--warn); font-weight: 600; }
+      .fail { color: var(--bad); font-weight: 600; }
+      .na, .muted { color: var(--muted); }
+      .wrap { overflow-x: auto; }
+      table { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 12px; }
+      th, td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+      #summary { font-weight: 600; font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>Footage-quality gate on the committed fixtures</h1>
+    <p class="muted">Runs js/pipeline/footage-checks.js on test/fixtures/clips/*.lm.json (landmarks only, client codes only). Expected: C0 and T1–T3 pass; the 16 floor-level wide-angle clips warn or fail with the camera height / hip / wide-angle (and for CD side, framing) reasons. Calibration: reference/GATE_CALIBRATION.md.</p>
+    <p id="summary">Running…</p>
+    <div id="out"></div>
+    <script type="module" src="gate-check.js"></script>
+  </body>
+</html>

@@ -99,6 +99,7 @@ function findings(model) {
         value: c.text,
         range: found.row.range?.green ? `usual range ${found.row.range.green}` : null,
         phase: PHASE[found.row.phase] || null,
+        phaseId: found.row.phase || null,
         trusted,
         hedge: c.hedge || (c.confidence === 'low' ? 'low confidence' : null),
         common: COMMON_ACROSS_RUNNERS[t.id] || null,
@@ -139,6 +140,32 @@ const uniqBy = (arr, key) => {
   return arr.filter((x) => (seen.has(key(x)) ? false : (seen.add(key(x)), true)));
 };
 const evOf = (items) => uniqBy(items.flatMap((x) => x.evidence || []).filter((e) => e.pmid), (e) => e.pmid);
+
+// Where another view would strengthen an entry: the chain's other trigger metrics that were not
+// assessed because their view is missing, and the other leg of a one-sided side-view finding.
+function strengthenText(model, g, fs) {
+  const views = new Set();
+  const ids = TRIGGERS.filter((t) => t.chains.some((c) => g.chains.includes(c))).map((t) => t.id);
+  for (const id of ids) {
+    const found = (() => {
+      for (const s of model.sections) for (const r of s.rows) if (r.id === id) return r;
+      return null;
+    })();
+    if (!found) continue;
+    for (const c of Object.values(found.cells)) {
+      const m = !c.assessed && /^needs (the [a-z ]+ view|a side view \(left or right\))/.exec(c.why || '');
+      if (m) views.add(m[1]);
+    }
+  }
+  // A side-view finding on one leg: the other leg needs its own side view.
+  for (const f of fs) {
+    const other = / \((left|right)\)$/.exec(f.label)?.[1] === 'left' ? 'right' : / \((left|right)\)$/.exec(f.label) ? 'left' : null;
+    const row = model.sections.flatMap((s) => s.rows).find((r) => r.id === f.id);
+    if (other && row?.cells[other] && !row.cells[other].assessed && /side view/.test(row.cells[other].why)) views.add(`the ${other} side view`);
+  }
+  if (!views.size) return null;
+  return `Confirm with ${[...views].join(' and ')}: ${views.size > 1 ? 'they show' : 'it shows'} related measures not assessed in this session.`;
+}
 
 export function buildExplanations(model) {
   const found = findings(model);
@@ -187,6 +214,7 @@ export function buildExplanations(model) {
       screens,
       work,
       sources,
+      strengthen: strengthenText(model, g, fs),
       softened: fs.length && fs.every((f) => f.common) ? 'All findings here are seen in nearly every analysed runner, which suggests a measurement bias or a range that is too tight rather than a problem specific to this runner.' : null,
     });
   }
@@ -209,6 +237,7 @@ export function explanationsText(ex) {
     out.push('', e.kind === 'full' ? e.title.toUpperCase() : `Worth screening: ${e.title.toLowerCase()}`);
     out.push(`What we saw: ${e.findings.map((f) => `${f.label} ${f.value}${f.range ? ` (${f.range})` : ''}${f.phase ? `, at ${f.phase}` : ''}${f.hedge ? ` [${f.hedge}]` : ''}`).join('; ')}.`);
     if (e.softened) out.push(`Note: ${e.softened}`);
+    if (e.strengthen) out.push(`Note: ${e.strengthen}`);
     if (e.context) out.push(`Note: ${e.context}`);
     for (const c of e.caveats || []) out.push(`Caveat: ${c}.`);
     if (e.kind === 'full') {

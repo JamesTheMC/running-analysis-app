@@ -7,6 +7,8 @@
 //     the two clip medians; if they differ by more than MIDLINE_DISAGREE (same unit as the metric), a
 //     note says the clips disagree.
 //   - Posterior clips supply posterior metrics and capture checks.
+//   - The anterior (front) clip's values are experimental: kept apart in `experimental`, never merged
+//     into the measurements the engine scores.
 // Speed or incline that differ between the two lateral clips produce a warning, because left/right
 // differences would then mix leg and condition.
 
@@ -42,7 +44,7 @@ function combineMidline(a, b) {
 }
 
 /**
- * @param {object} clips  { lateral_left?, lateral_right?, posterior? }, each { analysis, speed?, incline?, name }
+ * @param {object} clips  { lateral_left?, lateral_right?, posterior?, anterior? }, each { analysis, speed?, incline?, name }
  */
 export function mergeSession(clips) {
   const slots = Object.keys(CLIP_SLOTS).filter((s) => clips[s]);
@@ -51,6 +53,7 @@ export function mergeSession(clips) {
   const captureChecks = {};
   const cadenceByClip = [];
   const violations = [];
+  const experimental = {};
   let cyclesDetected = 0;
   for (const slot of slots) {
     const a = clips[slot].analysis;
@@ -63,6 +66,10 @@ export function mergeSession(clips) {
       cyclesDetected += a.cyclesDetected || 0;
     }
     for (const [id, cells] of Object.entries(a.measurements || {})) {
+      if (a.experimental || CLIP_SLOTS[slot].experimental) {
+        experimental[id] = { ...(experimental[id] || {}), ...Object.fromEntries(Object.entries(cells).map(([k, c]) => [k, { ...c, slot }])) };
+        continue;
+      }
       measurements[id] ??= {};
       for (const [key, cell] of Object.entries(cells)) {
         const prev = measurements[id][key];
@@ -82,6 +89,7 @@ export function mergeSession(clips) {
   return {
     source: 'pipeline',
     measurements,
+    experimental,
     lateralLegs: [...new Set(lateralLegs)],
     captureChecks,
     cadenceByClip,

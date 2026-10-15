@@ -128,7 +128,7 @@ export function toAnalysis(result, { heightCm } = {}) {
   );
   out.put('arm_shoulder_rom', leg, cell(metrics.shoulderSwing));
 
-  // Capture-quality gate (capture-quality.js): unsuitable clips give no values; degraded ones are capped.
+  // Capture-quality gate (capture-quality.js): failed clips give no values; warned ones are capped.
   const captureQuality = safely(() => applyCaptureGate(out.measurements, assessCapture('lateral', { rows, meta, events: result.events, nearSide: near, cadenceSpm: cadence?.spm })), [], 'captureQuality');
   return {
     source: 'pipeline',

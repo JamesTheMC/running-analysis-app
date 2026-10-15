@@ -9,13 +9,15 @@ import { renderIntake } from './views/intake.js';
 import { renderResults } from './views/results.js';
 import { renderAnalyzing } from './views/analyzing.js';
 import { mountDebug } from './views/debug.js';
-import { analyzeVideo, postProcess } from './pipeline/run.js';
+import { analyzeVideo } from './pipeline/run.js';
 import { reconcileSession } from './pipeline/reconcile.js';
-import { toAnalysis } from './pipeline/measurements.js';
-import { toPosteriorAnalysis } from './pipeline/posterior.js';
 import { mergeSession } from './pipeline/session.js';
 import { CLIP_SLOTS } from './config.js';
-import { RECONCILE } from './pipeline/reconcile.js';
+import { detectView } from './pipeline/view-detect.js';
+import { processClip } from './pipeline/adapt.js';
+import { quickCapture } from './pipeline/capture-quality.js';
+import { renderClipCheck } from './views/clip-check.js';
+import { mountPhasePanels } from './views/phase-panels.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -23,7 +25,7 @@ import { copyText, today } from './util.js';
 const EMPTY_INTAKE = {
   clientCode: '',
   sessionDate: today(),
-  slot: 'lateral_left',
+  slot: 'auto',
   heightValue: '',
   heightUnit: 'cm',
   speedValue: '',
@@ -58,6 +60,7 @@ function go(screen) {
   if (screen === 'intake' && !state.pendingClip) screen = 'upload';
   if (screen === 'results' && !state.session) screen = 'upload';
   if (screen === 'analyzing' && !state.progress) screen = state.session ? 'results' : 'upload';
+  if (screen === 'check' && !state.check) screen = state.session ? 'results' : 'upload';
   state.screen = screen;
   if (location.hash !== `#${screen}`) history.pushState(null, '', `#${screen}`);
   render();
@@ -68,10 +71,13 @@ function render() {
   if (state.screen === 'intake') root.innerHTML = renderIntake(state);
   else if (state.screen === 'results') root.innerHTML = renderResults(state, results, state.model);
   else if (state.screen === 'analyzing') root.innerHTML = renderAnalyzing(state);
+  else if (state.screen === 'check') root.innerHTML = renderClipCheck(state);
   else root.innerHTML = renderUpload(state);
   if (state.screen === 'intake') wireIntake();
   if (state.screen === 'results') for (const t of root.querySelectorAll('textarea.interpretation')) autosize(t);
   if (state.screen === 'results' && state.tab === 'debug' && state.session?.reconciled) mountDebug(root, state);
+  // Phase panels: stills are drawn on the device from the local video (never stored or sent).
+  if (state.screen === 'results' && (state.tab || 'results') === 'results' && !state.session?.placeholder) mountPhasePanels(root, state, state.model).catch((e) => console.error(e));
 }
 
 function recompute({ resetInterpretation = false } = {}) {
@@ -115,11 +121,10 @@ function pickVideo(file) {
       if (el) el.innerHTML = fileCheckHtml(check);
     });
   if (state.session) {
-    const used = Object.keys(state.session.clips);
     const last = Object.values(state.session.clips).at(-1) || {};
     state.draftIntake = {
       ...state.session.intake,
-      slot: Object.keys(CLIP_SLOTS).find((s) => !used.includes(s)) || '',
+      slot: 'auto',
       speedValue: last.speed ?? state.session.intake.speedValue,
       speedUnit: last.speedUnit ?? state.session.intake.speedUnit,
       incline: last.incline ?? state.session.intake.incline,
@@ -140,7 +145,7 @@ function wireIntake() {
     const data = Object.fromEntries(new FormData(form));
     Object.assign(state.draftIntake, data);
     const protocol = root.querySelector('[data-protocol]');
-    if (protocol && data.slot) protocol.innerHTML = protocolHtml(CLIP_SLOTS[data.slot].view);
+    if (protocol && data.slot) protocol.innerHTML = protocolHtml(data.slot === 'auto' ? 'auto' : CLIP_SLOTS[data.slot].view);
   });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -166,8 +171,7 @@ function submitIntake(form) {
   // Speed and incline are recorded per clip (the two lateral clips may be filmed at different speeds).
   const clip = {
     ...state.pendingClip,
-    slot: data.slot,
-    view: CLIP_SLOTS[data.slot].view,
+    requestedSlot: data.slot,
     speed: data.speedValue,
     speedUnit: data.speedUnit,
     incline: data.incline,
@@ -181,6 +185,7 @@ function addClip(clip, data, analysis) {
   state.pendingClip = null;
   clip.analysis = analysis;
   if (state.session) {
+    // A view can be added (or replaced) at any time; results update for the new set of views.
     state.session.clips[clip.slot] = clip;
   } else {
     const { slot: _slot, ...intake } = { ...EMPTY_INTAKE, ...data };
@@ -192,18 +197,35 @@ function addClip(clip, data, analysis) {
   go('results');
 }
 
+const heightOf = (data) => intakeNumbers(state.session ? state.session.intake : data).heightCm;
+
+// View-specific analysis of the tracked pose for a slot (re-run when the clinician changes the view).
+function analyseAs(check, slot) {
+  check.slot = slot;
+  // Lateral: the slot's leg is the near leg (the clinician confirmed or chose it); depth disagreement
+  // is still reported by the reconciliation (convention issues).
+  const { result, analysis } = processClip(check.rows, check.meta, slot, { heightCm: heightOf(check.data) });
+  check.result = result;
+  check.analysis = analysis;
+}
+
 async function analyzeClip(clip, data) {
-  const { view, leg } = CLIP_SLOTS[clip.slot];
   const controller = new AbortController();
   abortAnalysis = () => controller.abort();
   state.progress = { phase: 'starting', done: 0, total: 0, clipName: clip.name };
   go('analyzing');
   let lastPaint = 0;
   try {
-    let result = await analyzeVideo(clip.file, {
-      view,
-      // Lateral: the near leg is detected from depth and checked against the slot below.
+    // Pose once; the view is decided afterwards (detected, then confirmed or changed on the clip check).
+    const { rows, meta } = await analyzeVideo(clip.file, {
+      poseOnly: true,
       signal: controller.signal,
+      onPartial: (partRows, partMeta) => {
+        const guess = detectView(partRows);
+        const slot = clip.requestedSlot !== 'auto' ? clip.requestedSlot : guess.slot || 'lateral_right';
+        state.progress.quick = quickCapture(CLIP_SLOTS[slot].view, partRows, partMeta, guess);
+        if (state.screen === 'analyzing') render();
+      },
       onProgress: (p) => {
         Object.assign(state.progress, p);
         const now = performance.now();
@@ -214,25 +236,11 @@ async function analyzeClip(clip, data) {
       },
     });
     state.progress = null;
-    if (view === 'lateral') {
-      // Left/right convention: depth decides when it is clear; otherwise the slot (the user's word).
-      const auto = result.seg.near.side === 'L' ? 'left' : 'right';
-      const zGap = Math.abs((result.seg.near.zL ?? 0) - (result.seg.near.zR ?? 0));
-      if (auto !== leg && zGap >= RECONCILE.nearSideMinZGap) {
-        const target = auto === 'left' ? 'lateral_left' : 'lateral_right';
-        if (state.session?.clips[target]) {
-          throw new Error(`This clip looks filmed from the runner's ${auto} (the ${auto} leg faces the camera), but the ${CLIP_SLOTS[target].label.toLowerCase()} slot is already used. Remove that clip or check the video.`);
-        }
-        clip.slot = target;
-        clip.slotNote = `Moved to "${CLIP_SLOTS[target].label}": the ${auto} leg faces the camera (depth check), not the ${leg}.`;
-      } else if (auto !== leg) {
-        result = { ...result, ...postProcess(result.rows, result.meta, { nearSide: leg === 'left' ? 'L' : 'R' }) };
-      }
-    }
-    // Kept in memory for the debug view (skeleton overlay, events); never stored or sent anywhere.
-    clip.debug = { rows: result.rows, meta: result.meta, bad: result.bad };
-    const intake = state.session ? state.session.intake : data;
-    addClip(clip, data, view === 'posterior' ? toPosteriorAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }) : toAnalysis(result, { heightCm: intakeNumbers(intake).heightCm }));
+    const detect = detectView(rows);
+    const check = { clip, data, rows, meta, detect };
+    analyseAs(check, clip.requestedSlot !== 'auto' ? clip.requestedSlot : detect.slot || 'lateral_right');
+    state.check = check;
+    go('check');
   } catch (e) {
     if (e.name === 'AbortError') {
       state.progress = null;
@@ -245,6 +253,18 @@ async function analyzeClip(clip, data) {
   } finally {
     abortAnalysis = null;
   }
+}
+
+function useCheckedClip() {
+  const c = state.check;
+  if (state.session?.clips[c.slot] && !confirm(`Replace the ${CLIP_SLOTS[c.slot].short} clip already in this session?`)) return;
+  const clip = { ...c.clip, slot: c.slot, view: CLIP_SLOTS[c.slot].view };
+  if (c.detect.slot && c.detect.slot !== c.slot) clip.slotNote = `View set to "${CLIP_SLOTS[c.slot].label}" by the clinician; the app had detected ${CLIP_SLOTS[c.detect.slot].short}.`;
+  // Kept in memory for the debug view and the phase panels; never stored or sent anywhere.
+  clip.debug = { rows: c.rows, meta: { ...c.meta, view: clip.view }, bad: c.result.bad };
+  state.check = null;
+  if (state.session?.clips[c.slot]?.url && state.session.clips[c.slot].url !== clip.url) URL.revokeObjectURL(state.session.clips[c.slot].url);
+  addClip(clip, c.data, c.analysis);
 }
 
 function startDemo() {
@@ -305,6 +325,18 @@ root.addEventListener('click', (e) => {
     go('intake');
   }
   else if (action === 'copy') copySummary(el);
+  else if (action === 'use-clip') useCheckedClip();
+  else if (action === 'goto-panel') {
+    e.preventDefault();
+    const target = document.getElementById(el.dataset.panel);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  else if (action === 'discard-clip') {
+    if (state.check?.clip.url) URL.revokeObjectURL(state.check.clip.url);
+    state.check = null;
+    state.pendingClip = null;
+    go('upload');
+  }
   else if (action === 'print') {
     // Export: the browser's print dialog (Save as PDF); every detail is expanded for printing.
     for (const d of root.querySelectorAll('details')) d.open = true;
@@ -328,6 +360,10 @@ root.addEventListener('click', (e) => {
 
 root.addEventListener('change', (e) => {
   if (e.target.matches('[data-action="pick-video"]')) pickVideo(e.target.files[0]);
+  if (e.target.matches('[data-action="check-slot"]') && state.check) {
+    analyseAs(state.check, e.target.value);
+    render();
+  }
 });
 
 root.addEventListener('input', (e) => {
@@ -355,6 +391,7 @@ window.addEventListener('popstate', () => {
   const screen = location.hash.slice(1) || 'upload';
   if (screen === 'intake' && !state.pendingClip) state.screen = state.session ? 'results' : 'upload';
   else if (screen === 'results' && !state.session) state.screen = 'upload';
+  else if (screen === 'check' && !state.check) state.screen = state.session ? 'results' : 'upload';
   else if (state.progress && !state.progress.error) state.screen = 'analyzing'; // stay put while analysing
   else state.screen = screen;
   render();

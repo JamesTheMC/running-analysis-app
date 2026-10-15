@@ -3,11 +3,12 @@
 import { esc } from '../util.js';
 import { CLIP_SLOTS, SCORING } from '../config.js';
 import { STATUS_WORD } from '../presentation/model.js';
-import { buildSummaryText, missingLegs } from '../presentation/text.js';
+import { buildSummaryText } from '../presentation/text.js';
 import { renderDebug } from './debug.js';
+import { phasePanelsHtml } from './phase-panels.js';
 
 const SIDE = { left: 'Left', right: 'Right', mid: '' };
-const MISSING_LEG = /^needs a lateral clip filmed from the (left|right)$/;
+const LEVEL_WORD = { pass: 'Pass', warn: 'Warning', fail: 'Fail' };
 
 function scoreChip(label, value) {
   const band = value == null ? 'none' : value >= SCORING.bands.green ? 'green' : value >= SCORING.bands.yellow ? 'yellow' : 'red';
@@ -15,7 +16,7 @@ function scoreChip(label, value) {
 }
 
 function valueHtml(c) {
-  if (!c.assessed) return `<span class="r-na">Not assessed</span>`;
+  if (!c.assessed) return `<span class="r-na">Not assessed${c.needsView ? `: ${esc(c.why)}` : ''}</span>`;
   const chip = c.status ? `<span class="chip chip-${c.status}">${STATUS_WORD[c.status]}</span>` : '';
   const hedge = c.hedge ? `<span class="hedge">${esc(c.hedge)}</span>` : !c.status && c.confidence !== 'high' ? `<span class="hedge">${esc(c.confidence)} confidence</span>` : '';
   return `<span class="r-val">${esc(c.text)}</span>${chip}${hedge}`;
@@ -27,7 +28,7 @@ function detailHtml(r) {
   if (r.diff) parts.push(`<p>Left–right difference: ${esc(r.diff)}${r.diffNote ? ` (${esc(r.diffNote)})` : ''}</p>`);
   for (const c of Object.values(r.cells)) {
     if (!c.assessed) {
-      if (!MISSING_LEG.test(c.why)) parts.push(`<p>${SIDE[c.key] ? `${SIDE[c.key]}: ` : ''}not assessed: ${esc(c.why)}</p>`);
+      parts.push(`<p>${SIDE[c.key] ? `${SIDE[c.key]}: ` : ''}not assessed: ${esc(c.why)}</p>`);
       continue;
     }
     const bits = [`${esc(c.confidence)} confidence`, c.n ? `median of ${c.n} ${esc(c.countUnit)}` : null, c.source ? `from ${esc(c.source)}` : null].filter(Boolean).join(' · ');
@@ -38,7 +39,7 @@ function detailHtml(r) {
 }
 
 function rowHtml(r) {
-  const cells = Object.values(r.cells).filter((c) => c.assessed || !MISSING_LEG.test(c.why));
+  const cells = Object.values(r.cells);
   if (!cells.length) return '';
   const flagged = cells.some((c) => c.status === 'red') ? ' r-red' : cells.some((c) => c.status === 'yellow') ? ' r-yellow' : '';
   return `<details class="r-row${flagged}">
@@ -66,7 +67,7 @@ function timingHtml(t) {
   if (!t?.rows.length) return '';
   return `<section class="card"><h3>Timing and mechanics</h3>
     <div class="t-grid">${t.rows
-      .map((r) => `<div class="t-item"><span class="t-label">${esc(r.label)}</span><span class="t-val">${esc(r.text)}</span><span class="t-sub">${r.agreement === 'agree' ? 'side and rear agree' : r.flag ? esc(r.flag) : r.note ? esc(r.note) : ''}</span></div>`)
+      .map((r) => `<div class="t-item"><span class="t-label">${esc(r.label)}</span><span class="t-val">${esc(r.text)}</span><span class="t-sub">${r.agreementText ? esc(r.agreementText) : r.flag ? esc(r.flag) : r.note ? esc(r.note) : ''}</span></div>`)
       .join('')}</div>
     ${(t.notes || []).map((n) => `<p class="muted small">${esc(n)}</p>`).join('')}
   </section>`;
@@ -94,8 +95,9 @@ function explainHtml(state, m) {
   const entry = (e) => `<details class="r-row x-entry"${e.kind === 'full' ? ' open' : ''}>
     <summary><span class="r-name">${e.kind === 'screen' ? '<span class="hedge">Worth screening:</span> ' : ''}${esc(e.title)}</span><span class="r-cells"><span class="chip chip-ev">${esc(e.strength)} evidence</span></span></summary>
     <div class="r-detail small">
-      <p><strong>What we saw:</strong> ${e.findings.map((f) => `${esc(f.label)} ${esc(f.value)}${f.range ? ` <span class="muted">(${esc(f.range)})</span>` : ''}${f.phase ? ` <span class="muted">at ${esc(f.phase)}</span>` : ''}${f.hedge ? ` <span class="hedge">${esc(f.hedge)}</span>` : ''}`).join('; ')}</p>
+      <p><strong>What we saw:</strong> ${e.findings.map((f) => `${esc(f.label)} ${esc(f.value)}${f.range ? ` <span class="muted">(${esc(f.range)})</span>` : ''}${f.phase ? ` <span class="muted">at ${f.phaseId ? `<a href="#panel-${esc(f.phaseId)}" data-action="goto-panel" data-panel="panel-${esc(f.phaseId)}">${esc(f.phase)}</a>` : esc(f.phase)}</span>` : ''}${f.hedge ? ` <span class="hedge">${esc(f.hedge)}</span>` : ''}`).join('; ')}</p>
       ${e.softened ? `<p class="hedge">${esc(e.softened)}</p>` : ''}
+      ${e.strengthen ? `<p class="muted">${esc(e.strengthen)}</p>` : ''}
       ${e.context ? `<p class="muted">${esc(e.context)}</p>` : ''}
       ${(e.caveats || []).map((c) => `<p class="muted">Caveat: ${esc(c)}.</p>`).join('')}
       ${e.kind === 'full' ? `<p><strong>Could be contributing</strong> <span class="muted">(unconfirmed until screened)</span>:</p><ul class="tight">${e.limitations.map((l) => `<li>${esc(l.name)} <span class="muted">[${esc(STRENGTH(l.strength))}]</span></li>`).join('')}</ul>` : ''}
@@ -112,6 +114,42 @@ function explainHtml(state, m) {
     <textarea class="interpretation explain-text" data-action="edit-explain" aria-label="Why it may be happening and what to work on (editable)">${esc(state.explainText ?? '')}</textarea>
     <div class="explain-meta small"><span class="muted">${state.explainEdited ? 'Edited' : 'Auto-generated'}. Exercise lists and doses are editable here.</span>${state.explainEdited ? '<button class="btn btn-link" data-action="reset-explain">Reset</button>' : ''}</div>
   </section>`;
+}
+
+// Coverage indicator: which views were used and what share of the metric set is assessable.
+function coverageHtml(m) {
+  const c = m.coverage;
+  if (!c || m.header.demo) return '';
+  return `<section class="card coverage coverage-${c.full ? 'full' : 'partial'}" aria-label="Coverage">
+    <p class="cov-title"><strong>${esc(c.full ? 'Full analysis' : 'Partial analysis')}</strong> · ${esc(c.pct)}% of the metric set assessable <span class="muted">(${esc(c.assessable)} of ${esc(c.total)} values; ${esc(c.assessed)} measured)</span></p>
+    <div class="cov-bar" role="img" aria-label="${esc(c.pct)}% assessable"><span style="width:${Math.max(0, Math.min(100, c.pct))}%"></span></div>
+    <p class="small">Views used: <strong>${esc(c.usedText)}</strong>${c.missingText ? ` · not uploaded: ${esc(c.missingText)}` : ''}${c.failedText ? ` · <span class="warn">failed the video check: ${esc(c.failedText)}</span>` : ''}</p>
+    ${!c.full ? '<p class="muted small">Values marked "Not assessed" need the named view. A missing finding there means it was not checked, not that it is normal.</p>' : ''}
+  </section>`;
+}
+
+// Video check (capture-quality gate) per clip: pass / warning / fail, with what to fix.
+function clipChecksHtml(m) {
+  if (!m.clipChecks?.length) return '';
+  return `<section class="card vcheck"><h3>Video check</h3>${m.clipChecks
+    .map(
+      (k) => `<details class="r-row vc-${k.level}"${k.level === 'fail' ? ' open' : ''}>
+      <summary><span class="r-name">${esc(k.label)}</span><span class="r-cells"><span class="chip chip-${k.level === 'pass' ? 'green' : k.level === 'warn' ? 'yellow' : 'red'}">${esc(LEVEL_WORD[k.level] || k.level)}</span>${k.score != null ? `<span class="hedge">quality ${Math.round(k.score * 100)}%</span>` : ''}</span></summary>
+      <div class="r-detail small">
+        ${k.level === 'fail' ? '<p><strong>No measurements reported from this clip.</strong></p>' : k.level === 'warn' ? '<p>Measurements reported at lowered confidence.</p>' : ''}
+        ${k.reasons.length ? `<p>${esc(k.reasons.join('; '))}</p>` : '<p class="muted">No problems found.</p>'}
+        ${k.level !== 'pass' && k.fixes.length ? `<p><strong>To fix:</strong></p><ul class="tight">${k.fixes.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
+        ${k.checks.length ? `<ul class="tight checks">${k.checks.filter((x) => x.status !== 'na').map((x) => `<li><span class="dot dot-${x.status === 'pass' ? 'green' : x.status === 'warn' ? 'yellow' : 'red'}"></span>${esc(x.label)}: ${esc(x.detail || x.status)}</li>`).join('')}</ul>` : ''}
+      </div></details>`,
+    )
+    .join('')}</section>`;
+}
+
+function experimentalHtml(m) {
+  if (!m.experimental?.length) return '';
+  return `<section class="card exp"><h3>Front view <span class="hedge">experimental</span></h3>
+    <p class="muted small">Not yet validated on front-view video: shown for information only, never scored or used for findings. The rear view is the reference for these measures.</p>
+    <ul class="tight small">${m.experimental.map((e) => `<li>${esc(e.label)}: ${e.cells.map((c) => `${SIDE[c.key] ? `${SIDE[c.key]} ` : ''}${esc(c.text)}`).join(' · ')}</li>`).join('')}</ul></section>`;
 }
 
 function limitsHtml(m) {
@@ -131,10 +169,12 @@ function resultsTab(state, m) {
       <textarea class="interpretation" data-action="edit-interpretation" aria-label="Interpretation (editable)">${esc(state.interpretation)}</textarea>
       <div class="interp-meta small"><span class="muted">${state.interpretationEdited ? 'Edited' : 'Auto-generated'}. Edit before copying.</span>${state.interpretationEdited ? '<button class="btn btn-link" data-action="reset-interpretation">Reset</button>' : ''}</div>
       <div class="scores">${scoreChip('Overall', sc.overall.overall)}${scoreChip('Left', sc.overall.left)}${scoreChip('Right', sc.overall.right)}</div>
-      <p class="muted small">Score: normal = full credit, caution = half, flag = none, weighted by confidence; unscored and timing-sensitive values are left out. First-draft formula.</p>
+      <p class="muted small">${esc(sc.basis || '')} Score: normal = full credit, caution = half, flag = none, weighted by confidence; unscored and timing-sensitive values are left out. First-draft formula.</p>
     </section>
     ${timingHtml(m.timing)}
+    ${m.header.demo ? '' : phasePanelsHtml(state, m)}
     ${m.sections.map(sectionHtml).join('')}
+    ${experimentalHtml(m)}
     ${findingsHtml(m)}
     ${explainHtml(state, m)}
     ${limitsHtml(m)}
@@ -150,7 +190,6 @@ export function renderResults(state, results, model) {
   const { session } = state;
   const m = model;
   const missing = Object.keys(CLIP_SLOTS).filter((s) => !session.clips[s]);
-  const legs = missingLegs(m);
   const facts = [m.header.height ? `${Math.round(m.header.height)} cm` : null, m.header.speed, m.header.incline ? `incline ${m.header.incline}` : null].filter(Boolean);
   const tab = ['results', 'text', 'debug'].includes(state.tab) ? state.tab : 'results';
   return `
@@ -158,9 +197,10 @@ export function renderResults(state, results, model) {
       <header class="screen-head">
         <h1>${esc(m.header.client)} <span class="muted">· ${esc(m.header.date)}</span></h1>
         <p class="muted small">${m.header.clips.map(esc).join(' · ')}${facts.length ? ` · ${facts.map(esc).join(' · ')}` : ''}</p>
-        ${legs.length ? `<p class="muted small">Side-view values for the ${esc(legs.join(' and '))} leg need a clip filmed from that side.</p>` : ''}
-        ${m.header.warnings.map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`).join('')}
+        ${m.header.warnings.filter((w) => !/video check (failed|warning)/.test(w)).map((w) => `<p class="small warn">⚠ ${esc(w)}</p>`).join('')}
       </header>
+      ${coverageHtml(m)}
+      ${clipChecksHtml(m)}
       ${m.header.demo ? '<div class="banner" role="note"><strong>Demo data.</strong> Numbers are invented to show the layout and are not from any video. Upload a clip for a real analysis.</div>' : ''}
       <nav class="tabs" role="tablist">
         <button role="tab" aria-selected="${tab === 'results'}" data-action="tab" data-tab="results">Results</button>
@@ -169,7 +209,7 @@ export function renderResults(state, results, model) {
       </nav>
       ${tab === 'results' ? resultsTab(state, m) : tab === 'text' ? textTab(state, m) : renderDebug(state)}
       <div class="actions">
-        ${missing.length ? `<button class="btn btn-secondary" data-action="add-clip">Add clip (${esc(missing.map((s) => CLIP_SLOTS[s].label.toLowerCase()).join(' / '))})</button>` : ''}
+        ${missing.length && !m.header.demo ? `<button class="btn btn-secondary" data-action="add-clip">Add a view (${esc(missing.map((s) => CLIP_SLOTS[s].short).join(' / '))})</button>` : ''}
         <button class="btn btn-link" data-action="new-session">New session</button>
       </div>
     </section>`;

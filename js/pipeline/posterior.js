@@ -17,10 +17,12 @@ export const PSIS_BEYOND_CM = 5; // clinician decision 2026-10-09: beyond PSIS =
 
 const ANAT = { L: 'left', R: 'right' };
 
-export function toPosteriorAnalysis(result, { heightCm } = {}) {
+// view 'anterior': the front-view clip, already mirrored into rear-view geometry (run.js
+// postProcessFront); its values are tagged experimental by the emitter.
+export function toPosteriorAnalysis(result, { heightCm, view = 'posterior' } = {}) {
   const { metrics: pm, capture, cadence, midstancePelvis } = result;
   const swapCheckPassed = swapOk(capture.swapFrames, result.rows?.length ?? result.bad?.length ?? 0);
-  const out = createEmitter('posterior', { slot: 'posterior', swapCheckPassed });
+  const out = createEmitter(view, { slot: view, swapCheckPassed });
   const pxPerCm = heightCm > 0 && pm.bodyHeightPx > 0 ? pm.bodyHeightPx / heightCm : null;
   const withSweep = (c, side, key) => {
     if (c.value == null) return c;
@@ -108,7 +110,7 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
   const valid = (s) => midstancePelvis[s].filter((h) => h.valid).length;
   // Capture-quality gate (capture-quality.js).
   const captureQuality = safely(
-    () => applyCaptureGate(out.measurements, assessCapture('posterior', { rows: result.rows, meta: result.meta, cadenceSpm: cadence?.spm, midstanceValid: valid('L') + valid('R'), swapFrames: capture.swapFrames })),
+    () => applyCaptureGate(out.measurements, assessCapture(view, { rows: result.rows, meta: result.meta, cadenceSpm: cadence?.spm, midstanceValid: valid('L') + valid('R'), swapFrames: capture.swapFrames })),
     [],
     'captureQuality',
   );
@@ -121,7 +123,8 @@ export function toPosteriorAnalysis(result, { heightCm } = {}) {
     cadenceVideo: cadence ? { spm: cadence.spm, strides: cadence.strides } : null,
     cyclesDetected: cadence?.strides ?? 0,
     // For the reconciliation layer (js/pipeline/reconcile.js).
-    view: 'posterior',
+    view,
+    experimental: view === 'anterior',
     ...(() => {
       const errors = [];
       return {

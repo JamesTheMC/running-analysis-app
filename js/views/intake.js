@@ -16,7 +16,9 @@ export function fileCheckHtml(check) {
 // Capture protocol per view (also shown on the upload screen).
 export function protocolHtml(view) {
   const common = `level and fixed (tripod), lens at about pelvis height, as far back as the room allows with the whole body in frame, good light. At least ${CAPTURE.minSeconds} s of steady running (more than 7 steps per leg for a stable mean). ${CAPTURE.recommendedFps} fps recommended, ${CAPTURE.minFps} fps minimum; native camera file, not a screen recording.`;
+  if (view === 'auto') return `Any view works: left side, right side, rear or front. The app detects the view from the pose and shows its guess before using the clip; you can change it. Full setup: <a href="guide.html">capture guide</a>.`;
   if (view === 'posterior') return `<strong>Posterior:</strong> camera directly behind the runner and centred on the belt midline, ${common} The app estimates how far off-centre the runner is after analysis (approximate).`;
+  if (view === 'anterior') return `<strong>Anterior (front, experimental):</strong> camera directly in front of the runner, centred on the belt midline, ${common} Front-view values are shown for information only until validated.`;
   return `<strong>Lateral:</strong> camera perpendicular to the belt, ${common} Measures the leg and arm facing the camera only; film the other side for bilateral values. Keep the treadmill's side upright from crossing the near leg (move the camera back or lower).`;
 }
 
@@ -44,8 +46,8 @@ export function renderIntake(state) {
   const f = state.draftIntake;
   const usedSlots = Object.keys(state.session?.clips || {});
   const sharedLocked = usedSlots.length > 0;
-  const slot = f.slot && !usedSlots.includes(f.slot) ? f.slot : Object.keys(CLIP_SLOTS).find((v) => !usedSlots.includes(v));
-  const view = CLIP_SLOTS[slot]?.view || 'lateral';
+  const slot = f.slot === 'auto' || CLIP_SLOTS[f.slot] ? f.slot : 'auto';
+  const view = slot === 'auto' ? 'auto' : CLIP_SLOTS[slot].view;
 
   return `
     <section class="screen">
@@ -82,8 +84,8 @@ export function renderIntake(state) {
           <legend>Clip</legend>
           <div class="field">
             <span class="label">Camera view <span class="req">required</span></span>
-            ${radios('slot', Object.entries(CLIP_SLOTS).map(([v, d]) => [v, d.label]), slot, { disabled: usedSlots })}
-            <p class="hint">"Filmed from the left" = the runner's left side faces the camera. A lateral clip measures the leg and arm on that side only; film the other side for both legs.</p>
+            ${radios('slot', [['auto', 'Detect automatically'], ...Object.entries(CLIP_SLOTS).map(([v, d]) => [v, `${d.label}${usedSlots.includes(v) ? ' (replaces the current clip)' : ''}`])], slot)}
+            <p class="hint">The detected view is shown before the clip is used, and you can change it. "Filmed from the left" = the runner's left side faces the camera; a side clip measures the leg and arm on that side only.</p>
           </div>
           <p class="hint" data-protocol>${protocolHtml(view)}</p>
           <div class="grid-2">

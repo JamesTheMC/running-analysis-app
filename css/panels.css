@@ -1,0 +1,143 @@
+/* Phase panels (js/views/phase-panels.js): still frames with the pose overlay and the phase's metrics.
+   Phone: everything stacks. Tablet (>= 768 px): left and right legs side by side. */
+.pp-section {
+  min-width: 0;
+}
+.pp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.pp-phase {
+  margin-top: 8px;
+  scroll-margin-top: 12px;
+}
+.pp-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.pp-view {
+  min-width: 0;
+  scroll-margin-top: 12px;
+}
+.pp-view-rear {
+  margin-top: 16px;
+}
+.pp-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 6px 0;
+}
+.pp-fig {
+  margin: 0;
+  min-width: 0;
+}
+.pp-cap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.pp-stage {
+  background: var(--na-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  line-height: 0;
+  text-align: center;
+}
+.pp-canvas {
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 72vh;
+  object-fit: contain;
+}
+.pp-note:empty {
+  display: none;
+}
+.pp-note {
+  margin: 4px 0 0;
+}
+.pp-step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  margin: 4px 0;
+}
+.pp-step .pp-btn {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 4px 8px;
+  font-variant-numeric: tabular-nums;
+}
+.pp-offset {
+  flex: 1 1 auto;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pp-metrics {
+  margin-top: 4px;
+}
+.pp-mid {
+  margin-top: 10px;
+}
+.pp-m.pp-na {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+  font-size: 14px;
+}
+.pp-mname {
+  font-weight: 600;
+}
+.pp-missing {
+  margin: 6px 0;
+}
+
+@media (min-width: 768px) {
+  .pp-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* A pair with one leg only (one side clip) keeps the single panel at half width. */
+  .pp-pair > .pp-missing {
+    align-self: start;
+  }
+}
+
+@media print {
+  .pp-controls,
+  .pp-step {
+    display: none !important;
+  }
+  .pp-section.card {
+    break-inside: auto;
+  }
+  .pp-fig,
+  .pp-view-rear > .pp-sub {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .pp-phase > .r-phase {
+    break-after: avoid;
+  }
+  .pp-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pp-canvas {
+    max-height: 9cm;
+    width: auto;
+  }
+  .pp-stage {
+    background: none;
+  }
+}
+
+.pp-event {
+  flex-basis: 100%;
+  color: var(--text);
+}

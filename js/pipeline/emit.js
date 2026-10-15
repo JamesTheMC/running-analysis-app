@@ -13,11 +13,17 @@ export class ViewViolation extends Error {}
 
 export function allowed(metricId, view) {
   const def = BY_ID.get(metricId);
-  return !!def && (def.status ?? 'built') === 'built' && (def.allowedViews || []).includes(view);
+  return !!def && (def.status ?? 'built') === 'built' && ((def.allowedViews || []).includes(view) || experimental(metricId, view));
+}
+
+// Experimental view for a metric (front view): the value is kept apart, never scored or reported as a
+// finding (config experimentalViews).
+export function experimental(metricId, view) {
+  return !!BY_ID.get(metricId)?.experimentalViews?.includes(view);
 }
 
 /**
- * @param {string} view      'lateral' | 'posterior'
+ * @param {string} view      'lateral' | 'posterior' | 'anterior'
  * @param {object} source    provenance added to every value, e.g. { slot: 'lateral', filmedFrom: 'left' }
  */
 export function createEmitter(view, source = {}) {
@@ -37,7 +43,7 @@ export function createEmitter(view, source = {}) {
         return false;
       }
       measurements[metricId] ??= {};
-      measurements[metricId][key] = { ...cell, source: { view, ...source } };
+      measurements[metricId][key] = { ...cell, source: { view, ...source }, ...(experimental(metricId, view) ? { experimental: true } : {}) };
       return true;
     },
   };

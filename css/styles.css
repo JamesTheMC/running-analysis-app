@@ -1075,3 +1075,47 @@ abbr.p {
     color: #000;
   }
 }
+
+/* Coverage indicator and video check (view combinations, capture-quality gate). */
+.dot-yellow {
+  background: var(--yellow);
+}
+.checks .dot {
+  margin-left: 0;
+}
+.coverage .cov-title {
+  margin: 0 0 6px;
+}
+.coverage-partial {
+  border-left: 4px solid var(--yellow);
+}
+.coverage-full {
+  border-left: 4px solid var(--green);
+}
+.cov-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.cov-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.vc-fail > summary .r-name::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 1em;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: var(--red);
+}
+.r-na {
+  overflow-wrap: anywhere;
+}
+.vcheck .r-cells .chip {
+  flex: 0 0 auto;
+}

@@ -18,14 +18,19 @@ export const PHASES = [
 export const VIEWS = {
   lateral: { label: 'Lateral (side)' },
   posterior: { label: 'Posterior (rear)' },
+  anterior: { label: 'Anterior (front)' }, // experimental: no front-view clip validated yet
 };
 
-// Clip slots of a session (js/pipeline/session.js), each optional. Each lateral clip supplies its near
-// leg and near arm only; the posterior clip supplies frontal-plane metrics for both legs.
+// Clip slots of a session (js/pipeline/session.js), each optional; any subset works. Each lateral clip
+// supplies its near leg and near arm only; the posterior clip supplies frontal-plane metrics for both
+// legs; the anterior clip gives EXPERIMENTAL frontal-plane values only (never scored or used for the
+// corrective section) until a front-view clip is validated. Which view provides what:
+// js/pipeline/view-matrix.js.
 export const CLIP_SLOTS = {
-  lateral_left: { view: 'lateral', leg: 'left', label: 'Lateral, filmed from the left' },
-  lateral_right: { view: 'lateral', leg: 'right', label: 'Lateral, filmed from the right' },
-  posterior: { view: 'posterior', label: 'Posterior (from behind)' },
+  lateral_left: { view: 'lateral', leg: 'left', label: 'Lateral, filmed from the left', short: 'left side view' },
+  lateral_right: { view: 'lateral', leg: 'right', label: 'Lateral, filmed from the right', short: 'right side view' },
+  posterior: { view: 'posterior', label: 'Posterior (from behind)', short: 'rear view' },
+  anterior: { view: 'anterior', label: 'Anterior (from the front)', short: 'front view', experimental: true },
 };
 
 // Metric build status: 'built' = computed; 'planned' = allowed but not computed yet (reason below);
@@ -651,6 +656,11 @@ export const METRICS = [
     summary: 'ARMS',
   },
 ];
+
+// Front view (anterior): every built frontal-plane metric may be computed from it, but only as an
+// experimental value (listed separately, never scored, never a finding) until validated on real
+// front-view video (none filmed yet, 2026-10-15).
+for (const m of METRICS) if ((m.status ?? 'built') === 'built' && m.allowedViews.includes('posterior')) m.experimentalViews = ['anterior'];
 
 // Copy-paste summary sections, in order (Section 5). Interpretation is always last.
 export const SUMMARY_SECTIONS = [

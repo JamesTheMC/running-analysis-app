@@ -210,13 +210,13 @@ test('adapter emits only lateral-allowed metrics, near leg only (strict mode)', 
   assert(a.violations.length === 0, `${a.violations.length} violations`);
   return `${ids.length} metrics emitted`;
 });
-test('engine: other leg reads "needs a lateral clip filmed from the right"', () => {
+test('engine: other leg reads "needs the right side view"', () => {
   const a = toAnalysis(fixture(), { heightCm: 170 });
   const res = analyze({ intake: baseIntake, views: ['lateral'], analysis: a });
   const lateralLr = res.rows.filter((r) => r.def.sided === 'lr' && r.def.allowedViews.includes('lateral') && (r.def.status ?? 'built') === 'built');
   for (const r of lateralLr) {
     const c = r.cells.right;
-    assert(!c.assessed && c.value == null && c.reason === 'needs a lateral clip filmed from the right', `${r.def.id}: ${c.reason}`);
+    assert(!c.assessed && c.value == null && c.reason === 'needs the right side view', `${r.def.id}: ${c.reason}`);
   }
   assert(res.viewViolations.length === 0, 'violations');
   return `${lateralLr.length} right-leg cells`;
@@ -541,7 +541,7 @@ await testAsync('cached IMG_0640: only posterior metrics, both legs, swap check,
   assert(a.captureChecks.posterior.swapCheckPassed === true, 'swap check');
   const res2 = analyze({ intake: baseIntake, views: ['posterior'], analysis: mergeSession({ posterior: { analysis: a } }) });
   const lateralRow = res2.rowsById.ic_knee_flexion.cells.left;
-  assert(!lateralRow.assessed && /needs a lateral/.test(lateralRow.reason), `lateral metric from posterior session: ${lateralRow.reason}`);
+  assert(!lateralRow.assessed && /needs the left side view/.test(lateralRow.reason), `lateral metric from posterior session: ${lateralRow.reason}`);
   assert(res2.viewViolations.length === 0, 'violations');
   const h = res2.rowsById.ms_hip_adduction;
   return `hip adduction L ${h.cells.left.display ?? h.cells.left.value?.toFixed(1)} / R ${h.cells.right.display ?? h.cells.right.value?.toFixed(1)}; shift ${a.measurements.ms_lateral_shift.mid.display}`;
@@ -607,24 +607,24 @@ section = 'Fixture regression (committed landmark fixtures, all clients; no vide
     for (const client of ['AR', 'AZ', 'CD', 'CH', 'JW', 'ML', 'RQ', 'RY']) {
       const { clips, result } = await sessionFor(client);
       for (const [slot, c] of Object.entries(clips)) {
-        assert(c.analysis.captureQuality?.level === 'unsuitable', `${client} ${slot}: ${c.analysis.captureQuality?.level}`);
+        assert(c.analysis.captureQuality?.level === 'fail', `${client} ${slot}: ${c.analysis.captureQuality?.level}`);
         for (const cells of Object.values(c.analysis.measurements)) for (const cell of Object.values(cells)) assert(cell.value == null, `${client} ${slot}: value leaked`);
       }
-      assert(result.convention.issues.some((i) => /video setup unsuitable/.test(i)), `${client}: no capture warning`);
+      assert(result.convention.issues.some((i) => /video check failed/.test(i)), `${client}: no capture warning`);
       assert(!result.timing.crossChecks.some((x) => x.reported != null), `${client}: timing from unsuitable clips`);
     }
   });
-  await testAsync('capture gate: validated clips (C0, T1–T3) are suitable', async () => {
+  await testAsync('capture gate: validated clips (C0, T1–T3) pass', async () => {
     for (const client of ['C0', 'T1', 'T2', 'T3']) {
       const { clips } = await sessionFor(client);
-      for (const [slot, c] of Object.entries(clips)) assert(c.analysis.captureQuality?.level === 'suitable', `${client} ${slot}: ${c.analysis.captureQuality?.level} ${c.analysis.captureQuality?.reasons}`);
+      for (const [slot, c] of Object.entries(clips)) assert(c.analysis.captureQuality?.level === 'pass', `${client} ${slot}: ${c.analysis.captureQuality?.level} ${c.analysis.captureQuality?.reasons}`);
     }
   });
   await testAsync('one view only: missing view reported as not assessed', async () => {
     const { reconcileSession } = await import('../js/pipeline/reconcile.js');
     const { clips, intake } = await sessionFor('T3');
     const only = reconcileSession({ intake, clips: { lateral_right: clips.lateral_right } });
-    assert(only.views.length === 1 && only.metrics.ms_hip_adduction.notAssessed?.includes('posterior'), JSON.stringify(only.metrics.ms_hip_adduction));
+    assert(only.views.length === 1 && only.metrics.ms_hip_adduction.notAssessed === 'needs the rear view', JSON.stringify(only.metrics.ms_hip_adduction));
     assert(only.metrics.ic_knee_flexion.cells.right.value != null, 'lateral metric missing');
     const cad = only.timing.crossChecks.find((c) => c.quantity === 'cadence');
     assert(cad.status === 'single view', cad.status);
@@ -676,7 +676,7 @@ section = 'Presentation model and text (fixtures)';
     const knee = m.sections.flatMap((s) => s.rows).find((r) => r.id === 'ms_max_knee_flexion').cells.right; // 51.1° vs red > 45°, error ±6.7°
     assert(!knee.status && /within measurement error/.test(knee.hedge || ''), JSON.stringify(knee));
   });
-  await testAsync('text follows the template order and states the missing leg once', async () => {
+  await testAsync('text follows the template order; every missing value says which view it needs', async () => {
     const m = await modelFor('T3');
     const t = buildSummaryText(m, buildInterpretation(m));
     const order = ['ANKLE AND FOOT', 'KNEE', 'HIP AND PELVIS', 'TRUNK (LUMBAR PROXY)', 'ARMS', 'TIMING AND MECHANICS', 'INTERPRETATION', 'Limits:'];
@@ -686,8 +686,8 @@ section = 'Presentation model and text (fixtures)';
       assert(i > at, `${h} out of order`);
       at = i;
     }
-    assert((t.match(/need a clip filmed from that side/g) || []).length === 1, 'missing-leg note');
-    assert(!/needs a lateral clip filmed from the left/.test(t), 'per-line missing-leg noise');
+    assert(/L Not assessed: needs the left side view/.test(t), 'missing-leg cells not stated');
+    assert(/COVERAGE: Partial analysis/.test(t), 'coverage line');
     assert(/not a diagnosis/.test(t), 'limits statement');
   });
   await testAsync('corrections: verified evidence only, personalised step-rate targets, no primary on borderline findings', async () => {
@@ -776,6 +776,179 @@ section = 'Why it may be happening and what to work on';
     }
     assert(text.includes(explainText), 'Summary text does not carry the editable section');
     return `${m.explanations.entries.length} entries`;
+  });
+}
+
+section = 'View combinations (derived fixtures: T3 right side + rear filmed; left side and front derived)';
+{
+  const { fourViewSession } = await import('./fixture-regression.js');
+  const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+  const { buildModel } = await import('../js/presentation/model.js');
+  const { buildSummaryText, buildInterpretation } = await import('../js/presentation/text.js');
+  const { explanationsText } = await import('../js/presentation/explain.js');
+  const { renderResults } = await import('../js/views/results.js');
+  const { CLIP_SLOTS: SL } = await import('../js/config.js');
+  const { cellSources, compareCoverage, coverage, SLOT_SHORT } = await import('../js/pipeline/view-matrix.js');
+  const { correctionsFor } = await import('../js/presentation/corrections.js');
+  const all = ['lateral_left', 'lateral_right', 'posterior', 'anterior'];
+  const subsets = [];
+  for (let mask = 1; mask < 16; mask++) subsets.push(all.filter((_, i) => mask & (1 << i)));
+  const build = async (slots) => {
+    const { intake, clips } = await fourViewSession('T3');
+    const use = Object.fromEntries(slots.map((s) => [s, clips[s]]));
+    const session = { intake, clips: use, placeholder: false };
+    session.views = [...new Set(slots.map((s) => SL[s].view))];
+    session.analysis = mergeSession(use);
+    session.reconciled = reconcileSession(session);
+    const res = analyze(session);
+    const m = buildModel(session, res, { corrections: correctionsFor });
+    const interpretation = buildInterpretation(m);
+    const explainText = explanationsText(m.explanations);
+    const html = renderResults({ session, tab: 'results', interpretation, explainText, model: m }, res, m);
+    const text = buildSummaryText(m, interpretation, explainText);
+    const strip = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, ' ');
+    return { session, res, m, html, screen: strip(html), text };
+  };
+  await testAsync('derived views are detected as the view they stand for', async () => {
+    const { clips } = await fourViewSession('T3');
+    for (const s of all) assert(clips[s].detected === s, `${s} detected as ${clips[s].detected}`);
+  });
+  await testAsync('front view through the rear pipeline reproduces the rear values (mirror is exact)', async () => {
+    const { clips } = await fourViewSession('T3');
+    const a = clips.anterior.analysis.measurements;
+    const p = clips.posterior.analysis.measurements;
+    for (const id of ['ms_hip_adduction', 'ms_knee_varus_valgus']) for (const k of ['left', 'right']) assert(Math.abs(a[id][k].value - p[id][k].value) < 0.01 && a[id][k].experimental, `${id} ${k}: ${a[id][k].value} vs ${p[id][k].value}`);
+  });
+  for (const slots of subsets) {
+    const name = slots.map((s) => SLOT_SHORT[s]).join(' + ');
+    await testAsync(`${name}: renders; "Not assessed: needs …" correct; coverage; no unassessed or experimental value in scores; screen = text`, async () => {
+      const { session, res, m, html, screen, text } = await build(slots);
+      assert(html.length && text.length, 'empty output');
+      // Coverage: views used and share of the metric set.
+      const cov = coverage(session.clips, { exclude: ['ms_pelvic_drop'] });
+      assert(m.coverage.usable.join() === slots.join(), `usable ${m.coverage.usable}`);
+      assert(m.coverage.assessable === cov.assessable && m.coverage.full === (slots.length >= 3 && !slots.includes('anterior') ? true : slots.length === 4), `coverage ${m.coverage.assessable}/${m.coverage.total} full=${m.coverage.full}`);
+      assert(screen.includes(`${m.coverage.pct}% of the metric set assessable`) && text.includes(m.coverage.label), 'coverage indicator missing on screen or in text');
+      // Every cell: assessed only if its authoritative view is present; otherwise a reason naming the view.
+      for (const sec of m.sections) {
+        for (const r of sec.rows) {
+          const def = res.rowsById[r.id].def;
+          for (const c of Object.values(r.cells)) {
+            const src = cellSources(def, c.key).authoritative;
+            const has = src.some((x) => slots.includes(x));
+            if (!has) {
+              assert(!c.assessed, `${r.id} ${c.key} assessed without its view`);
+              assert(/^needs (the|a side view)/.test(c.why), `${r.id} ${c.key}: "${c.why}"`);
+              const need = src.length === 2 ? 'a side view' : SLOT_SHORT[src[0]];
+              assert(c.why.includes(need), `${r.id} ${c.key}: "${c.why}" does not name ${need}`);
+              assert(text.includes(`Not assessed: ${c.why}`) || (/side view$/.test(c.why) && text.includes('Not assessed: needs the left and right side views')), `text lacks reason for ${r.id} ${c.key}`);
+              assert(screen.includes(`Not assessed: ${c.why}`), `screen lacks reason for ${r.id} ${c.key}`);
+            } else if (c.assessed) {
+              assert(text.includes(c.text) && screen.includes(c.text), `${r.id} ${c.key}: value ${c.text} not on both screen and text`);
+            } else assert(c.why && c.why.length > 3, `${r.id} ${c.key}: blank reason`);
+          }
+        }
+      }
+      // Scores: only assessed cells from non-experimental views carry weight.
+      let weighted = 0;
+      for (const row of res.rows) for (const c of Object.values(row.cells)) if (c.weight != null) {
+        weighted++;
+        assert(c.assessed && c.source && c.source.view !== 'anterior', `${row.def.id}: weight on unassessed/experimental`);
+        assert(slots.includes(c.source.slot) || (c.source.slot || '').split('+').every((x) => slots.includes(x)) || (c.source.view === 'lateral' && slots.some((x) => x.startsWith('lateral'))), `${row.def.id}: weight from ${c.source.slot}`);
+      }
+      if (!weighted) assert(res.overall.overall == null, 'score without scored values');
+      assert(text.includes(m.scores.basis) && screen.includes(m.scores.basis), 'score basis');
+      // Experimental (front) values never in sections, findings or the corrective section.
+      if (slots.includes('anterior')) {
+        assert(m.experimental.length && /FRONT VIEW \(EXPERIMENTAL/.test(text) && /Front view/.test(screen), 'front view block missing');
+        for (const f of m.findings) for (const t of f.triggers) assert(!/front/i.test(t.text), 'front-view trigger');
+      }
+      if (slots.length === 1 && slots[0] === 'anterior') {
+        assert(weighted === 0 && !m.explanations.entries.length && !m.findings.length, 'front-only session produced scores or findings');
+      }
+      // Corrective entries only from assessed values.
+      for (const e of m.explanations.entries) for (const f of e.findings) assert(!/not assessed/i.test(f.value || ''), `${e.id}: unassessed finding`);
+      return `${m.coverage.assessable}/${m.coverage.total} assessable, ${weighted} scored`;
+    });
+  }
+  test('comparing sessions with different view coverage warns', () => {
+    const a = { signature: 'lateral_right', usable: ['lateral_right'], share: 0.4 };
+    const b = { signature: 'lateral_right+posterior', usable: ['lateral_right', 'posterior'], share: 0.7 };
+    assert(compareCoverage(a, a).same && !compareCoverage(a, a).warning, 'same coverage warned');
+    const w = compareCoverage(a, b);
+    assert(!w.same && /Different view coverage/.test(w.warning) && /rear view/.test(w.warning), w.warning);
+  });
+}
+
+section = 'Capture-quality gate (video check) on all 24 benchmark clips';
+{
+  const { sessionFor, fourViewSession } = await import('./fixture-regression.js');
+  const { footageChecks, summariseChecks, lumaFromImageData } = await import('../js/pipeline/footage-checks.js');
+  const { quickCapture, scoreCap } = await import('../js/pipeline/capture-quality.js');
+  const { CLIPS } = await import('./clips.js');
+  const { unpackRows } = await import('./fixture-io.js');
+  const { detectView } = await import('../js/pipeline/view-detect.js');
+  const GOOD = ['C0', 'T1', 'T2', 'T3'];
+  // Expected reasons (check ids) per problem clip: floor-level camera everywhere; CD side also the head
+  // out of frame (framing).
+  const expectReason = (id) => (id === 'CD-side' ? ['framing', 'camera_height'] : ['camera_height']);
+  const load = async (id) => unpackRows(await (await fetch(`fixtures/clips/${id}.lm.json`)).json());
+  await testAsync('verdicts: 8 good clips pass, 16 floor-level wide-angle clips fail with the right reasons and a fix', async () => {
+    let right = 0;
+    for (const c of CLIPS) {
+      const { rows, meta } = await load(c.id);
+      const view = detectView(rows).view;
+      assert(view === c.view, `${c.id}: detected ${view}`);
+      const checks = footageChecks(view, { rows, meta });
+      const q = summariseChecks(checks);
+      if (GOOD.includes(c.client)) assert(q.level === 'pass', `${c.id}: ${q.level} (${q.reasons})`);
+      else {
+        assert(q.level === 'fail', `${c.id}: ${q.level}`);
+        for (const id of expectReason(c.id)) assert(checks.find((x) => x.id === id)?.status === 'fail', `${c.id}: ${id} not failed`);
+        assert(q.fixes.some((f) => /hip height|whole body|move the camera back/i.test(f)), `${c.id}: no fix (${q.fixes})`);
+      }
+      right++;
+    }
+    return `${right}/24 correct`;
+  });
+  await testAsync('quick check (first 150 frames): good clips pass, problem clips warn or fail', async () => {
+    for (const c of CLIPS) {
+      const { rows, meta } = await load(c.id);
+      const q = quickCapture(c.view, rows.slice(0, 150), meta, detectView(rows.slice(0, 150)));
+      if (GOOD.includes(c.client)) assert(q.level === 'pass', `${c.id}: ${q.level} ${q.reasons}`);
+      else assert(q.level !== 'pass', `${c.id}: quick check passed`);
+    }
+  });
+  await testAsync('warn lowers confidence; quality score caps confidence; fail reports nothing', async () => {
+    const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+    const { intake, clips } = await sessionFor('T3');
+    const slot = 'lateral_right';
+    const a = clips[slot].analysis;
+    assert(a.captureQuality.score >= 0.85 && scoreCap(a.captureQuality.score) == null, `T3 score ${a.captureQuality.score}`);
+    assert(scoreCap(0.7) === 'medium' && scoreCap(0.4) === 'low', 'score caps');
+    // Simulate a warned clip: every value capped at low with the reason.
+    const { applyCaptureGate } = await import('../js/pipeline/capture-quality.js');
+    const warned = structuredClone(a.measurements);
+    applyCaptureGate(warned, { level: 'warn', score: 0.72, reasons: ['camera tilted 4°'], upperBodyOk: true });
+    const r = reconcileSession({ intake, clips: { [slot]: { ...clips[slot], analysis: { ...a, measurements: warned } } } });
+    const knee = r.metrics.ic_knee_flexion.cells.right;
+    assert(knee.value != null && knee.confidence === 'low' && knee.confidenceReasons.some((x) => /video check warning/.test(x)), JSON.stringify(knee.confidenceReasons));
+  });
+  test('lighting: not judged without brightness data; luma helper', () => {
+    const d = new Uint8ClampedArray(4 * 64).fill(100);
+    const l = lumaFromImageData(d);
+    assert(Math.abs(l.mean - 100) < 1, JSON.stringify(l));
+  });
+  await testAsync('phase panels: representative stride is a valid stride of the near leg, for every phase', async () => {
+    const { representativeStride } = await import('../js/views/phase-panels.js');
+    const { clips } = await fourViewSession('T3');
+    for (const [slot, phases] of [['lateral_right', ['initial_contact', 'midstance', 'toe_off']], ['posterior', ['midstance']]]) {
+      for (const ph of phases) for (const leg of slot === 'posterior' ? ['left', 'right'] : ['right']) {
+        const r = representativeStride(clips[slot], ph, leg);
+        assert(r && r.stride && r.stride.valid !== false && /Stride \d+ of \d+/.test(r.label), `${slot} ${ph} ${leg}: ${JSON.stringify(r && r.label)}`);
+      }
+    }
+    assert(representativeStride(clips.lateral_right, 'midstance', 'left') == null, 'far leg must never be drawn');
   });
 }
 

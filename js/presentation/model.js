@@ -13,6 +13,7 @@ import { PHASES, SUMMARY_SECTIONS, CLIP_SLOTS, NOT_MEASURABLE } from '../config.
 import { cellValue, formatDiff } from '../engine/format.js';
 import { statusFor } from '../engine/analysis.js';
 import { VALIDATION_ERROR } from '../pipeline/reconcile.js';
+import { coverage as viewCoverage, SLOT_SHORT } from '../pipeline/view-matrix.js';
 import { buildExplanations } from './explain.js';
 
 // Shown in "Not reliable from video" instead of as values (validation, reference/VALIDATION.md).
@@ -57,7 +58,8 @@ export function withinError(def, value) {
 
 function cellModel(def, key, engineCell, rec) {
   if (!engineCell?.assessed) {
-    return { key, assessed: false, text: 'not assessed', why: rec?.notAssessed || engineCell?.reason || 'not measured' };
+    const why = rec?.notAssessed || engineCell?.reason || 'not measured';
+    return { key, assessed: false, text: 'not assessed', why, needsView: /^needs |video check/.test(why) };
   }
   const conf = rec?.confidence ?? engineCell.confidence ?? 'low';
   const err = SHOWN_STATUS.includes(engineCell.status) ? withinError(def, engineCell.value) : null;
@@ -106,9 +108,18 @@ function rowModel(row, recMetric) {
 function timingModel(rec) {
   if (!rec) return null;
   const q = (name) => rec.timing.crossChecks.find((c) => c.quantity.startsWith(name));
+  const names = (vals) => Object.keys(vals || {}).map((s) => SLOT_SHORT[s] || s);
+  const agreementText = (c) => {
+    const v = names(c.values);
+    const exp = c.experimental ? `; front view (experimental): ${Object.values(c.experimental).map((x) => fmtExp(c, x)).join(', ')}` : '';
+    if (c.status === 'agree') return `${v.join(' and ')} agree${exp}`;
+    if (c.status === 'single view') return `${v[0]} only; no second view to cross-check${exp}`;
+    return exp ? exp.slice(2) : null;
+  };
+  const fmtExp = (c, x) => (c.unit === 's' ? `${Math.round(x * 1000)} ms` : c.unit === 'spm' ? `${Math.round(x)} steps/min` : `${x}${c.unit === '%' ? '%' : ` ${c.unit}`}`);
   const row = (label, c, fmt, extra) =>
     c && c.reported != null
-      ? { label, text: fmt(c.reported), confidence: c.confidence || 'medium', agreement: c.status, flag: c.flag || null, views: c.values, ...extra }
+      ? { label, text: fmt(c.reported), confidence: c.confidence || 'medium', agreement: c.status, agreementText: agreementText(c), flag: c.flag || null, views: c.values, ...extra }
       : null;
   const d = rec.derived;
   const rows = [
@@ -122,6 +133,57 @@ function timingModel(rec) {
     d.dutyFactor != null ? { label: 'Contact share of the stride', text: `${Math.round(d.dutyFactor * 100)}%${d.flightMs === 0 ? ' (no flight phase)' : ''}`, confidence: 'medium' } : null,
   ].filter(Boolean);
   return { rows, notes: d.notes };
+}
+
+// Coverage: which views were used and what share of the metric set they can assess, so a one-view
+// result is never mistaken for a full analysis.
+function coverageModel(session, rec, results) {
+  const c = viewCoverage(session.clips || {}, { exclude: Object.keys(NOT_RELIABLE) });
+  const names = (slots) => slots.map((s) => SLOT_SHORT[s] || s);
+  const assessed = results.rows.filter((r) => (r.def.status ?? 'built') === 'built' && !NOT_RELIABLE[r.def.id]).reduce((n, r) => n + Object.values(r.cells).filter((x) => x.assessed).length, 0);
+  const pct = Math.round(c.share * 100);
+  const used = names(c.usable);
+  return {
+    ...c,
+    assessed,
+    pct,
+    usedText: used.length ? used.join(', ') : 'none',
+    missingText: names(c.missing).join(', '),
+    failedText: names(c.failed).join(', '),
+    label: session.placeholder
+      ? 'Demo data'
+      : `${c.full ? 'Full analysis' : 'Partial analysis'}: ${used.length ? used.join(' + ') : 'no usable view'} · ${pct}% of the metric set assessable (${c.assessable} of ${c.total} values)`,
+  };
+}
+
+function scoreBasis(results, cov) {
+  const n = results.rows.filter((r) => r.def.phase).reduce((k, r) => k + Object.values(r.cells).filter((c) => c.weight != null).length, 0);
+  if (!n) return 'No score: no scored value was assessed.';
+  return `Scored over ${n} assessed value${n === 1 ? '' : 's'} only${cov.full ? '' : ` (partial coverage: ${cov.usedText}; ${cov.pct}% of the metric set assessable)`}; values not assessed are left out, never counted as normal or abnormal.`;
+}
+
+// Front-view (experimental) values: shown apart, never scored, never findings.
+function experimentalModel(rec, results) {
+  if (!rec) return [];
+  const out = [];
+  for (const [id, m] of Object.entries(rec.metrics)) {
+    if (!m.experimental || NOT_RELIABLE[id]) continue;
+    const def = results.rowsById[id]?.def;
+    if (!def) continue;
+    out.push({ id, label: def.summaryLabel || def.label, cells: Object.entries(m.experimental).map(([key, c]) => ({ key, text: cellValue(def, c, { short: true }), source: SLOT_SHORT[c.source.slot] })) });
+  }
+  return out;
+}
+
+// Video check per clip (capture-quality gate): verdict, plain-language reasons and fixes.
+function clipChecksModel(session) {
+  return Object.entries(session.clips || {})
+    .filter(([, c]) => c.analysis?.captureQuality)
+    .map(([slot, c]) => {
+      const q = c.analysis.captureQuality;
+      const level = { suitable: 'pass', degraded: 'warn', unsuitable: 'fail' }[q.level] || q.level;
+      return { slot, label: CLIP_SLOTS[slot]?.label || slot, short: SLOT_SHORT[slot] || slot, level, score: q.score ?? null, reasons: q.reasons || [], fixes: q.fixes || q.advice || [], checks: q.checks || [] };
+    });
 }
 
 // Correlated findings: the engine's pattern flags, with the confidence of their weakest trigger.
@@ -170,6 +232,7 @@ export function buildModel(session, results, extras = {}) {
   });
   const notBuilt = results.rows.filter((r) => r.def.status && r.def.status !== 'built').map((r) => ({ id: r.def.id, label: r.def.label, why: r.def.status === 'not-measurable' ? 'not measurable in 2D' : 'not built: foot landmarks too small and unreliable from behind' }));
   const intake = session.intake || {};
+  const cov = coverageModel(session, rec, results);
   const model = {
     header: {
       client: intake.clientCode || '',
@@ -182,7 +245,11 @@ export function buildModel(session, results, extras = {}) {
       warnings: [...(session.analysis?.sessionWarnings || []), ...(rec?.convention?.issues || [])],
       demo: !!session.placeholder,
     },
-    scores: { overall: results.overall, phases: results.phases.map((p) => ({ id: p.id, label: PHASE_LABEL[p.id] || p.label, score: p.score })) },
+    coverage: cov,
+    // Scores rest only on assessed, scored values; the basis says how many and from which views.
+    scores: { overall: results.overall, phases: results.phases.map((p) => ({ id: p.id, label: PHASE_LABEL[p.id] || p.label, score: p.score })), basis: scoreBasis(results, cov) },
+    experimental: experimentalModel(rec, results),
+    clipChecks: clipChecksModel(session),
     sections,
     timing: timingModel(rec),
     findings: findingsModel(results, rec, (id, key) => sections.flatMap((s) => s.rows).find((r) => r.id === id)?.cells[key]),

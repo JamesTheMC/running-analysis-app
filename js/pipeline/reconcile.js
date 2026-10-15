@@ -25,6 +25,10 @@
 
 import { CLIP_SLOTS, METRICS, VALIDATION } from '../config.js';
 import { confidenceFor, intakeNumbers, statusFor } from '../engine/analysis.js';
+import { cellSources, coverage, needsText, SLOT_SHORT } from './view-matrix.js';
+
+const FAILED = ['unsuitable', 'fail'];
+const isExperimental = (slot) => !!CLIP_SLOTS[slot]?.experimental;
 
 export const SCHEMA = 'gait-session/1';
 
@@ -91,19 +95,20 @@ function convention(clips) {
       mirrored: !!a.clip?.mirrored,
     };
   });
-  const posterior = viewSlots(clips, 'posterior').map((slot) => {
+  const posterior = [...viewSlots(clips, 'posterior'), ...viewSlots(clips, 'anterior')].map((slot) => {
     const a = clips[slot].analysis;
     const swaps = a.captureChecks?.posterior?.swapFrames ?? a.clip?.swapFrames ?? null;
     const passed = a.captureChecks?.posterior?.swapCheckPassed ?? swaps === 0;
-    return { slot, leftOnImage: 'left', mirrored: !!a.clip?.mirrored, swapFrames: swaps, swapCheckPassed: passed };
+    return { slot, leftOnImage: slot === 'anterior' ? 'right' : 'left', mirrored: !!a.clip?.mirrored, swapFrames: swaps, swapCheckPassed: passed };
   });
   const issues = [
     ...lateral.filter((l) => !l.agrees).map((l) => `${l.slot}: depth says the ${l.depthCheck.leg} leg faces the camera, but the clip is in the ${l.slotLeg}-side slot`),
     ...Object.keys(CLIP_SLOTS)
-      .filter((s) => clips[s]?.analysis?.captureQuality && clips[s].analysis.captureQuality.level !== 'suitable')
+      .filter((s) => clips[s]?.analysis?.captureQuality && !['suitable', 'pass'].includes(clips[s].analysis.captureQuality.level))
       .map((s) => {
         const q = clips[s].analysis.captureQuality;
-        return `${CLIP_SLOTS[s].label}: video setup ${q.level} (${q.reasons.join('; ')}). ${q.advice.join(' ')}`;
+        const verdict = FAILED.includes(q.level) ? 'video check failed, no values reported from this clip' : 'video check warning, values from this clip at lowered confidence';
+        return `${CLIP_SLOTS[s].label}: ${verdict} (${q.reasons.join('; ')}). ${(q.fixes || q.advice || []).join(' ')}`;
       }),
     ...posterior.filter((p) => !p.swapCheckPassed).map((p) => `${p.slot}: left/right landmark order swapped in ${p.swapFrames} frame(s), more than 5%; left-right differences from this clip are not reported`),
   ];
@@ -117,8 +122,8 @@ function viewTiming(clips) {
     const a = clips[slot]?.analysis;
     const t = a?.eventTable;
     if (!t) continue;
-    // A clip whose video setup is unsuitable contributes no timing (capture-quality.js).
-    if (a.captureQuality?.level === 'unsuitable') continue;
+    // A clip that failed the video check contributes no timing (capture-quality.js).
+    if (FAILED.includes(a.captureQuality?.level)) continue;
     const legConf = Object.fromEntries(Object.entries(t.legs).map(([leg, l]) => [leg, l.summary.confidence]));
     // Timing confidence of the view: the best leg's event confidence, low if step timing is unreliable.
     const best = Object.values(legConf).reduce((x, y) => (RANK[y] > RANK[x] ? y : x), 'none');
@@ -137,6 +142,7 @@ function viewTiming(clips) {
       confidence: t.timing.stepTimingReliable === false ? minConf(best, 'low') : best === 'none' ? 'low' : best,
       landmarkVisibility: a.landmarkQuality ? r1(a.landmarkQuality.meanVisibility, 3) : null,
       method: t.timing.method,
+      ...(isExperimental(slot) ? { experimental: true } : {}),
     };
   }
   return out;
@@ -176,16 +182,22 @@ function crossCheck(name, unit, entries, tol, note) {
 }
 
 function crossChecks(timing, heightCm) {
-  const slots = Object.keys(timing);
+  // Experimental views (front) are listed for information, never used for a reported value.
+  const expSlots = Object.keys(timing).filter((s) => timing[s].experimental);
+  const slots = Object.keys(timing).filter((s) => !timing[s].experimental);
   const fsMin = Math.min(...slots.map((s) => timing[s].analysedHz || 60));
   const e = (fn) => slots.map((s) => ({ slot: s, value: fn(timing[s]), weight: timing[s].strides || 1, confidence: timing[s].confidence, vis: timing[s].landmarkVisibility }));
   const usableStep = (t, v) => (t.stepTimingReliable === false ? null : v);
   const osc = (t) => (t.oscillation?.shareOfHeight == null ? null : heightCm ? t.oscillation.shareOfHeight * heightCm : t.oscillation.shareOfHeight * 100);
+  const withExp = (check, fn) => {
+    const info = Object.fromEntries(expSlots.map((s) => [s, fn(timing[s])]).filter(([, v]) => v != null && Number.isFinite(v)).map(([s, v]) => [s, r1(v, check.unit === 's' ? 3 : 1)]));
+    return Object.keys(info).length ? { ...check, experimental: info } : check;
+  };
   return [
-    crossCheck('cadence', 'spm', e((t) => t.cadenceSpm), (m) => (m * RECONCILE.cadencePct) / 100, 'separate recordings: small drift between clips is expected'),
-    crossCheck('step time, left', 's', e((t) => usableStep(t, t.stepSecL)), RECONCILE.stepTimeMs(fsMin) / 1000),
-    crossCheck('step time, right', 's', e((t) => usableStep(t, t.stepSecR)), RECONCILE.stepTimeMs(fsMin) / 1000),
-    crossCheck('step-time asymmetry (+ = left longer)', '%', e((t) => usableStep(t, t.stepAsymmetryPct)), RECONCILE.stepAsymmetryPts),
+    withExp(crossCheck('cadence', 'spm', e((t) => t.cadenceSpm), (m) => (m * RECONCILE.cadencePct) / 100, 'separate recordings: small drift between clips is expected'), (t) => t.cadenceSpm),
+    withExp(crossCheck('step time, left', 's', e((t) => usableStep(t, t.stepSecL)), RECONCILE.stepTimeMs(fsMin) / 1000), (t) => usableStep(t, t.stepSecL)),
+    withExp(crossCheck('step time, right', 's', e((t) => usableStep(t, t.stepSecR)), RECONCILE.stepTimeMs(fsMin) / 1000), (t) => usableStep(t, t.stepSecR)),
+    withExp(crossCheck('step-time asymmetry (+ = left longer)', '%', e((t) => usableStep(t, t.stepAsymmetryPct)), RECONCILE.stepAsymmetryPts), (t) => usableStep(t, t.stepAsymmetryPct)),
     // Side view only: from behind, fore-aft drift toward the camera also moves the pelvis in the image;
     // rear values read 40–75% higher than side on all four clients (2026-10-10), so they are shown
     // for information and never reported.
@@ -207,7 +219,7 @@ function cellConfidence(def, cell, eventConf) {
   if (!conf) return { confidence: 'none', reasons: ['too few measurable strides'] };
   if (cell.qualityCap) {
     conf = minConf(conf, cell.qualityCap);
-    reasons.push(cell.qualityNote || 'video setup degraded');
+    reasons.push(cell.qualityNote || 'video check warning');
   }
   if (def.baselineConfidence && RANK[def.baselineConfidence] < RANK.high) reasons.push(`metric capped at ${def.baselineConfidence} (2D reliability)`);
   if (cell.quality != null && cell.quality < 0.7) reasons.push(`${Math.round(cell.quality * 100)}% of strides measurable`);
@@ -248,7 +260,8 @@ function cellConfidence(def, cell, eventConf) {
 
 function metricsBlock(clips, timing) {
   const out = {};
-  const present = new Set(Object.keys(CLIP_SLOTS).filter((s) => clips[s]?.analysis).map((s) => CLIP_SLOTS[s].view));
+  const present = Object.keys(CLIP_SLOTS).filter((s) => clips[s]?.analysis);
+  const failed = present.filter((s) => FAILED.includes(clips[s].analysis.captureQuality?.level));
   for (const def of METRICS) {
     const build = def.status ?? 'built';
     const views = def.allowedViews || [];
@@ -259,17 +272,21 @@ function metricsBlock(clips, timing) {
       out[def.id] = entry;
       continue;
     }
-    if (!views.some((v) => present.has(v))) {
-      entry.notAssessed = `needs a ${views.includes('posterior') ? 'posterior (rear)' : 'lateral (side)'} clip`;
-      out[def.id] = entry;
-      continue;
-    }
     const keys = def.sided === 'mid' ? ['mid'] : ['left', 'right'];
     for (const key of keys) {
-      // The cell comes from the authoritative view's clip(s); a lateral leg from its own near-side clip.
+      // The cell comes from its authoritative view's clip(s) (view-matrix.js); a lateral leg from its
+      // own near-side clip. Experimental views (front) are kept apart in entry.experimental.
+      const src = cellSources(def, key);
+      for (const s of src.experimental) {
+        const c = clips[s]?.analysis?.measurements?.[def.id]?.[key];
+        if (c && c.value != null) {
+          entry.experimental ??= {};
+          entry.experimental[key] = { value: typeof c.value === 'number' ? r1(c.value, 2) : c.value, display: c.display ?? null, unit: c.unitOverride ?? def.unit ?? null, n: c.strides ?? null, source: { slot: s, view: CLIP_SLOTS[s].view } };
+        }
+      }
       let cell = null;
       let slot = null;
-      for (const s of Object.keys(CLIP_SLOTS)) {
+      for (const s of src.authoritative) {
         const c = clips[s]?.analysis?.measurements?.[def.id]?.[key];
         if (c && (cell == null || (cell.value == null && c.value != null))) {
           cell = c;
@@ -277,8 +294,15 @@ function metricsBlock(clips, timing) {
         }
       }
       if (!cell) {
-        const lateralOnly = views.length === 1 && views[0] === 'lateral';
-        entry.cells[key] = { value: null, confidence: 'none', notAssessed: lateralOnly && key !== 'mid' ? `needs a lateral clip filmed from the ${key}` : 'not measured' };
+        // Not assessed: name the view it needs (and why the one present cannot give it).
+        const need = needsText(def, key);
+        const failedHere = src.authoritative.filter((s) => failed.includes(s));
+        const expHere = src.experimental.filter((s) => present.includes(s));
+        let why = need ? `needs ${need}` : 'not measured';
+        if (failedHere.length) why = `${SLOT_SHORT[failedHere[0]]} failed the video check (no values reported); ${why} that passes`;
+        else if (src.authoritative.some((s) => present.includes(s))) why = 'not measured';
+        if (expHere.length && !failedHere.length) why += `; the ${SLOT_SHORT[expHere[0]]} gives an experimental value only (listed separately)`;
+        entry.cells[key] = { value: null, confidence: 'none', notAssessed: why, needs: src.authoritative };
         continue;
       }
       const t = timing[slot];
@@ -300,6 +324,9 @@ function metricsBlock(clips, timing) {
         note: cell.note ?? null,
         ...(cell.value == null ? { notAssessed: cell.reason || 'not measurable' } : {}),
       };
+    }
+    if (Object.values(entry.cells).every((c) => c.value == null && c.needs) && !Object.values(entry.cells).some((c) => c.needs.some((s) => present.includes(s)))) {
+      entry.notAssessed = Object.values(entry.cells)[0].notAssessed;
     }
     out[def.id] = entry;
   }
@@ -343,6 +370,9 @@ export function reconcileSession(session) {
   const timing = viewTiming(clips);
   const checks = crossChecks(timing, n.heightCm);
   const conv = convention(clips);
+  // Video check across views: cadence must agree between views (gate, owner brief 2026-10-15).
+  const cad = checks.find((c) => c.quantity === 'cadence');
+  if (cad?.status === 'disagree') conv.issues.push(`Video check across views: cadence differs by ${cad.difference} steps/min between ${Object.keys(cad.values).map((s) => SLOT_SHORT[s]).join(' and ')} (tolerance ${cad.tolerance}); one clip's foot contacts may be unreliable. Reported from ${SLOT_SHORT[cad.source] || cad.source}.`);
   const metrics = metricsBlock(clips, timing);
   const slots = Object.keys(CLIP_SLOTS).filter((s) => clips[s]?.analysis);
   const views = [...new Set(slots.map((s) => CLIP_SLOTS[s].view))];
@@ -363,10 +393,12 @@ export function reconcileSession(session) {
     timing: { perView: timing, crossChecks: checks },
     derived: derived({ ...n, speedUnit: intake.speedUnit }, clips, checks),
     metrics,
+    coverage: coverage(clips),
     notAssessed: Object.entries(metrics).filter(([, m]) => m.notAssessed).map(([id, m]) => ({ id, reason: m.notAssessed })),
     limits: [
       'Single-camera 2D estimates: rotation (transverse plane) is not measured; frontal-plane angles are projections and depend on camera alignment.',
       'Side-view values come from the leg facing the camera only; the far leg is occluded and not reported.',
+      ...(clips.anterior?.analysis ? ['Front-view values are experimental (not yet validated on front-view video): listed separately, never scored or used for findings.'] : []),
       'Rear-view foot contact and toe-off are approximate (step timing only); contact time comes from the side view.',
       'Movement analysis to support clinical judgment, not a diagnosis.',
     ],

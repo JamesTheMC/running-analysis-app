@@ -3,7 +3,7 @@
 
 import { demux } from './mp4.js';
 import { checkCodec, decodeSampledFrames, decoderSupported } from './decode.js';
-import { buildRow, createPoseLandmarker } from './pose.js';
+import { buildRow, createPoseLandmarker, deriveAngles } from './pose.js';
 import { series, tibiaGate } from './gate.js';
 import { STRIDE, hipExtensionPeaks, segmentStrides } from './strides.js';
 import { EVENTS, IC_SWEEP, detectEvents } from './events.js';
@@ -31,6 +31,8 @@ import { max, median, min } from './stats.js';
 export const PIPELINE = {
   scale: 0.45, // downscale before pose estimation (reference SCALE)
   targetHz: 60, // app default: sample every round(fps / 60)-th frame; the reference uses every 2nd
+  quickRows: 150, // quick video check after this many analysed frames (2.5 s at 60 Hz, 5 s at 30 fps)
+  lumaEverySec: 1, // brightness sample for the lighting check (tiny downscaled copy of the frame)
 };
 
 // Frame-interval check: variable frame rate would break frame-count timing. Timestamps (not frame
@@ -48,7 +50,9 @@ export function sampleEveryFor(fps, targetHz = PIPELINE.targetHz) {
 
 /**
  * @param {File|Blob} file
- * @param {object} opts { sampleEvery?, delegate?, nearSide?, onProgress?({done,total,phase}), signal? }
+ * @param {object} opts { sampleEvery?, delegate?, nearSide?, onProgress?({done,total,phase}), signal?,
+ *                        poseOnly? (stop after pose: the view is decided afterwards),
+ *                        onPartial?(rows, meta) (called once after PIPELINE.quickRows rows: quick video check) }
  */
 export async function analyzeVideo(file, opts = {}) {
   const { onProgress = () => {}, signal } = opts;
@@ -63,8 +67,12 @@ export async function analyzeVideo(file, opts = {}) {
   const { landmarker, delegate } = await createPoseLandmarker({ delegate: opts.delegate });
 
   const rows = [];
+  const luma = [];
   const started = performance.now();
   let size = null;
+  let lastLuma = -Infinity;
+  let partialSent = false;
+  const metaBase = { codec: track.codec, fps: track.fps, fs: track.fps / sampleEvery, frameCount: track.frameCount, rotation: track.rotation, mirrored: !!track.mirrored, sampleEvery };
   try {
     size = await decodeSampledFrames(file, track, {
       sampleEvery,
@@ -73,6 +81,19 @@ export async function analyzeVideo(file, opts = {}) {
       onFrame: async (canvas, { index, ptsSec }) => {
         const res = landmarker.detectForVideo(canvas, ptsSec * 1000);
         rows.push(buildRow(res.landmarks?.[0], { index, ptsSec, width: canvas.width, height: canvas.height }));
+        if (ptsSec - lastLuma >= PIPELINE.lumaEverySec) {
+          lastLuma = ptsSec;
+          const l = frameLuma(canvas);
+          if (l) luma.push(l);
+        }
+        if (!partialSent && opts.onPartial && rows.length >= PIPELINE.quickRows) {
+          partialSent = true;
+          try {
+            opts.onPartial(rows.slice(), { ...metaBase, analysedSize: [canvas.width, canvas.height], luma: lumaSummary(luma) });
+          } catch (e) {
+            console.error(e);
+          }
+        }
         if (rows.length % 10 === 0) {
           onProgress({ phase: 'analysing', done: rows.length, total });
           await new Promise((r) => setTimeout(r)); // let the UI paint
@@ -86,20 +107,67 @@ export async function analyzeVideo(file, opts = {}) {
   onProgress({ phase: 'summarising', done: rows.length, total });
 
   const meta = {
-    codec: track.codec,
-    fps: track.fps,
-    fs: track.fps / sampleEvery,
-    frameCount: track.frameCount,
-    rotation: track.rotation,
-    mirrored: !!track.mirrored,
+    ...metaBase,
     frameTiming: frameTiming(track.frameTimes),
-    sampleEvery,
     analysedSize: size && [size.width, size.height],
     delegate,
     seconds,
+    luma: lumaSummary(luma),
   };
   meta.view = opts.view || 'lateral';
-  return { meta, rows, ...(meta.view === 'posterior' ? postProcessRear(rows, meta) : postProcess(rows, meta, opts)) };
+  if (opts.poseOnly) return { meta, rows };
+  return { meta, rows, ...postProcessView(rows, meta, opts) };
+}
+
+// Mean brightness of a frame from a 32×18 copy (lighting check; nothing is stored but the numbers).
+let lumaCanvas = null;
+function frameLuma(src) {
+  try {
+    lumaCanvas ??= typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(32, 18) : Object.assign(document.createElement('canvas'), { width: 32, height: 18 });
+    const ctx = lumaCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(src, 0, 0, 32, 18);
+    const d = ctx.getImageData(0, 0, 32, 18).data;
+    const v = [];
+    for (let i = 0; i < d.length; i += 4) v.push(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+    v.sort((a, b) => a - b);
+    return { mean: v.reduce((a, b) => a + b, 0) / v.length, p5: v[Math.floor(v.length * 0.05)], p95: v[Math.floor(v.length * 0.95)] };
+  } catch {
+    return null;
+  }
+}
+function lumaSummary(list) {
+  if (!list.length) return null;
+  const m = (k) => median(list.map((l) => l[k]));
+  return { mean: m('mean'), p5: m('p5'), p95: m('p95'), samples: list.length };
+}
+
+// Post-processing for the clip's view (re-run when the clinician overrides the detected view).
+export function postProcessView(rows, meta, opts = {}) {
+  const view = opts.view || meta.view || 'lateral';
+  if (view === 'posterior') return postProcessRear(rows, meta, opts);
+  if (view === 'anterior') return postProcessFront(rows, meta, opts);
+  return postProcess(rows, meta, opts);
+}
+
+// Front view: rotating the runner 180° about the vertical axis maps a front view onto a rear view
+// (x -> width - x, z -> -z, anatomical labels unchanged), so the rear-view pipeline runs on the
+// mirrored landmarks. Its values are experimental (config experimentalViews) until validated on real
+// front-view video. The original rows stay untouched (debug overlay, phase panels).
+export function mirrorRows(rows, width) {
+  return rows.map((r) => {
+    if (!r.lm) return { ...r };
+    const lm = Float32Array.from(r.lm);
+    for (let k = 0; k < 33; k++) {
+      lm[k * 4] = width - lm[k * 4];
+      lm[k * 4 + 2] = -lm[k * 4 + 2];
+    }
+    return deriveAngles({ ...r, lm });
+  });
+}
+
+export function postProcessFront(rows, meta, opts = {}) {
+  const mirrored = mirrorRows(rows, meta.analysedSize?.[0] ?? 1);
+  return { ...postProcessRear(mirrored, meta, opts), frontRows: mirrored, view: 'anterior' };
 }
 
 // Posterior view (Milestone 4): events only so far. Metrics are added after the event contact sheet is reviewed.

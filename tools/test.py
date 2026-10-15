@@ -86,7 +86,7 @@ def main():
             section = r["section"]
             print(f"\n{section}")
         mark = "SKIP" if r.get("skip") else ("PASS" if r["ok"] else "FAIL")
-        detail = f"  ({r['detail']})" if r.get("detail") and (not r["ok"] or r.get("skip")) else ""
+        detail = f"  ({r['detail']})" if r.get('detail') and (not r['ok'] or r.get('skip') or os.environ.get('VERBOSE')) else ''
         print(f"  {mark}  {r['name']}{detail}")
     fails = [r for r in res["results"] if not r["ok"] and not r.get("skip")]
     skips = [r for r in res["results"] if r.get("skip")]

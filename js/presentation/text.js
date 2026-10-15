@@ -5,10 +5,10 @@ import { STATUS_WORD } from './model.js';
 import { explanationsText } from './explain.js';
 
 const SIDE = { left: 'L', right: 'R', mid: '' };
-const MISSING_LEG = /^needs a lateral clip filmed from the (left|right)$/;
+const MISSING_LEG = /^needs the (left|right) side view$/;
 
 function cellText(c) {
-  if (!c.assessed) return `not assessed (${c.why})`;
+  if (!c.assessed) return `Not assessed: ${c.why}`;
   const tags = [c.status ? STATUS_WORD[c.status] : null, c.hedge, !c.hedge && c.confidence !== 'high' && !c.status ? `${c.confidence} confidence` : null].filter(Boolean);
   return `${c.text}${tags.length ? ` (${tags.join('; ')})` : ''}`;
 }
@@ -18,11 +18,18 @@ function rangeText(r) {
   return ` | ref ${r.range.green}${r.range.red ? `, flag ${r.range.red}` : ''}${r.range.provisional ? ' (provisional)' : ''}`;
 }
 
-// One metric line; sides that only need the other lateral clip are left out (stated in the header).
-function rowLine(r) {
-  const cells = Object.values(r.cells).filter((c) => c.assessed || !MISSING_LEG.test(c.why));
+// One metric line. Every cell appears: a value, or "Not assessed: <reason>" (never a blank); when no
+// cell is assessed for the same reason, the reason is given once.
+export function rowLine(r) {
+  const cells = Object.values(r.cells);
   if (!cells.length) return null;
-  const body = cells.map((c) => `${SIDE[c.key] ? `${SIDE[c.key]} ` : ''}${cellText(c)}`).join(' / ');
+  const none = cells.every((c) => !c.assessed);
+  const body =
+    none && cells.length > 1 && cells.every((c) => MISSING_LEG.test(c.why))
+      ? 'Not assessed: needs the left and right side views'
+      : none && cells.every((c) => c.why === cells[0].why)
+        ? cellText(cells[0])
+        : cells.map((c) => `${SIDE[c.key] ? `${SIDE[c.key]} ` : ''}${cellText(c)}`).join(' / ');
   return `${r.label}: ${body}${r.diff ? ` | L–R diff ${r.diff}${r.diffNote ? ` (${r.diffNote})` : ''}` : ''}${rangeText(r)}`;
 }
 
@@ -50,7 +57,7 @@ export function buildInterpretation(model) {
   const cad = get('Cadence');
   const contact = get('Ground contact time');
   const share = get('Contact share of the stride');
-  if (cad) p.push(`Cadence was ${cad.text}${cad.agreement === 'agree' ? ' (side and rear videos agree)' : ''}${contact ? `, with ${contact.text} of ground contact per step` : ''}${share && /no flight/.test(share.text) ? ', and no flight phase (each foot lands as the other leaves)' : ''}.`);
+  if (cad) p.push(`Cadence was ${cad.text}${cad.agreement === 'agree' ? ` (${cad.agreementText})` : ''}${contact ? `, with ${contact.text} of ground contact per step` : ''}${share && /no flight/.test(share.text) ? ', and no flight phase (each foot lands as the other leaves)' : ''}.`);
   const reds = cellsWhere(model, (c) => c.status === 'red');
   const yellows = cellsWhere(model, (c) => c.status === 'yellow');
   if (reds.length) p.push(`Outside the usual range: ${list(reds.map(named))}.`);
@@ -64,6 +71,7 @@ export function buildInterpretation(model) {
   if (weakFindings.length) p.push(`Possible, but resting on borderline or low-confidence values: ${list(weakFindings.map((f) => lower(f.label)))}.`);
   const top = model.explanations?.priorities || [];
   if (top.length) p.push(`Suggested focus (to confirm with screening): ${list(top.slice(0, 3).map((x) => lower(x.title)))}.`);
+  if (model.coverage && !model.coverage.full && !model.header.demo) p.push(`This is a partial analysis (${model.coverage.usedText}; ${model.coverage.pct}% of the metric set assessable): anything marked "Not assessed" needs the named view, and the absence of a finding there means it was not checked, not that it is normal.`);
   p.push('This is movement analysis from 2D video to support clinical judgment, not a diagnosis; values marked low confidence or borderline are indicative only.');
   return p.join(' ');
 }
@@ -73,9 +81,12 @@ export function buildSummaryText(model, interpretation, explainText) {
   const out = [];
   out.push(`GAIT ANALYSIS SUMMARY | ${h.client} | ${h.date}`);
   out.push([`Clips: ${h.clips.join(', ') || 'none'}`, h.height ? `Height ${Math.round(h.height)} cm` : null, h.speed ? `Speed ${h.speed}` : null, h.incline ? `Incline ${h.incline}` : null].filter(Boolean).join(' | '));
-  const legs = missingLegs(model);
-  if (legs.length) out.push(`Side-view values for the ${list(legs)} leg need a clip filmed from that side.`);
-  for (const w of h.warnings) out.push(`Note: ${w}`);
+  if (model.coverage) {
+    const c = model.coverage;
+    out.push(`COVERAGE: ${c.label}${c.missingText ? ` | Views not uploaded: ${c.missingText}` : ''}${c.failedText ? ` | Failed the video check: ${c.failedText}` : ''}`);
+  }
+  for (const k of model.clipChecks || []) out.push(`Video check, ${k.short}: ${k.level.toUpperCase()}${k.reasons.length ? ` (${k.reasons.join('; ')})` : ''}${k.level !== 'pass' && k.fixes.length ? `. Fix: ${k.fixes.join(' ')}` : ''}`);
+  for (const w of h.warnings.filter((w) => !/video check (failed|warning)/.test(w))) out.push(`Note: ${w}`);
   if (h.demo) out.push('DEMO DATA: invented numbers, not from any video.');
 
   for (const s of model.sections) {
@@ -92,9 +103,20 @@ export function buildSummaryText(model, interpretation, explainText) {
     }
   }
 
+  if (model.scores) {
+    const sc = model.scores.overall || {};
+    const parts = [['overall', sc.overall], ['left', sc.left], ['right', sc.right]].filter(([, v]) => v != null).map(([k, v]) => `${k} ${v}`);
+    out.push('', 'SCORES (first-draft formula)', `${parts.length ? parts.join(', ') : 'none'}. ${model.scores.basis}`);
+  }
+
+  if (model.experimental?.length) {
+    out.push('', 'FRONT VIEW (EXPERIMENTAL: not validated yet; not scored, not used for findings)');
+    for (const e of model.experimental) out.push(`${e.label}: ${e.cells.map((c) => `${SIDE[c.key] ? `${SIDE[c.key]} ` : ''}${c.text}`).join(' / ')}`);
+  }
+
   if (model.timing?.rows.length) {
     out.push('', 'TIMING AND MECHANICS');
-    for (const r of model.timing.rows) out.push(`${r.label}: ${r.text}${r.agreement === 'agree' ? ' (side and rear agree)' : r.flag ? ` (${r.flag})` : ''}${r.note ? ` (${r.note})` : ''}`);
+    for (const r of model.timing.rows) out.push(`${r.label}: ${r.text}${r.agreementText ? ` (${r.agreementText})` : r.flag ? ` (${r.flag})` : ''}${r.note ? ` (${r.note})` : ''}`);
     for (const n of model.timing.notes || []) out.push(`Note: ${n}`);
   }
 

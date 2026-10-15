@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Capture Guide</title>
+    <meta name="description" content="How to film a running clip the gait analysis app can trust. One page, printable." />
+    <style>
+      /* Colours copied from css/styles.css (not imported, so this page stands alone). */
+      :root {
+        --bg: #f5f6f8; --surface: #ffffff; --text: #16202b; --muted: #5d6b7a; --border: #dde2e8;
+        --accent: #1f4e79; --accent-text: #ffffff; --ink: #16202b; --grey: #8a96a3; --fill: #eef1f4;
+        --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        color-scheme: light dark;
+      }
+      @media screen and (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1419; --surface: #182029; --text: #e6ebf0; --muted: #93a1b0; --border: #2b3642;
+          --accent: #6ea8dc; --accent-text: #0f1419; --ink: #e6ebf0; --grey: #7d8b99; --fill: #1f2832;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 var(--font); }
+      .page { max-width: 920px; margin: 0 auto; padding: 12px 16px 32px; }
+      .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+      .bar a { color: var(--accent); text-decoration: none; font-weight: 600; padding: 8px 0; }
+      .bar button { font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-text); cursor: pointer; }
+      h1 { font-size: 22px; margin: 4px 0 2px; }
+      h2 { font-size: 15px; margin: 0 0 4px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+      p { margin: 0 0 6px; }
+      ul { margin: 0; padding-left: 18px; }
+      li { margin: 0 0 3px; }
+      .lead { color: var(--muted); margin-bottom: 10px; }
+      .prov { color: var(--accent); font-weight: 700; }
+      code { font-family: var(--mono); font-size: 0.92em; background: var(--fill); padding: 0 3px; border-radius: 4px; overflow-wrap: anywhere; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; break-inside: avoid; }
+      .cols { display: grid; grid-template-columns: 1fr; gap: 0 10px; }
+      @media (min-width: 720px) { .cols { grid-template-columns: 1fr 1fr; } }
+      .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 6px 0; }
+      figure { margin: 0; }
+      figure.wide { grid-column: 1 / -1; max-width: 420px; }
+      figcaption { font-size: 13px; line-height: 1.35; }
+      figcaption strong { display: block; }
+      svg { display: block; width: 100%; height: auto; }
+      svg text { font-family: var(--font); fill: var(--ink); }
+      .ln { stroke: var(--ink); fill: none; stroke-width: 1.5; }
+      .belt { stroke: var(--ink); fill: var(--fill); stroke-width: 1.5; }
+      .grey { stroke: var(--grey); fill: none; stroke-width: 1.5; }
+      .sight { stroke: var(--accent); stroke-width: 1.8; stroke-dasharray: 5 4; fill: none; }
+      .sight-bad { stroke: var(--grey); stroke-width: 1.5; stroke-dasharray: 3 3; fill: none; }
+      .cam { fill: var(--accent); stroke: var(--accent); }
+      .cam-bad { fill: var(--grey); stroke: var(--grey); }
+      .solid { fill: var(--ink); stroke: none; }
+      .acc { fill: var(--accent) !important; }
+      .mut { fill: var(--muted) !important; }
+      .check { list-style: none; padding-left: 0; columns: 1; }
+      @media (min-width: 720px) { .check { columns: 2; column-gap: 20px; } }
+      .check li { padding-left: 24px; position: relative; break-inside: avoid; }
+      .check li::before { content: ''; position: absolute; left: 0; top: 3px; width: 13px; height: 13px; border: 1.5px solid var(--ink); border-radius: 3px; }
+      .limits { font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; }
+
+      @media print {
+        @page { size: auto; margin: 9mm 10mm; }
+        :root {
+          --bg: #fff; --surface: #fff; --text: #000; --muted: #444; --border: #bbb;
+          --accent: #1f4e79; --ink: #000; --grey: #888; --fill: #eef1f4;
+        }
+        body { font-size: 8.6pt; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .no-print { display: none !important; }
+        .page { max-width: none; padding: 0; }
+        h1 { font-size: 14pt; margin: 0; }
+        h2 { font-size: 8.6pt; margin-bottom: 2px; }
+        .lead { margin-bottom: 4px; }
+        li { margin-bottom: 1px; }
+        ul { padding-left: 12px; }
+        .card { border: 0.6pt solid #bbb; border-radius: 4px; padding: 4px 7px; margin-bottom: 4px; }
+        .cols { grid-template-columns: 1fr 1fr; gap: 0 6px; }
+        .views { grid-template-columns: repeat(4, 1fr) 2fr; gap: 6px; margin: 2px 0; }
+        figure.wide { grid-column: auto; max-width: none; }
+        figcaption { font-size: 8pt; line-height: 1.22; }
+        .check { columns: 2; column-gap: 14px; }
+        .check li { padding-left: 14px; }
+        .check li::before { width: 8px; height: 8px; top: 1px; border-width: 1px; }
+        .limits { font-size: 7.8pt; padding-top: 3px; }
+        code { font-size: 0.95em; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="bar no-print">
+        <a href="./index.html">‹ Back to the app</a>
+        <button type="button" id="print">Print / Save as PDF</button>
+      </div>
+
+      <h1>Capture guide: filming a running clip the app can trust</h1>
+      <p class="lead">Follow this for every clip. Numbers marked <span class="prov">*</span> are provisional: chosen for this guide, to be confirmed at the next filming session. Unmarked numbers are app requirements.</p>
+
+      <div class="cols">
+        <section class="card">
+          <h2>Why it matters</h2>
+          <ul>
+            <li>The app measures joint angles from the video, on this device. The camera setup decides whether those numbers can be trusted.</li>
+            <li>16 earlier clips (8 runners) were filmed from floor level with a wide lens, and the treadmill console hid the hips. The app rightly refused all of them. A good setup takes two minutes.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Phone settings</h2>
+          <ul>
+            <li><strong>Frame rate: 60 fps minimum; 120 fps if the phone offers it.</strong> The app analyses at 60 Hz (every 2nd frame of a 120 fps clip). More than 120 fps is not needed.</li>
+            <li>Older 30 fps clips still pass the video check, with a note: contact timing is less precise (±33 ms).</li>
+            <li>Main <strong>1x</strong> lens, <strong>not</strong> the ultra-wide 0.5x. No zoom: move the tripod instead.</li>
+            <li><strong>Landscape</strong> (phone on its side). Use the phone's own camera file, not a screen recording.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Camera setup</h2>
+          <ul>
+            <li><strong>Tripod</strong>, never hand-held. Camera <strong>level</strong> (no tilt up or down) and <strong>square</strong> to the belt.</li>
+            <li><strong>Height:</strong> lens level with the runner's hip (the bony bump on the side, greater trochanter), within about ±10 cm<span class="prov">*</span>. On most treadmills that is about 1.1–1.2 m<span class="prov">*</span> above the floor.</li>
+            <li><strong>Side views:</strong> lens pointing straight across the belt (at 90° to it), aimed at the runner's hip.</li>
+            <li><strong>Rear / front:</strong> centred on the belt midline, lens pointing straight along the belt.</li>
+            <li><strong>Distance:</strong> about 3.5 m<span class="prov">*</span> from lens to runner (range 3–4 m<span class="prov">*</span>), side and rear. Whole body in frame, head to feet, including the foot at the back of the swing, with a margin of about 10%<span class="prov">*</span> of the frame on every side. The runner fills at least half the frame height.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Running and visibility</h2>
+          <ul>
+            <li>Warm up first (about 5 min<span class="prov">*</span>). Start recording once the speed is steady.</li>
+            <li>Record <strong>30–60 s</strong> (30 s minimum; 60 s<span class="prov">*</span> is plenty) at <strong>one constant speed per clip</strong>. Note the speed and incline.</li>
+            <li>Console and handrails must not hide the hips, knees or feet. If they do, move the camera, don't film anyway.</li>
+            <li>Shorts or tights, fitted top; shirt tucked or short so the pelvis shows from behind. For the rear view, two small tape dots on the dimples at the base of the back help (optional).</li>
+            <li>Good, even light; no bright window or light behind the runner. Plain, uncluttered background; nobody else in the frame.</li>
+          </ul>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Views (top-down; runner runs towards the console)</h2>
+        <p>Four views, any subset. <strong>Ideal: three</strong>, e.g. left + right + rear, or one side + rear + front. One camera position per clip.</p>
+        <div class="views">
+          <figure>
+            <svg viewBox="0 0 200 150" role="img" aria-labelledby="t-left">
+              <title id="t-left">Left side view: camera to the runner's left, line of sight at 90 degrees across the belt</title>
+              <use href="#mill" /><use href="#runner" />
+              <line class="sight" x1="34" y1="82" x2="94" y2="82" />
+              <use href="#camera" transform="translate(22 82)" />
+              <text x="4" y="106" font-size="13">camera</text>
+            </svg>
+            <figcaption><strong>Left side</strong>Runner's left faces the camera. Sagittal plane, left leg and arm only: ankle, knee, hip extension, trunk lean, foot strike, overstride, contact time.</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 200 150" role="img" aria-labelledby="t-right">
+              <title id="t-right">Right side view: camera to the runner's right, line of sight at 90 degrees across the belt</title>
+              <use href="#mill" /><use href="#runner" />
+              <line class="sight" x1="106" y1="82" x2="166" y2="82" />
+              <use href="#camera" transform="translate(178 82) rotate(180)" />
+              <text x="198" y="106" font-size="13" text-anchor="end">camera</text>
+            </svg>
+            <figcaption><strong>Right side</strong>Runner's right faces the camera. Same measures, right leg and arm only.</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 200 150" role="img" aria-labelledby="t-rear">
+              <title id="t-rear">Rear view: camera behind the treadmill, centred on the belt midline, looking along the belt</title>
+              <use href="#mill" /><use href="#runner" />
+              <line class="sight" x1="100" y1="88" x2="100" y2="128" />
+              <use href="#camera" transform="translate(100 138) rotate(-90)" />
+              <text x="114" y="144" font-size="13">camera</text>
+            </svg>
+            <figcaption><strong>Rear</strong>Frontal plane, both legs: hip adduction, knee frontal angle, crossover, step width, trunk lateral lean.</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 200 150" role="img" aria-labelledby="t-front">
+              <title id="t-front">Front view: camera in front of the treadmill on the belt midline, looking back along the belt; the console must not block the legs</title>
+              <use href="#mill" /><use href="#runner" />
+              <line class="sight" x1="100" y1="22" x2="100" y2="74" />
+              <use href="#camera" transform="translate(100 11) rotate(90)" />
+              <text x="86" y="16" font-size="13" text-anchor="end">camera</text>
+            </svg>
+            <figcaption><strong>Front</strong>Experimental: values shown for information, not scored or used for findings yet. Only if the console does not hide the hips, knees or feet.</figcaption>
+          </figure>
+          <figure class="wide">
+            <svg viewBox="0 0 340 156" role="img" aria-labelledby="t-height">
+              <title id="t-height">Side elevation: correct camera on a tripod with the lens level with the runner's hip; wrong camera at floor level looking up</title>
+              <line class="ln" x1="0" y1="138" x2="340" y2="138" />
+              <g transform="translate(40 0)">
+              <rect class="belt" x="150" y="122" width="140" height="9" />
+              <line class="ln" x1="160" y1="131" x2="160" y2="138" /><line class="ln" x1="280" y1="131" x2="280" y2="138" />
+              <line class="ln" x1="282" y1="122" x2="282" y2="62" /><rect class="belt" x="270" y="54" width="24" height="10" />
+              <circle class="ln" cx="215" cy="30" r="8" />
+              <path class="ln" d="M215 38 L215 80 M215 50 L203 66 M215 50 L226 64 M215 80 L206 101 L198 122 M215 80 L228 98 L236 122" />
+              <circle class="cam" cx="215" cy="80" r="3.5" />
+              </g>
+              <path class="ln" d="M38 86 L26 138 M38 86 L50 138 M38 86 L38 138" />
+              <rect class="cam" x="30" y="74" width="16" height="11" rx="2" /><circle class="cam" cx="49" cy="79.5" r="3.5" />
+              <line class="sight" x1="54" y1="80" x2="251" y2="80" />
+              <text class="acc" x="58" y="72" font-size="14" font-weight="700">✓ lens level with hip</text>
+              <rect class="cam-bad" x="88" y="128" width="14" height="9" rx="2" />
+              <line class="sight-bad" x1="104" y1="130" x2="252" y2="83" />
+                            <text x="4" y="154" font-size="13"><tspan font-weight="700">✗ floor level:</tspan> looks up, hips hidden</text>
+            </svg>
+            <figcaption><strong>Camera height</strong>Tripod with the lens at hip height and level, not on the floor.</figcaption>
+          </figure>
+        </div>
+        <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+          <defs>
+            <g id="mill">
+              <rect class="belt" x="72" y="30" width="56" height="96" rx="3" />
+              <rect x="64" y="22" width="72" height="8" class="solid" />
+              <text x="139" y="31" font-size="12" class="mut">console</text>
+              <text x="131" y="122" font-size="12" class="mut">belt</text>
+            </g>
+            <g id="runner">
+              <circle cx="100" cy="82" r="6" class="solid" />
+              <path class="ln" d="M100 72 L100 46 M94 52 L100 44 L106 52" stroke-width="1.8" />
+            </g>
+            <g id="camera">
+              <rect class="cam" x="-8" y="-6" width="12" height="12" rx="2" />
+              <path class="cam" d="M4 -4 L10 -7 L10 7 L4 4 Z" />
+            </g>
+          </defs>
+        </svg>
+      </section>
+
+      <div class="cols">
+        <section class="card">
+          <h2>File name</h2>
+          <p><code>CODE_YYYY-MM-DD_VIEW_SPEED</code>, e.g. <code>T3_2026-10-20_left_6.0mph.mov</code>. VIEW is <code>left</code>, <code>right</code>, <code>rear</code> or <code>front</code>.</p>
+          <p><strong>Client code only, never a name.</strong> Videos stay on the device: the app does not upload them.</p>
+        </section>
+        <section class="card">
+          <h2>Before you press record</h2>
+          <ul class="check">
+            <li>Tripod, landscape, 1x lens, no zoom</li>
+            <li>60 fps or more (120 if offered)</li>
+            <li>Lens at hip height, camera level and square</li>
+            <li>Whole body in frame with a margin all round, even at the back of the swing</li>
+            <li>Hips, knees and feet not hidden by console or rails</li>
+            <li>Even light, plain background, nobody else in view</li>
+            <li>Runner warmed up, speed steady; record 30–60 s</li>
+          </ul>
+        </section>
+      </div>
+
+      <p class="limits">This is movement analysis to support clinical judgment, not a diagnosis. Any clip the app judges unsuitable gets no values, only the reason and re-filming advice.</p>
+    </div>
+    <script>
+      document.getElementById('print').addEventListener('click', () => window.print());
+    </script>
+  </body>
+</html>

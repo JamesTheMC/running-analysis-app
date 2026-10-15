@@ -3,6 +3,7 @@
 
 import { METRICS, PHASES, PATTERNS, SCORING, ASYMMETRY, STATUS_REASONS, VALIDATION } from '../config.js';
 import { formatRange, formatValue } from './format.js';
+import { needsText } from '../pipeline/view-matrix.js';
 
 // Statuses for values whose colour depends on an analysis choice (IC timing, window end): range shown,
 // no flag, no score weight, no pattern triggers, no L/R difference.
@@ -72,7 +73,7 @@ function evaluateCell(def, side, measurement, ctx) {
   }
   const allowed = def.allowedViews || [];
   if (!allowed.some((v) => ctx.views.includes(v))) {
-    cell.reason = `needs a ${allowed.map(viewLabel).join(' or ')} clip`;
+    cell.reason = `needs ${needsText(def, side) || `a ${allowed.map(viewLabel).join(' or ')} clip`}`;
     cell.missingView = allowed[0];
     return cell;
   }
@@ -92,7 +93,7 @@ function evaluateCell(def, side, measurement, ctx) {
     // Lateral clips cover their near leg only: the other leg needs a clip filmed from its side.
     const lateralOnly = allowed.length === 1 && allowed[0] === 'lateral';
     if (lateralOnly && (side === 'left' || side === 'right') && ctx.lateralLegs && !ctx.lateralLegs.includes(side)) {
-      cell.reason = `needs a lateral clip filmed from the ${side}`;
+      cell.reason = `needs ${needsText(def, side)}`;
     } else cell.reason = ctx.unmeasuredReason || 'not measured';
     return cell;
   }
