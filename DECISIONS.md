@@ -341,3 +341,23 @@ the output.
   only for trustworthy values. Rear: midstance only (rear IC/TO are low-confidence timing). Head blur
   on by default; mirrored clips drawn flipped to match the un-mirrored landmarks (untested: no mirrored
   clip exists). Y
+
+## Reference analysis (2026-10-23)
+- **reference/ and all derived material are gitignored** (videos, frames, contact sheets, transcripts;
+  docs/reference-analysis/local/ for working notes). Already-tracked docs of ours in reference/ stay
+  tracked. Alt: move reference videos elsewhere (not my call: the owner put them there). Y
+- **ffmpeg from the `imageio-ffmpeg` pip package** (user install, no system change). Alt: Homebrew
+  (not installed; system-wide), ffmpeg-static via npm (no Node.js). Y
+- **No transcripts:** faster-whisper installed (local, free) but both audio tracks are digital silence
+  (−91 dB). Y
+- **Frames:** scene change > 0.06 (cap 150) plus every 2 s (cap 120); 8 × 2 contact sheets reviewed
+  first, full frames for detail. A1-02 broken down by a subagent, reviewed against the same sheets. Y
+- **App B (App.Onform) folder was empty:** documented, nothing to analyse. Y
+- **Roadmap order = interface tools first** (review player, manual measurements, range scale,
+  explainers), then the on-device session library, then measured angle curves; "ideal position"
+  drawings, body maps, style labels, new metrics, overground, accounts deferred (reasons in ROADMAP.md).
+  Alt: start with angle curves (most visible reference feature) — rejected: they rest on angles
+  validated at events only. Y
+- **Manual measurement tool included although the reference only shows an unused drawing-style icon**
+  (A1-02 @ 00:00): clear clinical need, independent of validation; labelled manual and kept out of
+  scores and the corrective section. Y
