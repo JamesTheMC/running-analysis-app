@@ -1,0 +1,214 @@
+/* Video review player and manual measurement tools (js/views/review.js, js/views/measure.js). */
+.rv-toggles,
+.mz-tools,
+.rv-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.rv-chip,
+.rv-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface, transparent);
+  color: var(--text, inherit);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.rv-chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.rv-btn {
+  font-variant-numeric: tabular-nums;
+}
+.rv-speed {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.rv-speed select {
+  min-height: 44px;
+  font: inherit;
+}
+.rv-clip {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.rv-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.rv-head h4 {
+  margin: 0;
+}
+.rv-stage {
+  margin: 8px 0;
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.rv-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  height: auto;
+  touch-action: none; /* taps and drags on the frame are measurement input */
+}
+.rv-canvas.mz-active {
+  cursor: crosshair;
+  outline: 2px solid #ffd400;
+}
+.rv-scrub {
+  position: relative;
+  padding-top: 14px;
+}
+.rv-ticks {
+  position: absolute;
+  inset: 0 8px auto 8px;
+  height: 14px;
+}
+.rv-tick {
+  position: absolute;
+  top: 2px;
+  width: 0;
+  height: 0;
+  transform: translateX(-5px);
+  opacity: 0.9;
+}
+.rv-tick.rv-ic {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 9px solid var(--accent);
+}
+.rv-tick.rv-to {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 9px solid var(--accent);
+}
+.rv-tick.rv-ms {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(-4px);
+}
+.rv-tick.rv-r.rv-ms {
+  background: var(--yellow);
+}
+.rv-slider {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+}
+.mz {
+  margin-top: 8px;
+}
+.mz-list li {
+  padding: 4px 0;
+}
+.mz-del {
+  min-height: 44px;
+}
+
+/* Keep in view: the review card stays pinned (compact) while the results scroll. */
+.rv-section.rv-pinned {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  max-height: 55vh;
+  overflow-y: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.rv-section.rv-pinned .rv-canvas {
+  max-height: 32vh;
+}
+
+@media (min-width: 768px) {
+  .rv-section:not(.rv-pinned) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+  }
+  .rv-section:not(.rv-pinned) > h3,
+  .rv-section:not(.rv-pinned) > .rv-toggles,
+  .rv-section:not(.rv-pinned) > p {
+    grid-column: 1 / -1;
+  }
+}
+
+@media print {
+  .rv-section {
+    display: none !important;
+  }
+  .mz-card {
+    break-inside: avoid;
+  }
+}
+
+/* Range scale (js/views/range-scale.js) */
+.rs {
+  margin: 4px 0 6px;
+  max-width: 340px;
+}
+.rs-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.rs-svg {
+  width: 100%;
+  height: 40px;
+  overflow: visible;
+}
+.rs-z.rs-green {
+  fill: var(--green);
+  opacity: 0.55;
+}
+.rs-z.rs-yellow {
+  fill: var(--yellow);
+  opacity: 0.4;
+}
+.rs-z.rs-red {
+  fill: var(--red);
+  opacity: 0.45;
+}
+.rs-t {
+  font-size: 9px;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+.rs-m {
+  stroke: var(--surface);
+  stroke-width: 1;
+}
+.rs-m-green {
+  fill: var(--green);
+}
+.rs-m-yellow {
+  fill: var(--yellow);
+}
+.rs-m-red {
+  fill: var(--red);
+}
+.rs-m-neutral {
+  fill: var(--muted);
+}
+.rs-z.rs-review {
+  fill: var(--muted);
+  opacity: 0.25;
+}

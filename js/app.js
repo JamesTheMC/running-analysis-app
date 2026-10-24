@@ -18,6 +18,7 @@ import { processClip } from './pipeline/adapt.js';
 import { quickCapture } from './pipeline/capture-quality.js';
 import { renderClipCheck } from './views/clip-check.js';
 import { mountPhasePanels } from './views/phase-panels.js';
+import { mountReview } from './views/review.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -77,7 +78,10 @@ function render() {
   if (state.screen === 'results') for (const t of root.querySelectorAll('textarea.interpretation')) autosize(t);
   if (state.screen === 'results' && state.tab === 'debug' && state.session?.reconciled) mountDebug(root, state);
   // Phase panels: stills are drawn on the device from the local video (never stored or sent).
-  if (state.screen === 'results' && (state.tab || 'results') === 'results' && !state.session?.placeholder) mountPhasePanels(root, state, state.model).catch((e) => console.error(e));
+  if (state.screen === 'results' && (state.tab || 'results') === 'results' && !state.session?.placeholder) {
+    mountPhasePanels(root, state, state.model).catch((e) => console.error(e));
+    mountReview(root, state).catch((e) => console.error(e));
+  }
 }
 
 function recompute({ resetInterpretation = false } = {}) {
@@ -294,7 +298,7 @@ function newSession() {
 }
 
 async function copySummary(button) {
-  const text = buildSummaryText(state.model, state.interpretation, state.explainText);
+  const text = buildSummaryText(state.model, state.interpretation, state.explainText, state.session?.manual);
   const ok = await copyText(text);
   button.textContent = ok ? 'Copied ✓' : 'Copy failed. Select the text manually.';
   button.classList.toggle('is-done', ok);

@@ -226,7 +226,7 @@ function cellLine(r, c, sideWord) {
   </details>`;
 }
 
-const MISSING_LEG = /^needs a lateral clip filmed from the (left|right)$/;
+const MISSING_LEG = /^needs the (left|right) side view$/;
 
 function metricsHtml(spec) {
   if (spec.slot === 'anterior') return '<p class="muted small">Front-view values are experimental and are not listed or rated here; angles on the frame are for orientation only.</p>';
@@ -319,7 +319,7 @@ export function phasePanelsHtml(state, model) {
 
 let filterOk = null;
 // ctx.filter exists but is a no-op in some Safari versions: test that a blur actually spreads a pixel.
-function canvasFilterWorks() {
+export function canvasFilterWorks() {
   if (filterOk != null) return filterOk;
   try {
     const c = document.createElement('canvas');
@@ -340,7 +340,7 @@ function cssColour(name, fallback) {
   return v || fallback;
 }
 
-function palette() {
+export function palette() {
   return {
     green: cssColour('--green', '#1e7a4c'),
     yellow: cssColour('--yellow', '#8a6100'),
@@ -350,7 +350,7 @@ function palette() {
 }
 
 // Head region from the nose and shoulders (in analysed px): an ellipse around the head.
-function headEllipse(row) {
+export function headEllipse(row) {
   if (!seen(row, 0) || !row.lm) return null;
   const nose = P(row, 0);
   const sl = P(row, 11);
@@ -363,7 +363,7 @@ function headEllipse(row) {
   return { cx: nose[0] + 0.35 * (sm[0] - nose[0]), cy: nose[1] - 0.15 * d, rx: r, ry: r * 1.15 };
 }
 
-function blurHead(ctx, src, e, tf) {
+export function blurHead(ctx, src, e, tf) {
   const cx = (e.cx - tf.x0) * tf.k;
   const cy = (e.cy - tf.y0) * tf.k;
   const rx = e.rx * tf.k;
@@ -467,7 +467,7 @@ function statusColour(spec, id, key, pal) {
 // tf: the panel's crop of the analysed frame { x0, y0, k } (canvas px = (analysed px - origin) * k).
 const mapper = (row, tf) => (k) => [(row.lm[k * 4] - tf.x0) * tf.k, (row.lm[k * 4 + 1] - tf.y0) * tf.k];
 
-function drawSkeleton(ctx, row, tf, scale, stanceSide) {
+export function drawSkeleton(ctx, row, tf, scale, stanceSide) {
   const S = mapper(row, tf);
   ctx.save();
   ctx.lineCap = 'round';
@@ -620,7 +620,7 @@ function cropBox(rows, base, [aw, ah]) {
 
 let active = null; // the previous mount: its hidden videos are released on the next mount
 
-function seekTo(video, t) {
+export function seekTo(video, t) {
   return new Promise((resolve) => {
     const done = () => {
       clearTimeout(timer);
@@ -636,12 +636,12 @@ function seekTo(video, t) {
   });
 }
 
-function dropVideo(v) {
+export function dropVideo(v) {
   v.removeAttribute('src');
   v.load();
 }
 
-function loadVideo(url) {
+export function loadVideo(url) {
   return new Promise((resolve) => {
     const v = document.createElement('video');
     v.muted = true;

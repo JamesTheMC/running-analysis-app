@@ -959,6 +959,104 @@ section = 'Capture-quality gate (video check) on all 24 benchmark clips';
   });
 }
 
+section = 'Video review player and manual measurements';
+{
+  const { fourViewSession } = await import('./fixture-regression.js');
+  const { eventMarkers, rowAt, frameAngles, reviewHtml } = await import('../js/views/review.js');
+  const { angle3, fromVertical, distance, manualLines, measurementText } = await import('../js/views/measure.js');
+  const { buildModel } = await import('../js/presentation/model.js');
+  const { buildSummaryText, buildInterpretation } = await import('../js/presentation/text.js');
+  const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+  const { CLIP_SLOTS: SL } = await import('../js/config.js');
+  const { clips, intake } = await fourViewSession('T3');
+  await testAsync('event markers: side view = near leg IC / MS / TO; rear = each leg midstance; valid strides only', async () => {
+    const side = eventMarkers({ ...clips.lateral_right, slot: 'lateral_right' });
+    assert(side.length > 100 && side.every((m) => m.leg === 'right') && new Set(side.map((m) => m.kind)).size === 3, `side ${side.length}`);
+    const rear = eventMarkers({ ...clips.posterior, slot: 'posterior' });
+    assert(rear.every((m) => m.kind === 'ms') && rear.some((m) => m.leg === 'left') && rear.some((m) => m.leg === 'right'), 'rear');
+    for (let i = 1; i < side.length; i++) assert(side[i].row >= side[i - 1].row, 'markers not sorted');
+    return `${side.length} side, ${rear.length} rear markers`;
+  });
+  test('rowAt finds the nearest analysed row by time', () => {
+    const rows = [0, 0.033, 0.067, 0.1].map((t) => ({ t }));
+    assert(rowAt(rows, 0) === 0 && rowAt(rows, 0.05) === 2 && rowAt(rows, 0.04) === 1 && rowAt(rows, 9) === 3, 'rowAt');
+  });
+  await testAsync('frame angle labels: side knee/hip/trunk, rear hip adduction and knee per leg, front none', async () => {
+    const row = clips.lateral_right.debug.rows.find((r) => r.lm);
+    const a = frameAngles('lateral_right', row, { nearSide: 'R', facing: 1 });
+    assert(a.map((x) => x.label).join() === 'Knee,Hip,Trunk', JSON.stringify(a));
+    const rrow = clips.posterior.debug.rows.find((r) => r.lm);
+    assert(frameAngles('posterior', rrow).length === 4, 'rear labels');
+    assert(frameAngles('anterior', rrow).length === 0, 'front labels must be none (experimental)');
+  });
+  test('measurement maths: angle, line vs vertical, distance (cm only with a scale)', () => {
+    assert(Math.abs(angle3([0, 0], [1, 0], [1, 1]) - 90) < 1e-9, 'angle');
+    assert(Math.abs(fromVertical([0, 0], [0, 10])) < 1e-9 && Math.abs(fromVertical([0, 0], [10, 10]) - 45) < 1e-9 && Math.abs(fromVertical([0, 10], [0, 0])) < 1e-9, 'vertical');
+    const d = distance([0, 0], [30, 40], 2);
+    assert(d.px === 50 && d.cm === 25 && distance([0, 0], [3, 4]).cm == null, 'distance');
+    assert(/manual|°/.test(measurementText({ kind: 'angle', value: 12.34 })), 'text');
+  });
+  await testAsync('manual measurements stay apart: model, scores, findings and corrective section unchanged; text has its own section', async () => {
+    const use = { lateral_right: clips.lateral_right, posterior: clips.posterior };
+    const mk = (manual) => {
+      const session = { intake, clips: use, manual };
+      session.views = [...new Set(Object.keys(use).map((k) => SL[k].view))];
+      session.analysis = mergeSession(use);
+      session.reconciled = reconcileSession(session);
+      return { session, m: buildModel(session, analyze(session)) };
+    };
+    const a = mk(undefined);
+    const manual = [{ slot: 'lateral_right', kind: 'angle', pts: [[0, 0], [1, 0], [1, 1]], idx: 10, t: 0.33, value: 90 }, { slot: 'posterior', kind: 'vertical', pts: [[0, 0], [0, 1]], idx: 4, t: 0.13, value: 0 }];
+    const b = mk(manual);
+    assert(JSON.stringify(a.m) === JSON.stringify(b.m), 'model changed by manual measurements');
+    const t = buildSummaryText(b.m, buildInterpretation(b.m), undefined, manual);
+    const sec = t.indexOf('MANUAL ON-SCREEN MEASUREMENTS');
+    assert(sec > t.indexOf('WHY IT MAY BE HAPPENING') && sec < t.indexOf('INTERPRETATION') && /not validated, not scored, not used for findings/.test(t), 'manual section');
+    assert(manualLines(manual).length === 2 && /right side view, 0.33 s: angle 90.0°/.test(manualLines(manual)[0]), manualLines(manual)[0]);
+    assert(!/MANUAL/.test(buildSummaryText(a.m, buildInterpretation(a.m))), 'manual section without measurements');
+  });
+  await testAsync('review section renders one player per uploaded view and names the missing ones', async () => {
+    const html = reviewHtml({ session: { clips: { lateral_right: clips.lateral_right, posterior: clips.posterior } } });
+    assert((html.match(/class="rv-clip"/g) || []).length === 2 && /Not uploaded: left side view/.test(html), 'players');
+    assert(/this frame only, not the validated per-stride values/.test(html), 'frame-only wording');
+    assert(reviewHtml({ session: { clips: {}, placeholder: true } }) === '', 'demo');
+  });
+}
+
+section = 'Range scale';
+{
+  const { scaleZones, rangeScaleHtml } = await import('../js/views/range-scale.js');
+  const { sessionFor } = await import('./fixture-regression.js');
+  const { buildModel } = await import('../js/presentation/model.js');
+  const { renderResults } = await import('../js/views/results.js');
+  const { CLIP_SLOTS: SL } = await import('../js/config.js');
+  test('zones follow the config ranges (red below, caution, normal, caution above)', () => {
+    const z = scaleZones({ green: { min: 14, max: 30 }, red: { below: 10 } }, 19).zones.map((x) => `${x.kind}:${Math.round(x.from)}-${Math.round(x.to)}`);
+    assert(z[0].startsWith('red:') && z[1] === 'yellow:10-14' && z[2] === 'green:14-30' && z[3].startsWith('yellow:30'), z.join(' '));
+    const f = scaleZones({ green: { max: 13 }, red: { above: 17 } }, 24).zones.map((x) => x.kind).join();
+    assert(f === 'green,yellow,red', f);
+  });
+  test('marker coloured only for trusted values; untrusted is neutral with its hedge', () => {
+    const t = rangeScaleHtml({ green: { min: 0, max: 8 }, red: { above: 10 } }, 4, { status: 'green', unit: '°' });
+    assert(/rs-m-green/.test(t) && !/rs-m-neutral/.test(t), 'trusted');
+    const u = rangeScaleHtml({ green: { min: 0, max: 8 }, red: { above: 10 } }, 9.1, { status: null, unit: '°', hedge: 'borderline: changes with the exact moment of foot contact' });
+    assert(/rs-m-neutral/.test(u) && !/rs-m-(green|yellow|red)/.test(u) && /borderline/.test(u), 'untrusted');
+  });
+  await testAsync('results screen shows a scale for every assessed numeric range value', async () => {
+    const { intake, clips, result } = await sessionFor('T3');
+    const session = { intake, clips, reconciled: result };
+    session.views = [...new Set(Object.keys(clips).map((k) => SL[k].view))];
+    session.analysis = mergeSession(clips);
+    const res = analyze(session);
+    const m = buildModel(session, res);
+    const html = renderResults({ session, tab: 'results', interpretation: '', explainText: '', model: m }, res, m);
+    const want = m.sections.flatMap((s) => s.rows).filter((r) => r.range?.bounds).flatMap((r) => Object.values(r.cells).filter((c) => c.assessed && typeof c.value === 'number')).length;
+    const got = (html.match(/class="rs"/g) || []).length;
+    assert(got >= want && want > 5, `${got} scales for ${want} values`);
+    return `${want} values`;
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);

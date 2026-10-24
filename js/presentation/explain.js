@@ -100,6 +100,7 @@ function findings(model) {
         range: found.row.range?.green ? `usual range ${found.row.range.green}` : null,
         phase: PHASE[found.row.phase] || null,
         phaseId: found.row.phase || null,
+        key: c.key,
         trusted,
         hedge: c.hedge || (c.confidence === 'low' ? 'low confidence' : null),
         common: COMMON_ACROSS_RUNNERS[t.id] || null,

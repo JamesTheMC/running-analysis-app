@@ -6,6 +6,9 @@ import { STATUS_WORD } from '../presentation/model.js';
 import { buildSummaryText } from '../presentation/text.js';
 import { renderDebug } from './debug.js';
 import { phasePanelsHtml } from './phase-panels.js';
+import { reviewHtml } from './review.js';
+import { manualCardHtml } from './measure.js';
+import { rangeScaleHtml } from './range-scale.js';
 
 const SIDE = { left: 'Left', right: 'Right', mid: '' };
 const LEVEL_WORD = { pass: 'Pass', warn: 'Warning', fail: 'Fail' };
@@ -31,6 +34,8 @@ function detailHtml(r) {
       parts.push(`<p>${SIDE[c.key] ? `${SIDE[c.key]}: ` : ''}not assessed: ${esc(c.why)}</p>`);
       continue;
     }
+    const scale = r.range?.bounds && typeof c.value === 'number' ? rangeScaleHtml(r.range.bounds, c.value, { status: c.status, unit: r.unitSymbol, hedge: c.hedge || `${c.confidence} confidence`, provisional: r.range.provisional }) : '';
+    if (scale) parts.push(`<div class="rs-wrap">${SIDE[c.key] ? `<span class="small">${SIDE[c.key]}</span>` : ''}${scale}</div>`);
     const bits = [`${esc(c.confidence)} confidence`, c.n ? `median of ${c.n} ${esc(c.countUnit)}` : null, c.source ? `from ${esc(c.source)}` : null].filter(Boolean).join(' · ');
     parts.push(`<p>${SIDE[c.key] ? `<strong>${SIDE[c.key]}:</strong> ` : ''}${bits}${c.why?.length ? `<br><span class="muted">${esc(c.why.join('; '))}</span>` : ''}${c.note ? `<br><span class="muted">${esc(c.note)}</span>` : ''}${c.prompt ? `<br>${esc(c.prompt)}` : ''}</p>`);
   }
@@ -86,6 +91,14 @@ function findingsHtml(m) {
 const STRENGTH = (s) => (s === 'none' ? 'no tested link' : s);
 const link = (e) => (e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.short)}</a>` : esc(e.short));
 
+// Range scale for a corrective finding, from its row and cell in the model.
+function findingScale(m, f) {
+  const r = m.sections.flatMap((s) => s.rows).find((x) => x.id === f.id);
+  const c = r?.cells?.[f.key];
+  if (!r?.range?.bounds || typeof c?.value !== 'number') return '';
+  return rangeScaleHtml(r.range.bounds, c.value, { status: c.status, unit: r.unitSymbol, hedge: c.hedge || `${c.confidence} confidence`, provisional: r.range.provisional });
+}
+
 function explainHtml(state, m) {
   const ex = m.explanations;
   if (!ex) return '';
@@ -95,7 +108,7 @@ function explainHtml(state, m) {
   const entry = (e) => `<details class="r-row x-entry"${e.kind === 'full' ? ' open' : ''}>
     <summary><span class="r-name">${e.kind === 'screen' ? '<span class="hedge">Worth screening:</span> ' : ''}${esc(e.title)}</span><span class="r-cells"><span class="chip chip-ev">${esc(e.strength)} evidence</span></span></summary>
     <div class="r-detail small">
-      <p><strong>What we saw:</strong> ${e.findings.map((f) => `${esc(f.label)} ${esc(f.value)}${f.range ? ` <span class="muted">(${esc(f.range)})</span>` : ''}${f.phase ? ` <span class="muted">at ${f.phaseId ? `<a href="#panel-${esc(f.phaseId)}" data-action="goto-panel" data-panel="panel-${esc(f.phaseId)}">${esc(f.phase)}</a>` : esc(f.phase)}</span>` : ''}${f.hedge ? ` <span class="hedge">${esc(f.hedge)}</span>` : ''}`).join('; ')}</p>
+      <p><strong>What we saw:</strong> ${e.findings.map((f) => `${esc(f.label)} ${esc(f.value)}${f.range ? ` <span class="muted">(${esc(f.range)})</span>` : ''}${f.phase ? ` <span class="muted">at ${f.phaseId ? `<a href="#panel-${esc(f.phaseId)}" data-action="goto-panel" data-panel="panel-${esc(f.phaseId)}">${esc(f.phase)}</a>` : esc(f.phase)}</span>` : ''}${f.hedge ? ` <span class="hedge">${esc(f.hedge)}</span>` : ''}${findingScale(m, f)}`).join('; ')}</p>
       ${e.softened ? `<p class="hedge">${esc(e.softened)}</p>` : ''}
       ${e.strengthen ? `<p class="muted">${esc(e.strengthen)}</p>` : ''}
       ${e.context ? `<p class="muted">${esc(e.context)}</p>` : ''}
@@ -172,9 +185,11 @@ function resultsTab(state, m) {
       <p class="muted small">${esc(sc.basis || '')} Score: normal = full credit, caution = half, flag = none, weighted by confidence; unscored and timing-sensitive values are left out. First-draft formula.</p>
     </section>
     ${timingHtml(m.timing)}
+    ${m.header.demo ? '' : reviewHtml(state)}
     ${m.header.demo ? '' : phasePanelsHtml(state, m)}
     ${m.sections.map(sectionHtml).join('')}
     ${experimentalHtml(m)}
+    <div data-mz-card>${manualCardHtml(state.session?.manual)}</div>
     ${findingsHtml(m)}
     ${explainHtml(state, m)}
     ${limitsHtml(m)}
@@ -182,7 +197,7 @@ function resultsTab(state, m) {
 }
 
 function textTab(state, m) {
-  return `<section class="card summary"><pre class="summary-text">${esc(buildSummaryText(m, state.interpretation, state.explainText))}</pre></section>
+  return `<section class="card summary"><pre class="summary-text">${esc(buildSummaryText(m, state.interpretation, state.explainText, state.session?.manual))}</pre></section>
     <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button></div>`;
 }
 

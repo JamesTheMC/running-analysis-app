@@ -3,6 +3,7 @@
 // correlated findings, suggestions, interpretation and limits.
 import { STATUS_WORD } from './model.js';
 import { explanationsText } from './explain.js';
+import { manualLines } from '../views/measure.js';
 
 const SIDE = { left: 'L', right: 'R', mid: '' };
 const MISSING_LEG = /^needs the (left|right) side view$/;
@@ -76,7 +77,7 @@ export function buildInterpretation(model) {
   return p.join(' ');
 }
 
-export function buildSummaryText(model, interpretation, explainText) {
+export function buildSummaryText(model, interpretation, explainText, manual) {
   const h = model.header;
   const out = [];
   out.push(`GAIT ANALYSIS SUMMARY | ${h.client} | ${h.date}`);
@@ -133,6 +134,11 @@ export function buildSummaryText(model, interpretation, explainText) {
   if (model.notReliable.length) {
     out.push('', 'NOT REPORTED (not reliable from video)');
     for (const n of model.notReliable) out.push(`${n.label}: ${n.why}`);
+  }
+
+  if (manual?.length) {
+    out.push('', 'MANUAL ON-SCREEN MEASUREMENTS (marked by hand on a paused 2D frame; not validated, not scored, not used for findings)');
+    out.push(...manualLines(manual));
   }
 
   out.push('', 'INTERPRETATION', interpretation || buildInterpretation(model));
