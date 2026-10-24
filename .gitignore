@@ -4,3 +4,15 @@ node_modules/
 __pycache__/
 .venv/
 test-data/
+
+# Reference material (other products' screen recordings, client footage): local only. Never commit
+# videos, extracted frames, contact sheets, screenshots or transcripts. Already-tracked docs in
+# reference/ (our own) stay tracked; new files there are ignored.
+reference/
+**/frames/
+*.contact.jpg
+*.contact.png
+*.transcript.*
+*.vtt
+*.srt
+docs/reference-analysis/local/
