@@ -19,6 +19,9 @@ import { quickCapture } from './pipeline/capture-quality.js';
 import { renderClipCheck } from './views/clip-check.js';
 import { mountPhasePanels } from './views/phase-panels.js';
 import { mountReview } from './views/review.js';
+import { libraryHtml, renderCompare } from './views/library.js';
+import { deleteSession, getSession, listSessions, fromRecord, saveSession } from './storage/library.js';
+import { compareModels, compareText } from './presentation/compare.js';
 import { checkVideoFile } from './pipeline/file-check.js';
 import { fileCheckHtml, protocolHtml } from './views/intake.js';
 import { copyText, today } from './util.js';
@@ -62,6 +65,7 @@ function go(screen) {
   if (screen === 'results' && !state.session) screen = 'upload';
   if (screen === 'analyzing' && !state.progress) screen = state.session ? 'results' : 'upload';
   if (screen === 'check' && !state.check) screen = state.session ? 'results' : 'upload';
+  if (screen === 'compare' && !state.compare) screen = 'upload';
   state.screen = screen;
   if (location.hash !== `#${screen}`) history.pushState(null, '', `#${screen}`);
   render();
@@ -73,8 +77,10 @@ function render() {
   else if (state.screen === 'results') root.innerHTML = renderResults(state, results, state.model);
   else if (state.screen === 'analyzing') root.innerHTML = renderAnalyzing(state);
   else if (state.screen === 'check') root.innerHTML = renderClipCheck(state);
+  else if (state.screen === 'compare') root.innerHTML = renderCompare(state);
   else root.innerHTML = renderUpload(state);
   if (state.screen === 'intake') wireIntake();
+  if (state.screen === 'upload') loadLibrary();
   if (state.screen === 'results') for (const t of root.querySelectorAll('textarea.interpretation')) autosize(t);
   if (state.screen === 'results' && state.tab === 'debug' && state.session?.reconciled) mountDebug(root, state);
   // Phase panels: stills are drawn on the device from the local video (never stored or sent).
@@ -82,6 +88,27 @@ function render() {
     mountPhasePanels(root, state, state.model).catch((e) => console.error(e));
     mountReview(root, state).catch((e) => console.error(e));
   }
+}
+
+// Saved sessions (on this device only).
+async function loadLibrary() {
+  const el = root.querySelector('[data-library]');
+  if (!el) return;
+  el.innerHTML = libraryHtml(null);
+  try {
+    state.library = await listSessions();
+    el.innerHTML = libraryHtml(state.library, { selected: state.libSelected });
+  } catch (e) {
+    el.innerHTML = libraryHtml([], { error: `Saved sessions are not available in this browser (${e.message}).` });
+  }
+}
+
+// Model of any session (saved or current), without touching the on-screen session.
+function modelOf(s) {
+  s.views = [...new Set(Object.keys(s.clips).map((slot) => CLIP_SLOTS[slot].view))];
+  s.analysis = mergeSession(s.clips);
+  s.reconciled = reconcileSession(s);
+  return buildModel(s, analyze(s), { corrections: correctionsFor });
 }
 
 function recompute({ resetInterpretation = false } = {}) {
@@ -330,6 +357,36 @@ root.addEventListener('click', (e) => {
   }
   else if (action === 'copy') copySummary(el);
   else if (action === 'use-clip') useCheckedClip();
+  else if (action === 'save-session') {
+    saveSession(state.session)
+      .then((rec) => {
+        state.session.savedId = rec.id;
+        el.textContent = 'Saved on this device ✓';
+      })
+      .catch((err) => (el.textContent = `Could not save: ${err.message}`));
+  } else if (action === 'lib-open') {
+    getSession(el.dataset.id).then((rec) => {
+      if (!rec) return;
+      revokeClips();
+      state.session = fromRecord(rec);
+      state.tab = 'results';
+      recompute({ resetInterpretation: true });
+      go('results');
+    });
+  } else if (action === 'lib-delete') {
+    if (confirm('Delete this saved session from this device? This cannot be undone.')) deleteSession(el.dataset.id).then(() => {
+      state.libSelected = (state.libSelected || []).filter((x) => x !== el.dataset.id);
+      loadLibrary();
+    });
+  } else if (action === 'lib-compare') {
+    const recs = (state.library || []).filter((r) => (state.libSelected || []).includes(r.id)).sort((x, y) => x.sessionDate.localeCompare(y.sessionDate) || x.savedAt.localeCompare(y.savedAt));
+    if (recs.length !== 2) return;
+    const [a, b] = recs.map((r) => modelOf(fromRecord(r)));
+    state.compare = { a, b, cmp: compareModels(a, b) };
+    go('compare');
+  } else if (action === 'copy-compare') {
+    copyText(compareText(state.compare.cmp, state.compare.a, state.compare.b)).then((ok) => (el.textContent = ok ? 'Copied ✓' : 'Copy failed'));
+  }
   else if (action === 'goto-panel') {
     e.preventDefault();
     const target = document.getElementById(el.dataset.panel);
@@ -364,6 +421,14 @@ root.addEventListener('click', (e) => {
 
 root.addEventListener('change', (e) => {
   if (e.target.matches('[data-action="pick-video"]')) pickVideo(e.target.files[0]);
+  if (e.target.matches('[data-action="lib-select"]')) {
+    const set = new Set(state.libSelected || []);
+    if (e.target.checked) set.add(e.target.value);
+    else set.delete(e.target.value);
+    state.libSelected = [...set].slice(-2);
+    const el = root.querySelector('[data-library]');
+    if (el) el.innerHTML = libraryHtml(state.library, { selected: state.libSelected });
+  }
   if (e.target.matches('[data-action="check-slot"]') && state.check) {
     analyseAs(state.check, e.target.value);
     render();

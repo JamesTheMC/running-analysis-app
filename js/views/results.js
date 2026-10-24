@@ -196,7 +196,7 @@ function resultsTab(state, m) {
     ${findingsHtml(m)}
     ${explainHtml(state, m)}
     ${limitsHtml(m)}
-    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button><button class="btn btn-secondary" data-action="print">Print / Save as PDF</button></div>`;
+    <div class="actions sticky"><button class="btn btn-primary btn-copy" data-action="copy">Copy summary</button><button class="btn btn-secondary" data-action="print">Print / Save as PDF</button>${m.header.demo ? '' : `<button class="btn btn-secondary" data-action="save-session">${state.session?.savedId ? 'Saved on this device ✓' : 'Save on this device'}</button>`}</div>`;
 }
 
 function textTab(state, m) {

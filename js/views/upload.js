@@ -38,6 +38,8 @@ export function renderUpload(state) {
         </ul>
       </details>
 
+      ${adding ? '' : '<section class="card lib" data-library aria-label="Saved sessions"></section>'}
+
       <div class="actions">
         ${
           adding

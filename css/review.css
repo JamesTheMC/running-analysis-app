@@ -227,3 +227,63 @@
     display: none;
   }
 }
+
+/* Saved sessions and comparison (js/views/library.js) */
+.lib-client h4 {
+  margin: 12px 0 4px;
+}
+.lib-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lib-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+}
+.lib-pick input {
+  width: 24px;
+  height: 24px;
+}
+.lib-pick {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.lib-what {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.lib-actions {
+  display: flex;
+  gap: 6px;
+}
+.btn-small {
+  min-height: 44px;
+}
+.cmp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .cmp-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .cmp-label {
+    grid-column: 1 / -1;
+    font-weight: 600;
+  }
+}

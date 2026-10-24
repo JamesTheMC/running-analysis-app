@@ -1079,6 +1079,54 @@ section = '"What is this?" explainers';
   });
 }
 
+section = 'Saved sessions on this device and comparison';
+{
+  const lib = await import('../js/storage/library.js');
+  const { compareModels, compareText } = await import('../js/presentation/compare.js');
+  const { fourViewSession } = await import('./fixture-regression.js');
+  const { buildModel } = await import('../js/presentation/model.js');
+  const { buildSummaryText, buildInterpretation } = await import('../js/presentation/text.js');
+  const { reconcileSession } = await import('../js/pipeline/reconcile.js');
+  const { CLIP_SLOTS: SL } = await import('../js/config.js');
+  const modelOf = (s) => {
+    s.views = [...new Set(Object.keys(s.clips).map((k) => SL[k].view))];
+    s.analysis = mergeSession(s.clips);
+    s.reconciled = reconcileSession(s);
+    return buildModel(s, analyze(s));
+  };
+  const base = await fourViewSession('T3');
+  const session = { intake: { ...base.intake, runningHistory: 'free text', goals: 'free text' }, clips: { lateral_right: { ...base.clips.lateral_right, name: 'some file name.mov', url: 'blob:x' }, posterior: base.clips.posterior }, manual: [{ slot: 'posterior', kind: 'angle', pts: [[0, 0], [1, 1], [2, 0]], idx: 3, t: 0.1, value: 90 }] };
+  test('stored record: results only (no video, landmarks, file names or free-text fields)', () => {
+    const rec = lib.toRecord(session, { savedAt: '2026-10-23T10:00:00Z' });
+    const json = JSON.stringify(rec);
+    assert(!/free text|some file name|blob:|"debug"|"rows"/.test(json), 'something private was stored');
+    assert(rec.clientCode === 'T3' && rec.views.join() === 'lateral_right,posterior' && rec.manual.length === 1, 'record');
+  });
+  await testAsync('save → list → open gives the same summary text; delete removes it', async () => {
+    const before = modelOf({ ...session, clips: { ...session.clips } });
+    const rec = await lib.saveSession(session);
+    const list = await lib.listSessions();
+    assert(list.some((r) => r.id === rec.id), 'not listed');
+    const back = lib.fromRecord(await lib.getSession(rec.id));
+    const after = modelOf(back);
+    const t1 = buildSummaryText(before, buildInterpretation(before), undefined, session.manual);
+    const t2 = buildSummaryText(after, buildInterpretation(after), undefined, back.manual);
+    assert(t1 === t2, 'summary differs after reopening');
+    await lib.deleteSession(rec.id);
+    assert(!(await lib.listSessions()).some((r) => r.id === rec.id), 'not deleted');
+  });
+  await testAsync('comparison: only values in both sessions; small changes within error; coverage warning', async () => {
+    const a = modelOf({ intake: base.intake, clips: { lateral_right: base.clips.lateral_right } });
+    const b = modelOf({ intake: { ...base.intake, sessionDate: 'later' }, clips: { lateral_right: base.clips.lateral_right, posterior: base.clips.posterior } });
+    const cmp = compareModels(a, b);
+    assert(cmp.rows.length > 5 && cmp.rows.every((r) => r.delta == null || Math.abs(r.delta) < 1e-9), 'same clip must give zero change');
+    assert(cmp.rows.filter((r) => r.withinError != null).every((r) => r.withinError === true), 'zero change within error');
+    assert(!cmp.rows.some((r) => r.id === 'ms_hip_adduction'), 'rear metric compared although only one session has it');
+    assert(cmp.onlyOne > 0 && /Different view coverage/.test(cmp.coverage.warning || ''), 'coverage warning');
+    assert(/within measurement error/.test(compareText(cmp, a, b)), 'text');
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);
