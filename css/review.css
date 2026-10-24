@@ -287,3 +287,57 @@
     font-weight: 600;
   }
 }
+
+/* Angle curves (js/views/curves-chart.js) */
+.cv-svg {
+  width: 100%;
+  height: auto;
+  max-width: 480px;
+  display: block;
+}
+.cv-grid {
+  stroke: var(--border);
+  stroke-width: 0.6;
+}
+.cv-ax {
+  font-size: 8px;
+  fill: var(--muted);
+}
+.cv-line {
+  fill: none;
+  stroke-width: 1.8;
+}
+.cv-band {
+  stroke: none;
+  opacity: 0.18;
+}
+.cv-l .cv-line {
+  stroke: var(--accent);
+}
+.cv-l .cv-band {
+  fill: var(--accent);
+}
+.cv-r .cv-line {
+  stroke: var(--yellow);
+  stroke-dasharray: 4 2;
+}
+.cv-r .cv-band {
+  fill: var(--yellow);
+}
+.cv-grid-2 {
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .cv-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media print {
+  .cv-section .rv-toggles {
+    display: none;
+  }
+  .cv-section {
+    break-inside: avoid;
+  }
+}

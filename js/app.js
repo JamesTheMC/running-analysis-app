@@ -19,6 +19,7 @@ import { quickCapture } from './pipeline/capture-quality.js';
 import { renderClipCheck } from './views/clip-check.js';
 import { mountPhasePanels } from './views/phase-panels.js';
 import { mountReview } from './views/review.js';
+import { wireCurves } from './views/curves-chart.js';
 import { libraryHtml, renderCompare } from './views/library.js';
 import { deleteSession, getSession, listSessions, fromRecord, saveSession } from './storage/library.js';
 import { compareModels, compareText } from './presentation/compare.js';
@@ -87,6 +88,7 @@ function render() {
   if (state.screen === 'results' && (state.tab || 'results') === 'results' && !state.session?.placeholder) {
     mountPhasePanels(root, state, state.model).catch((e) => console.error(e));
     mountReview(root, state).catch((e) => console.error(e));
+    wireCurves(root);
   }
 }
 

@@ -7,6 +7,7 @@ import { buildSummaryText } from '../presentation/text.js';
 import { renderDebug } from './debug.js';
 import { phasePanelsHtml } from './phase-panels.js';
 import { reviewHtml } from './review.js';
+import { curvesHtml } from './curves-chart.js';
 import { manualCardHtml } from './measure.js';
 import { rangeScaleHtml } from './range-scale.js';
 import { explainerFor, TIMING_MEANING } from '../presentation/explainers.js';
@@ -190,6 +191,7 @@ function resultsTab(state, m) {
     ${timingHtml(m.timing)}
     ${m.header.demo ? '' : reviewHtml(state)}
     ${m.header.demo ? '' : phasePanelsHtml(state, m)}
+    ${m.header.demo ? '' : curvesHtml(state)}
     ${m.sections.map(sectionHtml).join('')}
     ${experimentalHtml(m)}
     <div data-mz-card>${manualCardHtml(state.session?.manual)}</div>

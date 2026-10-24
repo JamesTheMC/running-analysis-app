@@ -13,6 +13,7 @@ import { SCORING } from '../config.js';
 import { median } from './stats.js';
 import { IC_SWEEP } from './events.js';
 import { createEmitter } from './emit.js';
+import { gaitCurves } from './curves.js';
 
 export const MIN_STRIDES = 3;
 export const UNMEASURED_REASON = 'not measured by this build yet';
@@ -161,6 +162,8 @@ export function toAnalysis(result, { heightCm } = {}) {
       landmarkQuality: safely(() => landmarkQuality(rows, Object.values(LANDMARKS[near]).concat([LANDMARKS.L.sho, LANDMARKS.R.sho])), errors, 'landmarkQuality'),
       oscillation: safely(() => verticalOscillation(rows, bad, seg.cycles.filter((c) => c.windows).map((c) => [c.start, c.end]), metrics.bodyHeightPx, meta.fs), errors, 'oscillation'),
     };
+    // Angle curves over the gait cycle (display only; curves.js). Not from a clip that failed the check.
+    r.curves = ['fail', 'unsuitable'].includes(captureQuality?.level) ? null : safely(() => gaitCurves(rows, r.eventTable, { fs: meta.fs, nearSide: near, facing: seg.ref.facing > 0 ? 1 : -1 }), errors, 'curves');
     return { ...r, reconErrors: errors };
   }
 }

@@ -52,6 +52,8 @@ const SHELL = [
   './js/presentation/compare.js',
   './js/views/library.js',
   './js/storage/library.js',
+  './js/pipeline/curves.js',
+  './js/views/curves-chart.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',

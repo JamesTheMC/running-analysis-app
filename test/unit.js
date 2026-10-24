@@ -1127,6 +1127,32 @@ section = 'Saved sessions on this device and comparison';
   });
 }
 
+section = 'Angle curves over the gait cycle';
+{
+  const { fourViewSession, sessionFor } = await import('./fixture-regression.js');
+  const { curvesHtml } = await import('../js/views/curves-chart.js');
+  await testAsync('side clips get knee and hip curves: 101 points, knee peaks in swing, band around the median', async () => {
+    const { clips } = await sessionFor('T3');
+    const c = clips.lateral_right.analysis.curves;
+    assert(c && !c.reason && c.strides >= 10, JSON.stringify(c && (c.reason || c.strides)));
+    const k = c.knee.median;
+    assert(k.length === 101, 'points');
+    const peak = k.indexOf(Math.max(...k));
+    assert(peak > 55 && peak < 90 && Math.max(...k) > 70, `knee peak ${Math.max(...k)} at ${peak}%`);
+    assert(c.knee.p25.every((v, j) => v <= k[j] + 1e-9) && c.knee.p75.every((v, j) => v >= k[j] - 1e-9), 'band');
+    assert(c.hip.median.length === 101, 'hip');
+    return `${c.strides} strides, knee peak ${Math.max(...k)}° at ${peak}%`;
+  });
+  await testAsync('no curves from a clip that failed the video check; missing side says which view it needs', async () => {
+    const { clips } = await sessionFor('AR');
+    assert(Object.values(clips).every((c) => c.analysis.curves == null), 'curves from a failed clip');
+    const four = await fourViewSession('T3');
+    const html = curvesHtml({ session: { clips: { lateral_right: four.clips.lateral_right } } });
+    assert(/Not assessed: needs the left side view/.test(html) && /measured, not scored/.test(html), 'missing side wording');
+    assert(/Not assessed: needs a side view/.test(curvesHtml({ session: { clips: { posterior: four.clips.posterior } } })), 'rear only');
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);
