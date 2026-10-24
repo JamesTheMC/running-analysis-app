@@ -6,7 +6,7 @@ Paste this into the project root as `SPEC.md` (or into `CLAUDE.md`) so Claude Co
 
 ## 1. Product context
 
-- Owner/clinician: James, DPT, ATC, CSCS (sports PT, DMV area). Primary users are James and colleagues; outputs may be shared with clients (not "patients" in the UI).
+- Owner/clinician: James, DPT, ATC, CSCS (sports PT, DMV area). Primary users are the owner and colleagues; outputs may be shared with clients (not "patients" in the UI).
 - Platform: **web app (PWA) first**, mobile-first for iPhone/iPad. Native Swift rebuild only after validation. Built solo with Claude Code on a Mac. GitHub repo already exists.
 - v1 input: **video upload only** (no live capture). Treadmill running.
 - Privacy: videos may be real client gait video. **Process locally in the browser or on-device. No cloud upload of video.** Files are labeled by **client code + upload date, never client name.**

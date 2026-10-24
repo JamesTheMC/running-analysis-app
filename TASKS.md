@@ -112,6 +112,15 @@ No crashes; all clips upright (rotation metadata applied); no mirrored clips; fr
       runners (owner); then `python3 tools/revalidate.py`, blind marks on test/mark-clip.html, re-run
 - [x] Three-phase still-image panels, linked from the corrective section (2026-10-15)
 
+## Reference-analysis features (2026-10-23)
+- [x] Reference videos analysed locally (docs/reference-analysis/: inventory, App A breakdown, feature
+      matrix, roadmap, traceability); reference/ and derived frames gitignored
+- [x] Video review player; manual on-screen measurements; range scale; "What is this?" explainers
+- [x] On-device session library + two-session comparison; angle curves over the gait cycle
+- [ ] App B (App.Onform): folder was empty; add recordings to analyse
+- [ ] Deferred (ROADMAP.md): ideal-position drawings, body map, exercise images, running-style label,
+      head/arm findings, rearfoot angle, overground analysis, accounts
+
 ## Views, video check, guide (2026-10-15)
 - [x] Any combination of left / right / rear / front; view detection + Clip check with override; add a
       view later; metric-to-view matrix (code + HANDOFF §9, test-locked)

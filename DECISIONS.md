@@ -361,3 +361,18 @@ the output.
 - **Manual measurement tool included although the reference only shows an unused drawing-style icon**
   (A1-02 @ 00:00): clear clinical need, independent of validation; labelled manual and kept out of
   scores and the corrective section. Y
+- **Review player angle labels are per frame, never coloured** (a frame's angle is not the validated
+  per-stride median); no labels on a clip that failed the video check, but it stays playable to see why. Y
+- **Manual measurements live in session.manual, outside the presentation model** (a test checks the
+  model is byte-identical with and without them), with their own text/print section. Alt: add them as
+  model rows (risk of entering scores or findings). Y
+- **Range scale reads the config ranges** (single source); "above template range, under review" zones
+  are drawn uncoloured. Y
+- **Session library stores results only** (IndexedDB, this browser): no video, landmarks, clip file
+  names (may contain names) or free-text history/goals. Alt: also store landmarks so saved sessions keep
+  the player (rejected: more personal data, large). Reopened sessions show no player/panels (no video). Y
+- **Comparison labels a change within the validated error as not a change**; values assessed in only
+  one session are counted, not compared; different coverage warned. Y
+- **Angle curves computed at analysis time** (stabilised landmarks, valid near-leg strides within ±35%
+  of the median stride, ≥ 5 strides; median + 25–75% band), shown as measured, not scored. Alt: compute
+  on screen from rows (lost for saved sessions). Y

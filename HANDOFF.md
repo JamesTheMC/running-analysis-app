@@ -549,3 +549,15 @@ trustworthy, that phase's metrics beside it, left and right side by side; rear: 
 midstance. Controls: hide overlay, step ±1/±3 frames, head blur (on by default). Stills are drawn on the
 device from the local video and never stored. Findings in the corrective section link to their phase
 panel. Printed in the PDF export.
+
+
+## 10. Review tools and session library (2026-10-23)
+From the reference analysis (docs/reference-analysis/ROADMAP.md, TRACEABILITY.md):
+| Piece | File | Notes |
+|---|---|---|
+| Video review player | js/views/review.js, css/review.css | Results tab, one player per clip; shares skeleton, head blur and seeking with phase-panels.js; angle labels = this frame only, never coloured; no labels on a clip that failed the video check; hidden in print |
+| Manual measurements | js/views/measure.js | session.manual (in memory, saved with the session); manualLines() for text/print; never in the model, scores or explanations (test) |
+| Range scale | js/views/range-scale.js | zones from config green/red (model row.range.bounds); marker coloured only when the cell has a shown status |
+| Explainers | js/presentation/explainers.js | MEANING per metric id + view (view matrix) + validated error (reconcile) |
+| Session library | js/storage/library.js, js/views/library.js, js/presentation/compare.js | IndexedDB 'gait-library'; toRecord() keeps results only (no video, landmarks, file names, free text); compare = values assessed in both, within-error labelling, compareCoverage warning |
+| Angle curves | js/pipeline/curves.js, js/views/curves-chart.js | computed in toAnalysis (analysis.curves), so saved sessions keep them; none for failed clips |
