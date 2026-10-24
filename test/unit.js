@@ -1057,6 +1057,28 @@ section = 'Range scale';
   });
 }
 
+section = '"What is this?" explainers';
+{
+  const { explainerFor, TIMING_MEANING } = await import('../js/presentation/explainers.js');
+  const { sessionFor } = await import('./fixture-regression.js');
+  const { buildModel } = await import('../js/presentation/model.js');
+  const { CLIP_SLOTS: SL } = await import('../js/config.js');
+  await testAsync('every displayed metric row and timing row has an explainer naming its view', async () => {
+    const { intake, clips, result } = await sessionFor('T2');
+    const session = { intake: { ...intake, speedValue: '7', speedUnit: 'mph' }, clips, reconciled: result };
+    session.views = [...new Set(Object.keys(clips).map((k) => SL[k].view))];
+    session.analysis = mergeSession(clips);
+    const m = buildModel(session, analyze(session));
+    const rows = m.sections.flatMap((s) => s.rows);
+    for (const r of rows) {
+      const e = explainerFor(r.id);
+      assert(e && / From: (left side view|rear view|side view)/.test(e), `${r.id}: ${e}`);
+    }
+    for (const t of m.timing.rows) assert(TIMING_MEANING[t.label], `timing: ${t.label}`);
+    return `${rows.length} metrics, ${m.timing.rows.length} timing rows`;
+  });
+}
+
 // ---------------------------------------------------------------------------
 EMIT.strict = false;
 const fails = results.filter((r) => !r.ok && !r.skip);

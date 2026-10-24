@@ -48,6 +48,7 @@ const SHELL = [
   './js/views/review.js',
   './js/views/measure.js',
   './js/views/range-scale.js',
+  './js/presentation/explainers.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',

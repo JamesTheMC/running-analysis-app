@@ -9,6 +9,7 @@ import { phasePanelsHtml } from './phase-panels.js';
 import { reviewHtml } from './review.js';
 import { manualCardHtml } from './measure.js';
 import { rangeScaleHtml } from './range-scale.js';
+import { explainerFor, TIMING_MEANING } from '../presentation/explainers.js';
 
 const SIDE = { left: 'Left', right: 'Right', mid: '' };
 const LEVEL_WORD = { pass: 'Pass', warn: 'Warning', fail: 'Fail' };
@@ -27,6 +28,8 @@ function valueHtml(c) {
 
 function detailHtml(r) {
   const parts = [];
+  const what = explainerFor(r.id);
+  if (what) parts.push(`<p class="what"><strong>What is this?</strong> ${esc(what)}</p>`);
   if (r.range?.green) parts.push(`<p><span class="dot dot-green"></span>Normal: ${esc(r.range.green)}${r.range.red ? ` · <span class="dot dot-red"></span>Flag: ${esc(r.range.red)}` : ''}${r.range.provisional ? ' <span class="prov">provisional</span>' : ''}</p>`);
   if (r.diff) parts.push(`<p>Left–right difference: ${esc(r.diff)}${r.diffNote ? ` (${esc(r.diffNote)})` : ''}</p>`);
   for (const c of Object.values(r.cells)) {
@@ -72,7 +75,7 @@ function timingHtml(t) {
   if (!t?.rows.length) return '';
   return `<section class="card"><h3>Timing and mechanics</h3>
     <div class="t-grid">${t.rows
-      .map((r) => `<div class="t-item"><span class="t-label">${esc(r.label)}</span><span class="t-val">${esc(r.text)}</span><span class="t-sub">${r.agreementText ? esc(r.agreementText) : r.flag ? esc(r.flag) : r.note ? esc(r.note) : ''}</span></div>`)
+      .map((r) => `<div class="t-item"><span class="t-label">${esc(r.label)}</span><span class="t-val">${esc(r.text)}</span><span class="t-sub">${r.agreementText ? esc(r.agreementText) : r.flag ? esc(r.flag) : r.note ? esc(r.note) : ''}</span>${TIMING_MEANING[r.label] ? `<details class="t-what small"><summary>What is this?</summary>${esc(TIMING_MEANING[r.label])}</details>` : ''}</div>`)
       .join('')}</div>
     ${(t.notes || []).map((n) => `<p class="muted small">${esc(n)}</p>`).join('')}
   </section>`;
